@@ -1,5 +1,7 @@
 ﻿using MySql.Data.MySqlClient;
 using System;
+using System.Drawing;
+using System.Drawing.Drawing2D;
 using System.Security.Cryptography;
 using System.Text;
 using System.Windows.Forms;
@@ -8,82 +10,142 @@ using WebSiteDev.ManagerForm;
 namespace WebSiteDev
 {
     /// <summary>
-    /// Форма авторизации пользователей в систему
-    /// Проверяет учётные данные против встроенного администратора или БД пользователей
+    /// Главное окно авторизации пользователя
     /// </summary>
     public partial class AuthForm : Form
     {
-        private BlockForms blockForms;
-        private string captchaText;
-        private bool captchaRequired = false;
-        private int failedAttempts = 0;
-        private Timer lockoutTimer;
-        private int lockoutSeconds = 0;
+        private BlockForms blockForms; // Ссылка на объект блокировки окон
+        private string captchaText; // Строка с текущим значением капчи
+        private bool captchaRequired = false; // Флаг необходимости ввода капчи
+        private int failedAttempts = 0; // Счетчик неверных попыток входа
+        private Timer lockoutTimer; // Таймер для отсчета времени блокировки
+        private int lockoutSeconds = 0; // Оставшееся время до снятия блокировки
 
         public AuthForm()
         {
             InitializeComponent();
 
-            // Создаём папку для хранения изображений товаров если её нет
+            // Запуск настройки папок программы
             FolderPermissions.InitializeImagesFolder();
+
+            // Настройка и создание таймера ожидания
+            lockoutTimer = new Timer();
+            lockoutTimer.Interval = 1000;
+            lockoutTimer.Tick += LockoutTimer_Tick;
         }
 
+        /// <summary>
+        /// Обработчик события загрузки окна приложения
+        /// </summary>
         private void AuthForm_Load(object sender, EventArgs e)
         {
+            // Получение экземпляра блокировщика
             blockForms = Program.GetBlockForms();
             blockForms.RegisterForm(this);
             blockForms.Start();
+
+            // Изначально скрываем поля капчи
             HideCaptcha();
         }
 
         /// <summary>
-        /// Обработчик кнопки входа
+        /// Выполнение действий при нажатии кнопки входа
         /// </summary>
         private void button1_Click(object sender, EventArgs e)
         {
-            // Получаем введённые логин и пароль
+            // Блокируем новые нажатия если таймер активен
+            if (lockoutTimer.Enabled)
+            {
+                MessageBox.Show("Вход заблокирован. Попробуйте через " + lockoutSeconds + " сек.", "Блокировка", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
+            // Получение введенных данных
             string login = textBox1.Text.Trim();
             string password = textBox2.Text;
+
+            // Создание криптографического хеша пароля
             string hashedPassword = GetSha256(password);
 
-            // Проверяем что оба поля заполнены
+            // Проверка на пустоту
             if (string.IsNullOrEmpty(login) || string.IsNullOrEmpty(password))
             {
                 MessageBox.Show("Введите логин и пароль!", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
 
-            // Получаем учётные данные встроенного администратора из настроек
+            // Проверка введенного текста капчи если она требуется
+            if (captchaRequired)
+            {
+                // Пользователь не ввел капчу — мягкое предупреждение без штрафа
+                if (string.IsNullOrEmpty(textBox3.Text))
+                {
+                    MessageBox.Show("Пожалуйста, введите код с картинки (CAPTCHA).", "Требуется CAPTCHA", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    textBox3.Focus();
+                    return;
+                }
+
+                // Капча введена, но неверно — считаем как ошибку
+                if (textBox3.Text != captchaText)
+                {
+                    MessageBox.Show("Неверно введена CAPTCHA!", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    failedAttempts++;
+
+                    // Включение блокировки при двух и более ошибках
+                    if (failedAttempts >= 2)
+                    {
+                        MessageBox.Show("Вход заблокирован на 10 секунд!", "Блокировка", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                        StartLockout();
+                    }
+                    else
+                    {
+                        CaptchaToImage();
+                    }
+
+                    textBox3.Clear();
+                    return;
+                }
+            }
+
+            // Чтение данных встроенного администратора из настроек
             string adminLogin = Properties.Settings.Default.AdminLogin;
             string adminPassword = Properties.Settings.Default.AdminPassword;
 
-            // Проверяем вход администратора
+            // Сравнение данных со встроенным админом
             if (login == adminLogin && password == adminPassword)
             {
-                // Открываем главную форму администратора
+                // Сброс счетчиков
+                failedAttempts = 0;
+                captchaRequired = false;
+
+                HideCaptcha();
+                blockForms.Stop();
+
+                // Переход в панель администрирования
                 MainForm adminForm = new MainForm("Администратор", "Администратор", 0);
+                blockForms.RegisterForm(adminForm);
                 this.Hide();
                 adminForm.ShowDialog();
                 this.Show();
+                blockForms.UnregisterForm(adminForm);
+                blockForms.Restart();
 
-                // Очищаем поля после выхода
                 textBox1.Text = "";
                 textBox2.Text = "";
+
                 return;
             }
 
-            // Проверяем учётные данные в БД для обычных пользователей
             using (MySqlConnection con = new MySqlConnection(Data.GetConnectionString()))
             {
                 try
                 {
                     con.Open();
 
-                    // Запрос для получения данных пользователя
+                    // Поисковый запрос учетной записи
                     string query = @"SELECT u.UserID, u.FirstName, u.Surname, u.MiddleName, r.RoleName 
-                             FROM Users u JOIN Role r ON u.RoleID = r.RoleID 
-                             WHERE u.UserLogin = @login AND u.UserPassword = @password
-                             LIMIT 1;";
+                     FROM Users u JOIN Role r ON u.RoleID = r.RoleID 
+                     WHERE u.UserLogin = @login AND u.UserPassword = @password LIMIT 1;";
 
                     MySqlCommand cmd = new MySqlCommand(query, con);
                     cmd.Parameters.AddWithValue("@login", login);
@@ -91,61 +153,86 @@ namespace WebSiteDev
 
                     using (var reader = cmd.ExecuteReader())
                     {
-                        // Если пользователь найден
+                        // Пользователь успешно найден
                         if (reader.Read())
                         {
+                            failedAttempts = 0;
+                            captchaRequired = false;
+                            HideCaptcha();
+
                             int userID = Convert.ToInt32(reader["UserID"]);
-                            // Формируем полное имя пользователя
-                            string fullName = $"{reader["Surname"]} {reader["FirstName"]} {reader["MiddleName"]}";
+                            string fullName = reader["Surname"].ToString() + " " + reader["FirstName"].ToString() + " " + reader["MiddleName"].ToString();
                             string role = reader["RoleName"].ToString();
 
-                            // Открываем нужную форму в зависимости от роли пользователя
+                            blockForms.Stop();
+
+                            // Распределение по окнам согласно роли
                             if (role == "Администратор")
                             {
-                                MainForm adminForm = new MainForm(fullName, role, userID);
+                                MainForm mainForm = new MainForm(fullName, role, userID);
+                                blockForms.RegisterForm(mainForm);
                                 this.Hide();
-                                adminForm.ShowDialog();
+                                mainForm.ShowDialog();
                                 this.Show();
+                                blockForms.UnregisterForm(mainForm);
                             }
                             else if (role == "Менеджер")
                             {
                                 ManagerMainForm managerForm = new ManagerMainForm(fullName, role, userID);
+                                blockForms.RegisterForm(managerForm);
                                 this.Hide();
                                 managerForm.ShowDialog();
                                 this.Show();
+                                blockForms.UnregisterForm(managerForm);
                             }
                             else if (role == "Директор")
                             {
                                 DirectorMainForm directorForm = new DirectorMainForm(fullName, role);
+                                blockForms.RegisterForm(directorForm);
                                 this.Hide();
                                 directorForm.ShowDialog();
                                 this.Show();
+                                blockForms.UnregisterForm(directorForm);
                             }
 
-                            // Очищаем поля после успешного входа
+                            blockForms.Restart();
                             textBox1.Text = "";
                             textBox2.Text = "";
                         }
                         else
                         {
-                            // Пользователь не найден или неверные учётные данные
-                            MessageBox.Show("Неверный логин или пароль!", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                            // Если совпадений в базе нет
+                            failedAttempts++;
+                            if (failedAttempts == 1)
+                            {
+                                // Первое предупреждение и требование капчи
+                                MessageBox.Show("Неверный логин или пароль!\nДля дальнейших попыток требуется ввод CAPTCHA.", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                                captchaRequired = true;
+                                ShowCaptcha();
+                            }
+                            else if (failedAttempts >= 2)
+                            {
+                                // Временная блокировка формы
+                                MessageBox.Show("Неверный логин или пароль!\nВход заблокирован на 10 секунд!", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                                StartLockout();
+                            }
                             textBox1.Text = "";
                             textBox2.Text = "";
+                            textBox3.Clear();
                         }
                     }
                 }
-                catch (MySqlException Ex)
+                catch (MySqlException ex)
                 {
-                    // Обработка ошибок базы данных
-                    HandleDatabaseError(Ex);
+                    // Обработка критических ошибок базы
+                    HandleDatabaseError(ex);
                     textBox1.Text = "";
                     textBox2.Text = "";
                 }
                 catch (Exception ex)
                 {
-                    // Обработка неожиданных ошибок
-                    MessageBox.Show("Неожиданная ошибка:\n" + ex.Message, "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    // Обработка любых иных сбоев
+                    MessageBox.Show("Ошибка:\n" + ex.Message, "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
                     textBox1.Text = "";
                     textBox2.Text = "";
                 }
@@ -153,51 +240,280 @@ namespace WebSiteDev
         }
 
         /// <summary>
-        /// Обрабатывает ошибки подключения к БД и выводит понятные сообщения
+        /// Создание капчи
+        /// </summary>
+        private void CaptchaToImage()
+        {
+            Random random = new Random();
+
+            // Все символы заглавные строчные цифры
+            string chars = "ABCDEFGHIJKLMNPQRSTUVWXYZabcdefghijklmnpqrstuvwxyz123456789";
+            captchaText = "";
+
+            // Генерация случайных шести знаков
+            for (int i = 0; i < 6; i++)
+            {
+                captchaText += chars[random.Next(chars.Length)];
+            }
+
+            Bitmap bmp = new Bitmap(pictureBox4.Width, pictureBox4.Height);
+            Graphics g = Graphics.FromImage(bmp);
+
+            // Включение качественного сглаживания графики
+            g.SmoothingMode = SmoothingMode.AntiAlias;
+
+            // Светлый градиентный фон
+            using (LinearGradientBrush bgBrush = new LinearGradientBrush(
+                new Rectangle(0, 0, bmp.Width, bmp.Height),
+                Color.FromArgb(230, 240, 255),
+                Color.FromArgb(200, 220, 245),
+                LinearGradientMode.ForwardDiagonal))
+            {
+                g.FillRectangle(bgBrush, 0, 0, bmp.Width, bmp.Height);
+            }
+
+            // Шум из точек разного размера
+            for (int i = 0; i < 150; i++)
+            {
+                int x = random.Next(bmp.Width);
+                int y = random.Next(bmp.Height);
+                int size = random.Next(1, 4);
+                int alpha = random.Next(40, 120);
+
+                using (SolidBrush dotBrush = new SolidBrush(Color.FromArgb(alpha,
+                       random.Next(80, 180), random.Next(80, 180), random.Next(150, 220))))
+                {
+                    g.FillEllipse(dotBrush, x, y, size, size);
+                }
+            }
+
+            // Мелкие случайные буквы шума на фоне
+            string noiseChars = "ABCDEFGHIJKLMNPQRSTUVWXYZabcdefghijklmnpqrstuvwxyz123456789@#$%&";
+
+            using (Font noiseFont = new Font("Arial", random.Next(7, 11), FontStyle.Regular))
+            {
+                for (int i = 0; i < 12; i++)
+                {
+                    string nc = noiseChars[random.Next(noiseChars.Length)].ToString();
+                    int alpha = random.Next(40, 90);
+                    using (SolidBrush noiseBrush = new SolidBrush(Color.FromArgb(alpha,
+                        random.Next(80, 160), random.Next(80, 160), random.Next(120, 200))))
+                    {
+                        g.DrawString(nc, noiseFont, noiseBrush,
+                            random.Next(0, bmp.Width - 10), random.Next(0, bmp.Height - 12));
+                    }
+                }
+            }
+
+            // Две волнистые линии через поле
+            for (int l = 0; l < 2; l++)
+            {
+                int alpha = random.Next(60, 110);
+                using (Pen linePen = new Pen(Color.FromArgb(alpha,
+                    random.Next(80, 160), random.Next(80, 160), random.Next(140, 200)), 1))
+                {
+                    int y1 = random.Next(bmp.Height / 4, bmp.Height * 3 / 4);
+                    int y2 = random.Next(bmp.Height / 4, bmp.Height * 3 / 4);
+                    int ymid = random.Next(bmp.Height / 4, bmp.Height * 3 / 4);
+
+                    g.DrawBezier(linePen,
+                        0, y1,
+                        bmp.Width / 3, ymid - random.Next(-15, 15),
+                        bmp.Width * 2 / 3, ymid + random.Next(-15, 15),
+                        bmp.Width, y2);
+                }
+            }
+
+            // Пул случайных темных цветов
+            Color[] colors = new Color[]
+            {
+                Color.FromArgb(30, 80, 160),
+                Color.FromArgb(160, 30, 30),
+                Color.FromArgb(20, 120, 60),
+                Color.FromArgb(120, 50, 150),
+                Color.FromArgb(180, 100, 0),
+                Color.FromArgb(0, 100, 140),
+                Color.FromArgb(140, 0, 80),
+                Color.FromArgb(0, 120, 100),
+                Color.FromArgb(100, 80, 0),
+                Color.FromArgb(60, 60, 160)
+            };
+
+            // Массив шрифтов для букв
+            string[] fontNames = new string[] { "Arial", "Verdana", "Tahoma", "Georgia" };
+
+            int startX = 12;
+            int cellWidth = (bmp.Width - startX * 2) / 6;
+
+            for (int i = 0; i < 6; i++)
+            {
+                string fontName = fontNames[random.Next(fontNames.Length)];
+                float fontSize = random.Next(22, 30);
+                FontStyle style = (random.Next(2) == 0) ? FontStyle.Bold : FontStyle.Regular;
+
+                // Полностью случайный цвет
+                Color symbolColor = colors[random.Next(colors.Length)];
+
+                using (Font font = new Font(fontName, fontSize, style))
+                using (SolidBrush brush = new SolidBrush(symbolColor))
+                {
+                    var state = g.Save();
+                    float cx = startX + i * cellWidth + cellWidth / 2f;
+
+                    // Легкое вертикальное смещение
+                    float cy = bmp.Height / 2f + random.Next(-6, 7);
+
+                    g.TranslateTransform(cx, cy);
+                    g.RotateTransform(random.Next(-15, 16));
+
+                    SizeF sz = g.MeasureString(captchaText[i].ToString(), font);
+                    g.DrawString(captchaText[i].ToString(), font, brush, -sz.Width / 2f, -sz.Height / 2f);
+
+                    g.Restore(state);
+                }
+            }
+
+            g.Dispose();
+            pictureBox4.Image = bmp;
+        }
+
+        /// <summary>
+        /// Вывод на экран параметров графической защиты
+        /// </summary>
+        private void ShowCaptcha()
+        {
+            pictureBox4.Visible = true;
+            textBox3.Visible = true;
+            pictureBox5.Visible = true;
+            label5.Visible = true;
+            label6.Visible = true;
+
+            // Расширение ширины формы под картинку
+            if (this.Width != 930)
+            {
+                this.Width = 930;
+            }
+
+            CaptchaToImage();
+        }
+
+        /// <summary>
+        /// Скрытие всех полей связанных с капчей
+        /// </summary>
+        private void HideCaptcha()
+        {
+            pictureBox4.Visible = false;
+            textBox3.Visible = false;
+            pictureBox5.Visible = false;
+            label5.Visible = false;
+            label6.Visible = false;
+
+            // Возврат прежней ширины формы
+            if (this.Width != 660)
+            {
+                this.Width = 660;
+            }
+            textBox3.Clear();
+        }
+
+        /// <summary>
+        /// Обработчик кнопки обновления картинки с капчей
+        /// </summary>
+        private void pictureBox5_Click(object sender, EventArgs e)
+        {
+            CaptchaToImage();
+            textBox3.Clear();
+            textBox3.Focus();
+        }
+
+        /// <summary>
+        /// Метод инициации блокировки действий пользователя на время
+        /// </summary>
+        private void StartLockout()
+        {
+            lockoutSeconds = 10;
+
+            button1.Enabled = false;
+            button2.Enabled = false;
+            textBox1.Enabled = false;
+            textBox2.Enabled = false;
+            textBox3.Enabled = false;
+            pictureBox5.Enabled = false;
+            pictureBox2.Enabled = false;
+            pictureBox3.Enabled = false;
+
+            lockoutTimer.Start();
+        }
+
+        /// <summary>
+        /// Функция обратного отсчета системного таймера
+        /// </summary>
+        private void LockoutTimer_Tick(object sender, EventArgs e)
+        {
+            lockoutSeconds--;
+            button1.Text = "Вход (" + lockoutSeconds + " сек)";
+
+            // Снятие блокировки по истечении времени
+            if (lockoutSeconds <= 0)
+            {
+                lockoutTimer.Stop();
+
+                button1.Enabled = true;
+                button2.Enabled = true;
+                textBox1.Enabled = true;
+                textBox2.Enabled = true;
+                textBox3.Enabled = true;
+                pictureBox2.Enabled = true;
+                pictureBox3.Enabled = true;
+                pictureBox5.Enabled = true;
+
+                button1.Text = "Вход";
+                CaptchaToImage();
+                textBox3.Clear();
+                textBox3.Focus();
+            }
+        }
+
+        /// <summary>
+        /// Анализ и расшифровка кодов ошибок базы данных
         /// </summary>
         private void HandleDatabaseError(MySqlException ex)
         {
             string ErrorMessage = "";
-
-            // Определяем тип ошибки по коду и выводим соответствующее сообщение
-            switch (ex.Number)
+            if (ex.Number == 0)
             {
-                case 0:
-                    ErrorMessage = "Не удаётся подключиться к серверу базы данных.\n\nПроверьте:\n• Адрес хоста\n• Доступность сервера";
-                    break;
-
-                case 1045:
-                    ErrorMessage = "Ошибка доступа отклонена!\n\nПроверьте:\n• Имя пользователя\n• Пароль";
-                    break;
-
-                case 1049:
-                    ErrorMessage = "База данных не найдена!\n\nПроверьте имя базы данных в настройках.";
-                    break;
-
-                case 2003:
-                    ErrorMessage = "Не удаётся подключиться к MySQL серверу.\n\nПроверьте:\n• IP адрес хоста\n• Работает ли сервер MySQL";
-                    break;
-
-                case 2006:
-                    ErrorMessage = "MySQL сервер отключен.\n\nПожалуйста, проверьте состояние сервера.";
-                    break;
-
-                default:
-                    ErrorMessage = $"Ошибка базы данных (код: {ex.Number}):\n{ex.Message}";
-                    break;
+                ErrorMessage = "Не удаётся подключиться к серверу базы данных.";
+            }
+            else if (ex.Number == 1045)
+            {
+                ErrorMessage = "Ошибка доступа отклонена!";
+            }
+            else if (ex.Number == 1049)
+            {
+                ErrorMessage = "База данных не найдена!";
+            }
+            else if (ex.Number == 2003)
+            {
+                ErrorMessage = "Не удаётся подключиться к MySQL серверу.";
+            }
+            else if (ex.Number == 2006)
+            {
+                ErrorMessage = "MySQL сервер отключен.";
+            }
+            else
+            {
+                ErrorMessage = "Ошибка БД (код: " + ex.Number + "): " + ex.Message;
             }
 
             MessageBox.Show(ErrorMessage, "Ошибка подключения", MessageBoxButtons.OK, MessageBoxIcon.Error);
         }
 
         /// <summary>
-        /// Обработчик кнопки выхода из приложения
+        /// Обработчик кнопки выхода из программы
         /// </summary>
         private void button2_Click(object sender, EventArgs e)
         {
-            // Запрашиваем подтверждение у пользователя
-            var result = MessageBox.Show("Вы действительно хотите выйти из приложения?", "Подтверждение", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
-
+            DialogResult result = MessageBox.Show("Вы действительно хотите выйти?", "Подтверждение", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
             if (result == DialogResult.Yes)
             {
                 this.DialogResult = DialogResult.OK;
@@ -206,11 +522,10 @@ namespace WebSiteDev
         }
 
         /// <summary>
-        /// Переключает видимость пароля при нажатии на иконку глаза
+        /// Переключение режима скрытия знаков пароля
         /// </summary>
         private void pictureBox2_Click(object sender, EventArgs e)
         {
-            // Если пароль скрыт показываем его и меняем иконку
             if (textBox2.UseSystemPasswordChar)
             {
                 textBox2.UseSystemPasswordChar = false;
@@ -218,37 +533,11 @@ namespace WebSiteDev
             }
             else
             {
-                // Иначе скрываем пароль обратно
                 textBox2.UseSystemPasswordChar = true;
                 pictureBox2.BackgroundImage = Properties.Resources.EyeView;
             }
         }
 
-        /// <summary>
-        /// Хеширует пароль алгоритмом SHA256
-        /// </summary>
-        private string GetSha256(string text)
-        {
-            using (SHA256 sha = SHA256.Create())
-            {
-                // Преобразуем текст в массив байт
-                byte[] bytes = Encoding.UTF8.GetBytes(text);
-                // Создаём хеш
-                byte[] hash = sha.ComputeHash(bytes);
-                // Конвертируем хеш в строку шестнадцатеричного формата
-                StringBuilder sb = new StringBuilder();
-                foreach (byte b in hash)
-                {
-                    sb.Append(b.ToString("x2"));
-                }
-
-                return sb.ToString();
-            }
-        }
-
-        /// <summary>
-        /// Открывает форму настроек приложения
-        /// </summary>
         private void pictureBox3_Click(object sender, EventArgs e)
         {
             SettingsForm settingsForm = new SettingsForm();
@@ -277,38 +566,48 @@ namespace WebSiteDev
             }
         }
 
+        /// <summary>
+        /// Сдвиг текстового курсора в конец при вводе
+        /// </summary>
         private void textBox3_TextChanged(object sender, EventArgs e)
         {
             textBox3.SelectionStart = textBox3.Text.Length;
         }
 
-        private void HideCaptcha()
+        /// <summary>
+        /// Шифрование входной строки алгоритмом SHA256
+        /// </summary>
+        private string GetSha256(string text)
         {
-            pictureBox4.Visible = false;
-            textBox3.Visible = false;
-            pictureBox5.Visible = false;
-            label5.Visible = false;
-            label6.Visible = false;
-
-            if (this.Width != 660)
+            using (SHA256 sha = SHA256.Create())
             {
-                this.Width = 660;
+                // Конвертация строки в массив байтов и расчет
+                byte[] hash = sha.ComputeHash(Encoding.UTF8.GetBytes(text));
+                StringBuilder sb = new StringBuilder();
+
+                // Перевод результата в шестнадцатеричную систему
+                foreach (byte b in hash)
+                {
+                    sb.Append(b.ToString("x2"));
+                }
+
+                return sb.ToString();
             }
-            textBox3.Clear();
         }
 
-        private void pictureBox5_Click(object sender, EventArgs e)
-        {
-
-        }
-
+        /// <summary>
+        /// Обработчик процесса закрытия программы
+        /// </summary>
         private void AuthForm_FormClosing(object sender, FormClosingEventArgs e)
         {
+            // Отвязка окна от защиты для выгрузки из памяти
             if (blockForms != null)
             {
                 blockForms.UnregisterForm(this);
                 blockForms.Stop();
             }
+
+            // Принудительная остановка фонового таймера
             if (lockoutTimer != null)
             {
                 lockoutTimer.Stop();
