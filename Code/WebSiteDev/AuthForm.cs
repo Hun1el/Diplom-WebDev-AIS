@@ -13,6 +13,13 @@ namespace WebSiteDev
     /// </summary>
     public partial class AuthForm : Form
     {
+        private BlockForms blockForms;
+        private string captchaText;
+        private bool captchaRequired = false;
+        private int failedAttempts = 0;
+        private Timer lockoutTimer;
+        private int lockoutSeconds = 0;
+
         public AuthForm()
         {
             InitializeComponent();
@@ -21,9 +28,16 @@ namespace WebSiteDev
             FolderPermissions.InitializeImagesFolder();
         }
 
+        private void AuthForm_Load(object sender, EventArgs e)
+        {
+            blockForms = Program.GetBlockForms();
+            blockForms.RegisterForm(this);
+            blockForms.Start();
+            HideCaptcha();
+        }
+
         /// <summary>
         /// Обработчик кнопки входа
-        /// Проверяет учётные данные и открывает соответствующую форму
         /// </summary>
         private void button1_Click(object sender, EventArgs e)
         {
@@ -251,6 +265,54 @@ namespace WebSiteDev
         private void textBox2_KeyPress(object sender, KeyPressEventArgs e)
         {
             InputRest.EnglishDigitsAndSpecial(e);
+        }
+
+        private void textBox3_KeyPress(object sender, KeyPressEventArgs e)
+        {
+            string allowedChars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+
+            if (allowedChars.IndexOf(e.KeyChar) == -1 && !char.IsControl(e.KeyChar))
+            {
+                e.Handled = true;
+            }
+        }
+
+        private void textBox3_TextChanged(object sender, EventArgs e)
+        {
+            textBox3.SelectionStart = textBox3.Text.Length;
+        }
+
+        private void HideCaptcha()
+        {
+            pictureBox4.Visible = false;
+            textBox3.Visible = false;
+            pictureBox5.Visible = false;
+            label5.Visible = false;
+            label6.Visible = false;
+
+            if (this.Width != 660)
+            {
+                this.Width = 660;
+            }
+            textBox3.Clear();
+        }
+
+        private void pictureBox5_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void AuthForm_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            if (blockForms != null)
+            {
+                blockForms.UnregisterForm(this);
+                blockForms.Stop();
+            }
+            if (lockoutTimer != null)
+            {
+                lockoutTimer.Stop();
+            }
         }
     }
 }
