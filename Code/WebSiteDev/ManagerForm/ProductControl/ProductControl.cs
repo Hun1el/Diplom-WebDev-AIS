@@ -46,9 +46,6 @@ namespace WebSiteDev.ManagerForm
             public static void Clear() { Items.Clear(); }
         }
 
-        /// <summary>
-        /// Конструктор - инициализирует контрол и загружает данные
-        /// </summary>
         public ProductControl(string role, int userID = 0, string userName = "")
         {
             InitializeComponent();
@@ -61,9 +58,6 @@ namespace WebSiteDev.ManagerForm
             flowPanel.MouseWheel += flowPanel_MouseWheel;
         }
 
-        /// <summary>
-        /// При загрузке контрола - скрывает кнопки в зависимости от роли
-        /// </summary>
         private void ProductControl_Load(object sender, EventArgs e)
         {
             // Менеджеры не могут добавлять новые товары
@@ -73,7 +67,7 @@ namespace WebSiteDev.ManagerForm
             }
             else
             {
-                // Если это администратор и находится в режиме просмотра услуг, скрываем кнопку просмотра заказа
+                // Если это администратор и находится в режиме просмотра услуг скрываем кнопку просмотра заказа
                 Form parentForm = this.FindForm();
                 if (parentForm != null && parentForm.Text == "Список услуг")
                 {
@@ -88,6 +82,10 @@ namespace WebSiteDev.ManagerForm
             UpdateOrderButtonVisibility();
         }
 
+        string ProductCmd = @"SELECT p.ProductID, p.ProductName, p.ProductDescription, p.ProductPhoto,
+                              c.CategoryName AS Category, p.BasePrice, p.CategoryID FROM Product p JOIN Category c ON p.CategoryID = c.CategoryID";
+        string ProductCount = @"SELECT COUNT(*) FROM Product";
+
         /// <summary>
         /// Загружает все товары из БД в DataTable
         /// </summary>
@@ -98,8 +96,7 @@ namespace WebSiteDev.ManagerForm
                 con.Open();
 
                 // Получаем все товары с их категориями
-                MySqlDataAdapter da = new MySqlDataAdapter(@"SELECT p.ProductID, p.ProductName, p.ProductDescription, p.ProductPhoto,
-                    c.CategoryName AS Category, p.BasePrice, p.CategoryID FROM Product p JOIN Category c ON p.CategoryID = c.CategoryID", con);
+                MySqlDataAdapter da = new MySqlDataAdapter(ProductCmd, con);
 
                 DataTable dt = new DataTable();
                 da.Fill(dt);
@@ -108,7 +105,7 @@ namespace WebSiteDev.ManagerForm
                 dataManipulation.FillComboBoxWithCategories(comboBox1, "Все категории");
 
                 // Показываем количество товаров
-                MySqlCommand count = new MySqlCommand("SELECT COUNT(*) FROM Product", con);
+                MySqlCommand count = new MySqlCommand(ProductCount, con);
                 label1.Text = "Количество записей: " + count.ExecuteScalar();
             }
         }
@@ -125,6 +122,7 @@ namespace WebSiteDev.ManagerForm
                     card.Dispose();
                 }
             }
+
             flowPanel.Controls.Clear();
 
             using (MySqlConnection con = new MySqlConnection(Data.GetConnectionString()))
@@ -132,8 +130,7 @@ namespace WebSiteDev.ManagerForm
                 con.Open();
 
                 // Получаем все товары с их категориями
-                MySqlDataAdapter da = new MySqlDataAdapter(@"SELECT p.ProductID, p.ProductName, p.ProductDescription, p.ProductPhoto,
-            c.CategoryName AS Category, p.BasePrice, p.CategoryID FROM Product p JOIN Category c ON p.CategoryID = c.CategoryID", con);
+                MySqlDataAdapter da = new MySqlDataAdapter(ProductCmd, con);
 
                 DataTable dt = new DataTable();
                 da.Fill(dt);
@@ -141,7 +138,7 @@ namespace WebSiteDev.ManagerForm
                 dataManipulation = new DataManipulation(dt);
 
                 // Обновляем количество товаров
-                MySqlCommand count = new MySqlCommand("SELECT COUNT(*) FROM Product", con);
+                MySqlCommand count = new MySqlCommand(ProductCount, con);
                 label1.Text = "Количество записей: " + count.ExecuteScalar();
             }
 
@@ -214,7 +211,7 @@ namespace WebSiteDev.ManagerForm
         }
 
         /// <summary>
-        /// Обработка события добавления в корзину - поддерживает левый и правый клик
+        /// Обработка события добавления в корзину поддерживает левый и правый клик
         /// </summary>
         private void Card_AddToCartClicked(object sender, EventArgs e)
         {
@@ -234,7 +231,7 @@ namespace WebSiteDev.ManagerForm
             MouseEventArgs me = e as MouseEventArgs;
             selectedCard = card;
 
-            // Левый клик - добавляем сразу, правый клик - открываем контекстное меню
+            // Левый клик добавляем сразу, правый клик открываем контекстное меню
             if (me != null && me.Button == MouseButtons.Left)
             {
                 AddToCartDirect(card);
@@ -274,6 +271,7 @@ namespace WebSiteDev.ManagerForm
 
             // Рассчитываем текущую сумму заказа
             decimal currentTotal = 0;
+
             foreach (OrderItem item in CurrentOrder.Items)
             {
                 currentTotal += item.BasePrice * item.Quantity;
@@ -296,6 +294,7 @@ namespace WebSiteDev.ManagerForm
                     MessageBoxButtons.OK,
                     MessageBoxIcon.Error
                 );
+
                 return;
             }
 
@@ -337,7 +336,7 @@ namespace WebSiteDev.ManagerForm
         }
 
         /// <summary>
-        /// Начинает редактирование товара - переводит карточку в режим редактирования
+        /// Начинает редактирование товара переводит карточку в режим редактирования
         /// </summary>
         private void StartEdit(ProductCard card)
         {
@@ -517,9 +516,6 @@ namespace WebSiteDev.ManagerForm
             }
         }
 
-        /// <summary>
-        /// Валидирует введённые данные товара перед сохранением
-        /// </summary>
         private bool ValidateProductData(TextBox name, TextBox description, TextBox rubles, NumericUpDown kopecks, ComboBox category)
         {
             // Проверяем что все элементы переданы
@@ -597,7 +593,7 @@ namespace WebSiteDev.ManagerForm
         }
 
         /// <summary>
-        /// Обработчик контекстного меню - добавляет товар с правого клика в корзину
+        /// Обработчик контекстного меню
         /// </summary>
         private void contextMenuStrip1_Click(object sender, EventArgs e)
         {
@@ -667,7 +663,7 @@ namespace WebSiteDev.ManagerForm
         }
 
         /// <summary>
-        /// Загружает следующую партию товаров при скроллинге (ленивая загрузка)
+        /// Загружает следующую партию товаров при скроллинге
         /// </summary>
         private void LoadNextBatch()
         {
@@ -718,7 +714,7 @@ namespace WebSiteDev.ManagerForm
         }
 
         /// <summary>
-        /// Обновляет состояние кнопки просмотра заказа (видимость и текст с количеством)
+        /// Обновляет состояние кнопки просмотра заказа
         /// </summary>
         public void UpdateOrderButtonVisibility()
         {
@@ -782,7 +778,7 @@ namespace WebSiteDev.ManagerForm
         }
 
         /// <summary>
-        /// При изменении фильтра по категориям - применяет фильтры
+        /// При изменении фильтра по категориям применяет фильтры
         /// </summary>
         private void comboBox1_SelectedIndexChanged(object sender, EventArgs e)
         {
@@ -790,7 +786,7 @@ namespace WebSiteDev.ManagerForm
         }
 
         /// <summary>
-        /// При изменении сортировки - применяет фильтры
+        /// При изменении сортировки применяет фильтры
         /// </summary>
         private void comboBox3_SelectedIndexChanged(object sender, EventArgs e)
         {
@@ -798,7 +794,7 @@ namespace WebSiteDev.ManagerForm
         }
 
         /// <summary>
-        /// Кнопка "Просмотр заказа" - открывает форму корзины
+        /// Кнопка "Просмотр заказа" открывает форму корзины
         /// </summary>
         private void button1_Click(object sender, EventArgs e)
         {
@@ -810,7 +806,7 @@ namespace WebSiteDev.ManagerForm
         }
 
         /// <summary>
-        /// Кнопка "Добавить товар" - открывает форму для добавления нового товара
+        /// Кнопка "Добавить товар" открывает форму для добавления нового товара
         /// </summary>
         private void button2_Click(object sender, EventArgs e)
         {
@@ -821,7 +817,7 @@ namespace WebSiteDev.ManagerForm
         }
 
         /// <summary>
-        /// Кнопка "Свернуть панель" - уменьшает размер окна
+        /// Кнопка "Свернуть панель" уменьшает размер окна
         /// </summary>
         private void button3_Click(object sender, EventArgs e)
         {
@@ -834,7 +830,7 @@ namespace WebSiteDev.ManagerForm
         }
 
         /// <summary>
-        /// Кнопка "Сброс фильтров" - очищает фильтры и сортировку
+        /// Кнопка "Сброс фильтров" очищает фильтры и сортировку
         /// </summary>
         private void button4_Click(object sender, EventArgs e)
         {
@@ -844,7 +840,7 @@ namespace WebSiteDev.ManagerForm
         }
 
         /// <summary>
-        /// При скроллинге таблицы - загружает ещё товары если достигнут конец
+        /// При скроллинге таблицы загружает ещё товары если достигнут конец
         /// </summary>
         private void flowPanel_Scroll(object sender, ScrollEventArgs e)
         {
@@ -855,7 +851,7 @@ namespace WebSiteDev.ManagerForm
         }
 
         /// <summary>
-        /// При прокрутке колёсико мыши - загружает ещё товары если достигнут конец
+        /// При прокрутке колёсико мыши загружает ещё товары если достигнут конец
         /// </summary>
         private void flowPanel_MouseWheel(object sender, MouseEventArgs e)
         {
@@ -866,7 +862,7 @@ namespace WebSiteDev.ManagerForm
         }
 
         /// <summary>
-        /// Обновляет состояние всех карточек товаров (отмечает какие в корзине)
+        /// Обновляет состояние всех карточек товаров
         /// </summary>
         public void RefreshProductCardStates()
         {

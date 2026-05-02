@@ -8,9 +8,6 @@ namespace WebSiteDev
     /// </summary>
     public partial class DescriptionProduct : Form
     {
-        /// <summary>
-        /// Инициализирует форму описания товара
-        /// </summary>
         public DescriptionProduct()
         {
             InitializeComponent();
@@ -29,11 +26,21 @@ namespace WebSiteDev
         }
 
         /// <summary>
-        /// Кнопка закрыть - закрывает окно описания товара
+        /// Кнопка закрыть
         /// </summary>
         private void button1_Click(object sender, EventArgs e)
         {
             this.Close();
+        }
+
+        private void DescriptionProduct_Load(object sender, EventArgs e)
+        {
+            Inactivity.OnFormLoad(this);
+        }
+
+        private void DescriptionProduct_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            Inactivity.OnFormClosing(this);
         }
     }
 }

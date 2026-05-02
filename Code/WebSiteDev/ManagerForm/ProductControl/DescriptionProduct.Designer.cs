@@ -57,6 +57,8 @@
             this.Name = "DescriptionProduct";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
             this.Text = "Описание услуги";
+            this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.DescriptionProduct_FormClosing);
+            this.Load += new System.EventHandler(this.DescriptionProduct_Load);
             this.ResumeLayout(false);
             this.PerformLayout();
 

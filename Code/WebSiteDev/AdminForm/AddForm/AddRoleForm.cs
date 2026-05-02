@@ -9,9 +9,6 @@ namespace WebSiteDev.AddForm
     /// </summary>
     public partial class AddRoleForm : Form
     {
-        /// <summary>
-        /// Инициализирует форму добавления роли
-        /// </summary>
         public AddRoleForm()
         {
             InitializeComponent();
@@ -69,7 +66,6 @@ namespace WebSiteDev.AddForm
                     {
                         int count = Convert.ToInt32(checkCmd.ExecuteScalar());
 
-                        // Если роль найдена - показываем ошибку
                         if (count > 0)
                         {
                             MessageBox.Show("Такая роль уже существует!", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Warning);
@@ -91,9 +87,18 @@ namespace WebSiteDev.AddForm
             }
             catch (Exception ex)
             {
-                // Обработка исключений при работе с БД
                 MessageBox.Show("Ошибка при добавлении роли:\n" + ex.Message, "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
+        }
+
+        private void AddRoleForm_Load(object sender, EventArgs e)
+        {
+            Inactivity.OnFormLoad(this);
+        }
+
+        private void AddRoleForm_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            Inactivity.OnFormClosing(this);
         }
     }
 }

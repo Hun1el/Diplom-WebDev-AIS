@@ -8,7 +8,6 @@ namespace WebSiteDev.AdminForm
 {
     /// <summary>
     /// Пользовательский контрол для управления ролями пользователей
-    /// Позволяет просматривать, добавлять, редактировать и удалять роли
     /// </summary>
     public partial class RoleControl : UserControl
     {
@@ -17,9 +16,6 @@ namespace WebSiteDev.AdminForm
         private int selectedRoleID = -1;
         private int selectedRowIndex = -1;
 
-        /// <summary>
-        /// Инициализирует контрол и загружает данные ролей
-        /// </summary>
         public RoleControl()
         {
             InitializeComponent();
@@ -73,7 +69,6 @@ namespace WebSiteDev.AdminForm
 
         /// <summary>
         /// Обработчик изменения текста в поле поиска
-        /// Применяет фильтр и обновляет таблицу
         /// </summary>
         private void textBox1_TextChanged(object sender, EventArgs e)
         {
@@ -90,9 +85,6 @@ namespace WebSiteDev.AdminForm
             selectedRowIndex = -1;
         }
 
-        /// <summary>
-        /// Обработчик кнопки расширения окна для редактирования
-        /// </summary>
         private void button1_Click(object sender, EventArgs e)
         {
             FormControl.Resize(this.FindForm(), 1500);
@@ -100,9 +92,6 @@ namespace WebSiteDev.AdminForm
             button1.Enabled = false;
         }
 
-        /// <summary>
-        /// Обработчик кнопки сжатия окна после редактирования
-        /// </summary>
         private void button3_Click(object sender, EventArgs e)
         {
             FormControl.Resize(this.FindForm(), 1175);
@@ -219,7 +208,6 @@ namespace WebSiteDev.AdminForm
 
         /// <summary>
         /// Обработчик кнопки удаления выбранной роли
-        /// Проверяет выбор, запрашивает подтверждение и удаляет из БД
         /// </summary>
         private void button7_Click(object sender, EventArgs e)
         {

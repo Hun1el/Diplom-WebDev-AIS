@@ -6,7 +6,7 @@ using System.Windows.Forms;
 namespace WebSiteDev.ManagerForm
 {
     /// <summary>
-    /// Контрол для управления заказами - отслеживание статусов, редактирование дат выполнения, статусов, печать чеков
+    /// Контрол для управления заказами
     /// </summary>
     public partial class OrderControl : UserControl
     {
@@ -23,9 +23,7 @@ namespace WebSiteDev.ManagerForm
 
         private DataSecurity dataSecurity = new DataSecurity();
 
-        /// <summary>
-        /// Инициализирует контрол и загружает данные заказов
-        /// </summary>
+
         public OrderControl(string role, int userID = 0, string userName = "")
         {
             InitializeComponent();
@@ -38,7 +36,7 @@ namespace WebSiteDev.ManagerForm
         }
 
         /// <summary>
-        /// При загрузке контрола - инициализирует UI элементы и скрывает кнопки для администраторов
+        /// При загрузке контрола инициализирует UI элементы и скрывает кнопки для администраторов
         /// </summary>
         private void OrderControl_Load(object sender, EventArgs e)
         {
@@ -50,7 +48,7 @@ namespace WebSiteDev.ManagerForm
 
             dataGridView1.ContextMenuStrip = contextMenuStrip1;
 
-            // Администраторы не могут создавать заказы, только просматривать
+            // Администраторы не могут создавать заказы только просматривать
             if (userRole == "Администратор")
             {
                 button5.Visible = false;
@@ -59,9 +57,6 @@ namespace WebSiteDev.ManagerForm
             }
         }
 
-        /// <summary>
-        /// Загружает все заказы из БД с информацией о клиентах, сотрудниках и товарах
-        /// </summary>
         void GetDate()
         {
             using (MySqlConnection con = new MySqlConnection(Data.GetConnectionString()))
@@ -134,7 +129,7 @@ namespace WebSiteDev.ManagerForm
         }
 
         /// <summary>
-        /// Форматирует отображение ячеек - окрашивает по статусу, маскирует/показывает имена
+        /// Форматирует отображение ячеек
         /// </summary>
         private void DataGridView1_CellFormatting(object sender, DataGridViewCellFormattingEventArgs e)
         {
@@ -156,7 +151,7 @@ namespace WebSiteDev.ManagerForm
                 e.CellStyle.BackColor = System.Drawing.Color.IndianRed;
             }
 
-            // Если строка открыта (двойной клик) - показываем оригинальные данные
+            // Если строка открыта показываем оригинальные данные
             if (e.RowIndex == lastRevealedRowIndex)
             {
                 if (dataGridView1.Columns[e.ColumnIndex].Name == "ClientName")
@@ -203,7 +198,7 @@ namespace WebSiteDev.ManagerForm
         }
 
         /// <summary>
-        /// Обработка правого клика на таблице - выделение строки для контекстного меню
+        /// Обработка правого клика на таблице выделение строки для контекстного меню
         /// </summary>
         private void DataGridView1_MouseDown(object sender, MouseEventArgs e)
         {
@@ -220,7 +215,7 @@ namespace WebSiteDev.ManagerForm
         }
 
         /// <summary>
-        /// При вводе номера заказа - фильтрует таблицу по данному номеру
+        /// При вводе номера заказа фильтрует таблицу по данному номеру
         /// </summary>
         private void textBox1_TextChanged(object sender, EventArgs e)
         {
@@ -234,7 +229,7 @@ namespace WebSiteDev.ManagerForm
         }
 
         /// <summary>
-        /// Кнопка расширить панель - показывает дополнительные элементы управления
+        /// Кнопка расширить панель показывает дополнительные элементы управления
         /// </summary>
         private void button1_Click(object sender, EventArgs e)
         {
@@ -244,7 +239,7 @@ namespace WebSiteDev.ManagerForm
         }
 
         /// <summary>
-        /// Кнопка свернуть панель - скрывает дополнительные элементы управления
+        /// Кнопка свернуть панель скрывает дополнительные элементы управления
         /// </summary>
         private void button3_Click(object sender, EventArgs e)
         {
@@ -254,7 +249,7 @@ namespace WebSiteDev.ManagerForm
         }
 
         /// <summary>
-        /// Кнопка создать новый заказ - переходит к форме выбора товаров
+        /// Кнопка создать новый заказ переходит к форме выбора товаров
         /// </summary>
         private void button2_Click(object sender, EventArgs e)
         {
@@ -268,7 +263,7 @@ namespace WebSiteDev.ManagerForm
         }
 
         /// <summary>
-        /// При изменении фильтра по дате - обновляет отображение таблицы
+        /// При изменении фильтра по дате обновляет отображение таблицы
         /// </summary>
         private void comboBox1_SelectedIndexChanged(object sender, EventArgs e)
         {
@@ -281,7 +276,7 @@ namespace WebSiteDev.ManagerForm
         }
 
         /// <summary>
-        /// При изменении фильтра по статусу - обновляет отображение таблицы
+        /// При изменении фильтра по статусу обновляет отображение таблицы
         /// </summary>
         private void comboBox6_SelectedIndexChanged(object sender, EventArgs e)
         {
@@ -294,7 +289,7 @@ namespace WebSiteDev.ManagerForm
         }
 
         /// <summary>
-        /// Кнопка сброс фильтров - отображает все заказы
+        /// Кнопка сброс фильтров отображает все заказы
         /// </summary>
         private void button4_Click(object sender, EventArgs e)
         {
@@ -314,7 +309,7 @@ namespace WebSiteDev.ManagerForm
         }
 
         /// <summary>
-        /// Двойной клик на ячейку таблицы - открывает форму со списком товаров в заказе
+        /// Двойной клик на ячейку таблицы открывает форму со списком товаров в заказе
         /// </summary>
         private void dataGridView1_CellMouseDoubleClick(object sender, DataGridViewCellMouseEventArgs e)
         {
@@ -327,7 +322,7 @@ namespace WebSiteDev.ManagerForm
         }
 
         /// <summary>
-        /// Пункт контекстного меню - просмотр состава заказа
+        /// Пункт контекстного меню просмотр состава заказа
         /// </summary>
         private void просмотрСоставаЗаказаToolStripMenuItem_Click(object sender, EventArgs e)
         {
@@ -344,7 +339,7 @@ namespace WebSiteDev.ManagerForm
         }
 
         /// <summary>
-        /// При клике на строку таблицы - загружает данные заказа и доступные статусы для редактирования
+        /// При клике на строку таблицы загружает данные заказа и доступные статусы для редактирования
         /// </summary>
         private void dataGridView1_CellClick(object sender, DataGridViewCellEventArgs e)
         {
@@ -422,7 +417,7 @@ namespace WebSiteDev.ManagerForm
         }
 
         /// <summary>
-        /// Кнопка сохранить - обновляет статус и дату выполнения заказа в БД
+        /// Кнопка сохранить обновляет статус и дату выполнения заказа в БД
         /// </summary>
         private void button6_Click(object sender, EventArgs e)
         {
@@ -435,7 +430,7 @@ namespace WebSiteDev.ManagerForm
             string newStatus = comboBox5.SelectedItem.ToString();
             DateTime newDate = dateTimePicker1.Value;
 
-            // Если выбрана дата в прошлом - переносим на завтра
+            // Если выбрана дата в прошлом переносим на завтра
             if (newDate < DateTime.Now)
             {
                 newDate = DateTime.Now.AddDays(1);
@@ -529,7 +524,7 @@ namespace WebSiteDev.ManagerForm
         }
 
         /// <summary>
-        /// Кнопка печать чека - создаёт документ Word с информацией о заказе
+        /// Кнопка печать чека создаёт документ Word с информацией о заказе
         /// </summary>
         private void button5_Click(object sender, EventArgs e)
         {
@@ -542,14 +537,7 @@ namespace WebSiteDev.ManagerForm
             // Проверяем установлен ли Microsoft Word на компьютере
             if (!IsWordInstalled())
             {
-                MessageBox.Show(
-                    "Microsoft Word не установлен на вашем компьютере!\n\n" +
-                    "Для создания чека требуется установленное приложение Microsoft Office Word.\n\n" +
-                    "Пожалуйста, установите Microsoft Office и повторите попытку.",
-                    "Ошибка",
-                    MessageBoxButtons.OK,
-                    MessageBoxIcon.Error
-                );
+                MessageBox.Show("Microsoft Word не установлен на вашем компьютере!\n\nДля создания чека требуется установленное приложение Microsoft Office Word.\n\nПожалуйста, установите Microsoft Office и повторите попытку.", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return;
             }
 
@@ -614,7 +602,7 @@ namespace WebSiteDev.ManagerForm
         }
 
         /// <summary>
-        /// Двойной клик на ячейку - показывает/скрывает оригинальные имена на 20 секунд
+        /// Двойной клик на ячейку показывает/скрывает оригинальные имена на 20 секунд
         /// </summary>
         private void dataGridView1_CellDoubleClick(object sender, DataGridViewCellEventArgs e)
         {
@@ -648,7 +636,7 @@ namespace WebSiteDev.ManagerForm
         }
 
         /// <summary>
-        /// Таймер - срабатывает через 20 секунд и скрывает открытые данные
+        /// Таймер срабатывает через 20 секунд и скрывает открытые данные
         /// </summary>
         private void Timer1_Tick(object sender, EventArgs e)
         {

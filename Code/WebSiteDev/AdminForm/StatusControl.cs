@@ -8,7 +8,6 @@ namespace WebSiteDev.AdminForm
 {
     /// <summary>
     /// Пользовательский контрол для управления статусами заказов
-    /// Позволяет просматривать, добавлять, редактировать и удалять статусы
     /// </summary>
     public partial class StatusControl : UserControl
     {
@@ -17,9 +16,6 @@ namespace WebSiteDev.AdminForm
         private int selectedStatusID = -1;
         private int selectedRowIndex = -1;
 
-        /// <summary>
-        /// Инициализирует контрол и загружает данные статусов
-        /// </summary>
         public StatusControl()
         {
             InitializeComponent();
@@ -71,10 +67,6 @@ namespace WebSiteDev.AdminForm
 
         }
 
-        /// <summary>
-        /// Обработчик изменения текста в поле поиска
-        /// Применяет фильтр и обновляет таблицу
-        /// </summary>
         private void textBox1_TextChanged(object sender, EventArgs e)
         {
             // Применяем фильтр по названию статуса
@@ -90,9 +82,6 @@ namespace WebSiteDev.AdminForm
             selectedRowIndex = -1;
         }
 
-        /// <summary>
-        /// Обработчик кнопки расширения окна для редактирования
-        /// </summary>
         private void button1_Click(object sender, EventArgs e)
         {
             FormControl.Resize(this.FindForm(), 1500);
@@ -100,9 +89,6 @@ namespace WebSiteDev.AdminForm
             button1.Enabled = false;
         }
 
-        /// <summary>
-        /// Обработчик кнопки сжатия окна после редактирования
-        /// </summary>
         private void button3_Click(object sender, EventArgs e)
         {
             FormControl.Resize(this.FindForm(), 1175);
@@ -112,7 +98,6 @@ namespace WebSiteDev.AdminForm
 
         /// <summary>
         /// Обработчик кнопки добавления нового статуса
-        /// Открывает диалоговую форму и перезагружает данные
         /// </summary>
         private void button2_Click(object sender, EventArgs e)
         {
@@ -126,7 +111,6 @@ namespace WebSiteDev.AdminForm
 
         /// <summary>
         /// Обработчик кнопки сброса фильтров
-        /// Возвращает таблицу в исходное состояние
         /// </summary>
         private void button4_Click(object sender, EventArgs e)
         {
@@ -166,7 +150,6 @@ namespace WebSiteDev.AdminForm
 
         /// <summary>
         /// Обработчик клика по ячейке в таблице
-        /// Загружает данные выбранного статуса в поле редактирования
         /// </summary>
         private void dataGridView1_CellClick(object sender, DataGridViewCellEventArgs e)
         {
@@ -183,7 +166,6 @@ namespace WebSiteDev.AdminForm
 
         /// <summary>
         /// Обработчик кнопки редактирования выбранного статуса
-        /// Проверяет выбор, запрашивает подтверждение и обновляет в БД
         /// </summary>
         private void button6_Click(object sender, EventArgs e)
         {
@@ -219,7 +201,6 @@ namespace WebSiteDev.AdminForm
 
         /// <summary>
         /// Обработчик кнопки удаления выбранного статуса
-        /// Проверяет выбор, запрашивает подтверждение и удаляет из БД
         /// </summary>
         private void button7_Click(object sender, EventArgs e)
         {

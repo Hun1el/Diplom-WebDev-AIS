@@ -24,7 +24,7 @@ namespace WebSiteDev
         }
 
         /// <summary>
-        /// Кнопка "Отмена" - закрывает форму без сохранения
+        /// Кнопка "Отмена" закрывает форму без сохранения
         /// </summary>
         private void button3_Click(object sender, EventArgs e)
         {
@@ -38,7 +38,7 @@ namespace WebSiteDev
         }
 
         /// <summary>
-        /// Кнопка "Сохранить" - сохраняет все параметры подключения и время неактивности
+        /// Кнопка "Сохранить" сохраняет все параметры подключения и время неактивности
         /// </summary>
         private void button1_Click(object sender, EventArgs e)
         {
@@ -92,7 +92,7 @@ namespace WebSiteDev
         }
 
         /// <summary>
-        /// Кнопка "Тест подключения" - проверяет подключение к БД с введёнными параметрами
+        /// Кнопка "Тест подключения" проверяет подключение к БД с введёнными параметрами
         /// </summary>
         private void button2_Click(object sender, EventArgs e)
         {
@@ -161,7 +161,6 @@ namespace WebSiteDev
                     break;
 
                 default:
-                    // Для неизвестных ошибок выводим код и описание
                     ErrorMessage = string.Format("Ошибка базы данных (код: {0}):\n{1}", ex.Number, ex.Message);
                     break;
             }
@@ -170,8 +169,8 @@ namespace WebSiteDev
         }
 
         /// <summary>
-        /// Если пусто - устанавливает 30 сек по умолчанию
-        /// Если < 1 или > 1800 - показывает предупреждение и выставляет граничное значение
+        /// Если пусто устанавливает 30 сек по умолчанию
+        /// Если < 1 или > 1800 показывает предупреждение и выставляет граничное значение
         /// </summary>
         private int ValidateInactivityTimeout(string input)
         {

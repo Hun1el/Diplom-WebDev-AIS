@@ -8,7 +8,6 @@ namespace WebSiteDev.AdminForm
 {
     /// <summary>
     /// Пользовательский контрол для управления категориями товаров
-    /// Позволяет просматривать, добавлять, редактировать и удалять категории
     /// </summary>
     public partial class CategoryControl : UserControl
     {
@@ -17,9 +16,6 @@ namespace WebSiteDev.AdminForm
         private int selectedCategoryID = -1;
         private int selectedRowIndex = -1;
 
-        /// <summary>
-        /// Инициализирует контрол и загружает данные категорий
-        /// </summary>
         public CategoryControl()
         {
             InitializeComponent();
@@ -126,7 +122,6 @@ namespace WebSiteDev.AdminForm
 
         /// <summary>
         /// Обработчик кнопки сброса фильтров
-        /// Возвращает таблицу в исходное состояние
         /// </summary>
         private void button4_Click(object sender, EventArgs e)
         {
@@ -143,7 +138,6 @@ namespace WebSiteDev.AdminForm
 
         /// <summary>
         /// Обработчик изменения выбора в комбо-боксе сортировки
-        /// Применяет новый порядок сортировки
         /// </summary>
         private void comboBox3_SelectedIndexChanged(object sender, EventArgs e)
         {
@@ -182,10 +176,6 @@ namespace WebSiteDev.AdminForm
             InputRest.CategoryInput(e);
         }
 
-        /// <summary>
-        /// Обработчик клика по ячейке в таблице
-        /// Загружает данные выбранной категории в поле редактирования
-        /// </summary>
         private void dataGridView1_CellClick(object sender, DataGridViewCellEventArgs e)
         {
             if (e.RowIndex >= 0)
@@ -237,7 +227,6 @@ namespace WebSiteDev.AdminForm
 
         /// <summary>
         /// Обработчик кнопки удаления выбранной категории
-        /// Проверяет выбор, запрашивает подтверждение и удаляет из БД
         /// </summary>
         private void button7_Click(object sender, EventArgs e)
         {

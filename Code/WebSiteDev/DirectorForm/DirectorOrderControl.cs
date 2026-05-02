@@ -37,10 +37,12 @@ namespace WebSiteDev.ManagerForm
         {
             using (MySqlConnection con = new MySqlConnection(Data.GetConnectionString()))
             {
+                string DataCmd = @"SELECT MIN(OrderDate) AS FirstDate, MAX(OrderDate) AS LastDate FROM `Order`";
+
                 con.Open();
 
                 // Получаем первую и последнюю дату заказов из БД
-                MySqlCommand cmd = new MySqlCommand("SELECT MIN(OrderDate) AS FirstDate, MAX(OrderDate) AS LastDate FROM `Order`", con);
+                MySqlCommand cmd = new MySqlCommand(DataCmd, con);
 
                 using (MySqlDataReader reader = cmd.ExecuteReader())
                 {
@@ -49,7 +51,7 @@ namespace WebSiteDev.ManagerForm
                         DateTime firstDate = DateTime.Now;
                         DateTime lastDate = DateTime.Now;
 
-                        // Если дата не null - используем её, иначе используем текущую дату
+                        // Если дата не null используем её иначе используем текущую дату
                         if (reader["FirstDate"] != DBNull.Value)
                         {
                             firstDate = Convert.ToDateTime(reader["FirstDate"]);
@@ -83,14 +85,11 @@ namespace WebSiteDev.ManagerForm
         {
             using (MySqlConnection con = new MySqlConnection(Data.GetConnectionString()))
             {
-                con.Open();
-
                 // Формируем даты для фильтрации
                 string dateFromStr = dateTimePicker1.Value.Date.ToString("yyyy-MM-dd");
                 string dateToStr = dateTimePicker2.Value.Date.ToString("yyyy-MM-dd");
 
-                // Получаем заказы за выбранный период
-                MySqlCommand cmd = new MySqlCommand($@"
+                string OrderCmd = $@"
                     SELECT 
                         o.OrderID,
                         CONCAT(c.Surname, ' ', c.FirstName, ' ', COALESCE(c.MiddleName, '')) AS ClientName,
@@ -108,7 +107,12 @@ namespace WebSiteDev.ManagerForm
                     LEFT JOIN Status s ON o.StatusID = s.StatusID
                     WHERE DATE(o.OrderDate) BETWEEN '{dateFromStr}' AND '{dateToStr}'
                     GROUP BY o.OrderID 
-                    ORDER BY o.OrderDate ASC", con);
+                    ORDER BY o.OrderDate ASC";
+
+                con.Open();
+
+                // Получаем заказы за выбранный период
+                MySqlCommand cmd = new MySqlCommand(OrderCmd, con);
 
                 MySqlDataAdapter da = new MySqlDataAdapter(cmd);
                 DataTable dt = new DataTable();
@@ -158,7 +162,7 @@ namespace WebSiteDev.ManagerForm
         }
 
         /// <summary>
-        /// При вводе номера заказа - фильтрует таблицу
+        /// При вводе номера заказа фильтрует таблицу
         /// </summary>
         private void textBox1_TextChanged(object sender, EventArgs e)
         {
@@ -176,7 +180,7 @@ namespace WebSiteDev.ManagerForm
         }
 
         /// <summary>
-        /// Кнопка "Создать отчёт" - экспортирует данные в Excel файл
+        /// Кнопка "Создать отчёт" экспортирует данные в Excel файл
         /// </summary>
         private void button2_Click(object sender, EventArgs e)
         {
@@ -306,7 +310,7 @@ namespace WebSiteDev.ManagerForm
         }
 
         /// <summary>
-        /// При изменении сортировки - применяет фильтры
+        /// При изменении сортировки применяет фильтры
         /// </summary>
         private void comboBox3_SelectedIndexChanged(object sender, EventArgs e)
         {
@@ -323,7 +327,7 @@ namespace WebSiteDev.ManagerForm
         }
 
         /// <summary>
-        /// При изменении фильтра по статусу - применяет фильтры
+        /// При изменении фильтра по статусу применяет фильтры
         /// </summary>
         private void comboBox1_SelectedIndexChanged(object sender, EventArgs e)
         {
@@ -340,7 +344,7 @@ namespace WebSiteDev.ManagerForm
         }
 
         /// <summary>
-        /// Кнопка "Сброс фильтров" - очищает все фильтры и загружает заново
+        /// Кнопка "Сброс фильтров" очищает все фильтры и загружает заново
         /// </summary>
         private void button4_Click(object sender, EventArgs e)
         {
@@ -361,7 +365,7 @@ namespace WebSiteDev.ManagerForm
         }
 
         /// <summary>
-        /// Двойной клик на строку таблицы - открывает форму со составом заказа
+        /// Двойной клик на строку таблицы открывает форму со составом заказа
         /// </summary>
         private void dataGridView1_CellMouseDoubleClick(object sender, DataGridViewCellMouseEventArgs e)
         {
@@ -374,7 +378,7 @@ namespace WebSiteDev.ManagerForm
         }
 
         /// <summary>
-        /// Пункт контекстного меню - просмотр состава заказа
+        /// Пункт контекстного меню просмотр состава заказа
         /// </summary>
         private void просмотрСоставаЗаказаToolStripMenuItem_Click(object sender, EventArgs e)
         {
@@ -391,13 +395,14 @@ namespace WebSiteDev.ManagerForm
         }
 
         /// <summary>
-        /// Правый клик на таблице - выделяет строку для контекстного меню
+        /// Правый клик на таблице выделяет строку для контекстного меню
         /// </summary>
         private void dataGridView1_MouseDown(object sender, MouseEventArgs e)
         {
             if (e.Button == MouseButtons.Right)
             {
                 DataGridView.HitTestInfo hit = dataGridView1.HitTest(e.X, e.Y);
+
                 if (hit.RowIndex >= 0)
                 {
                     dataGridView1.ClearSelection();
@@ -407,7 +412,7 @@ namespace WebSiteDev.ManagerForm
         }
 
         /// <summary>
-        /// При изменении начальной даты - обновляет минимальную дату конечной и перезагружает данные
+        /// При изменении начальной даты обновляет минимальную дату конечной и перезагружает данные
         /// </summary>
         private void dateTimePicker1_ValueChanged(object sender, EventArgs e)
         {
@@ -417,9 +422,6 @@ namespace WebSiteDev.ManagerForm
             dataGridView1.ClearSelection();
         }
 
-        /// <summary>
-        /// При изменении конечной даты - перезагружает данные
-        /// </summary>
         private void dateTimePicker2_ValueChanged(object sender, EventArgs e)
         {
             GetDate();
@@ -428,7 +430,7 @@ namespace WebSiteDev.ManagerForm
         }
 
         /// <summary>
-        /// Форматирует отображение ячеек - окрашивает по статусу, маскирует/показывает имена
+        /// Форматирует отображение ячеек окрашивает по статусу, маскирует/показывает имена
         /// </summary>
         private void dataGridView1_CellFormatting(object sender, DataGridViewCellFormattingEventArgs e)
         {
@@ -450,12 +452,13 @@ namespace WebSiteDev.ManagerForm
                 e.CellStyle.BackColor = System.Drawing.Color.IndianRed;
             }
 
-            // Если строка открыта (двойной клик) - показываем оригинальные данные
+            // Если строка открыта показываем оригинальные данные
             if (e.RowIndex == lastRevealedRowIndex)
             {
                 if (dataGridView1.Columns[e.ColumnIndex].Name == "ClientName")
                 {
                     string original = dataSecurity.GetOriginalClientName(orderID);
+
                     if (original != null)
                     {
                         e.Value = original;
@@ -465,6 +468,7 @@ namespace WebSiteDev.ManagerForm
                 else if (dataGridView1.Columns[e.ColumnIndex].Name == "UserName")
                 {
                     string original = dataSecurity.GetOriginalUserName(orderID);
+
                     if (original != null)
                     {
                         e.Value = original;
@@ -478,6 +482,7 @@ namespace WebSiteDev.ManagerForm
             if (dataGridView1.Columns[e.ColumnIndex].Name == "ClientName")
             {
                 string original = dataSecurity.GetOriginalClientName(orderID);
+
                 if (e.Value != null && original != null)
                 {
                     e.Value = DataSecurity.MaskClientName(original);
@@ -488,6 +493,7 @@ namespace WebSiteDev.ManagerForm
             if (dataGridView1.Columns[e.ColumnIndex].Name == "UserName")
             {
                 string original = dataSecurity.GetOriginalUserName(orderID);
+
                 if (e.Value != null && original != null)
                 {
                     e.Value = DataSecurity.MaskUserName(original);
@@ -497,7 +503,7 @@ namespace WebSiteDev.ManagerForm
         }
 
         /// <summary>
-        /// Двойной клик на ячейку - показывает/скрывает оригинальные имена на 20 секунд
+        /// Двойной клик на ячейку показывает/скрывает оригинальные имена на 20 секунд
         /// </summary>
         private void dataGridView1_CellDoubleClick(object sender, DataGridViewCellEventArgs e)
         {
@@ -531,7 +537,7 @@ namespace WebSiteDev.ManagerForm
         }
 
         /// <summary>
-        /// Таймер - срабатывает через 20 секунд и скрывает открытые данные
+        /// Таймер срабатывает через 20 секунд и скрывает открытые данные
         /// </summary>
         private void Timer1_Tick(object sender, EventArgs e)
         {

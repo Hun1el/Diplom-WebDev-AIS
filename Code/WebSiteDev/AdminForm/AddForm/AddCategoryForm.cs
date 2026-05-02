@@ -47,7 +47,6 @@ namespace WebSiteDev.AddForm
             // Получаем и очищаем название категории от пробелов
             string categoryName = textBox1.Text.Trim();
 
-            // Проверяем, что поле не пусто
             if (categoryName == "")
             {
                 MessageBox.Show("Заполните все обязательные поля!", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
@@ -60,13 +59,13 @@ namespace WebSiteDev.AddForm
                 {
                     con.Open();
 
-                    // Проверяем, существует ли уже такая категория в базе
+                    // Проверяем существует ли уже такая категория в базе
                     string checkQuery = "SELECT COUNT(*) FROM Category WHERE CategoryName = '" + categoryName + "'";
                     using (MySqlCommand checkCmd = new MySqlCommand(checkQuery, con))
                     {
                         int count = Convert.ToInt32(checkCmd.ExecuteScalar());
 
-                        // Если категория найдена, показываем ошибку
+                        // Если категория найдена показываем ошибку
                         if (count > 0)
                         {
                             MessageBox.Show("Такая категория уже существует!", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Warning);
@@ -88,9 +87,18 @@ namespace WebSiteDev.AddForm
             }
             catch (Exception Ex)
             {
-                // Обработка исключений при работе с БД
                 MessageBox.Show("Ошибка при добавлении категории:\n" + Ex.Message, "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
+        }
+
+        private void AddCategoryForm_Load(object sender, EventArgs e)
+        {
+            Inactivity.OnFormLoad(this);
+        }
+
+        private void AddCategoryForm_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            Inactivity.OnFormClosing(this);
         }
     }
 }

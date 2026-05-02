@@ -53,11 +53,10 @@ namespace WebSiteDev.ManagerForm
         }
 
         /// <summary>
-        /// Кнопка "Учёт заказов" - загружает контрол для просмотра и экспорта заказов
+        /// Кнопка "Учёт заказов" загружает контрол для просмотра и экспорта заказов
         /// </summary>
         private void button3_Click(object sender, EventArgs e)
         {
-            // Если уже открыт этот контрол - ничего не делаем
             if (currentSelectedButton == button3)
             {
                 return;
@@ -69,7 +68,7 @@ namespace WebSiteDev.ManagerForm
         }
 
         /// <summary>
-        /// Кнопка "Смена учётной записи" - закрывает форму директора и возвращает на форму входа
+        /// Кнопка "Смена учётной записи" закрывает форму директора и возвращает на форму входа
         /// </summary>
         private void button5_Click(object sender, EventArgs e)
         {
@@ -99,7 +98,7 @@ namespace WebSiteDev.ManagerForm
         }
 
         /// <summary>
-        /// Кнопка "Выход" - закрывает приложение полностью
+        /// Кнопка "Выход" закрывает приложение полностью
         /// </summary>
         private void button6_Click(object sender, EventArgs e)
         {
@@ -115,13 +114,12 @@ namespace WebSiteDev.ManagerForm
             }
             else
             {
-                // Если отказали - выбираем предыдущую кнопку
                 SelectButton(currentSelectedButton);
             }
         }
 
         /// <summary>
-        /// Выбирает кнопку и изменяет её оформление - отмечает активную кнопку
+        /// Выбирает кнопку и изменяет её оформление отмечает активную кнопку
         /// </summary>
         private void SelectButton(Button selectedButton)
         {
@@ -135,7 +133,7 @@ namespace WebSiteDev.ManagerForm
                     btn.BackColor = Color.FromArgb(45, 156, 219);
                     btn.FlatStyle = FlatStyle.Flat;
 
-                    // Кнопка выхода - красная
+                    // Кнопка выхода красная
                     if (btn == button6)
                     {
                         btn.ForeColor = Color.White;
@@ -143,13 +141,13 @@ namespace WebSiteDev.ManagerForm
                     }
                     else
                     {
-                        // Остальные кнопки - белый текст на голубом фоне
+                        // Остальные кнопки белый текст на голубом фоне
                         btn.ForeColor = Color.White;
                     }
                 }
                 else
                 {
-                    // Невыбранные кнопки - стандартное оформление
+                    // Невыбранные кнопки стандартное оформление
                     btn.BackColor = SystemColors.Control;
                     btn.FlatStyle = FlatStyle.Standard;
 
@@ -160,13 +158,13 @@ namespace WebSiteDev.ManagerForm
                     }
                     else
                     {
-                        // Остальные кнопки - чёрный текст
+                        // Остальные кнопки чёрный текст
                         btn.ForeColor = Color.Black;
                     }
                 }
             }
 
-            // Сохраняем текущую выбранную кнопку (кроме кнопок смены учётной записи и выхода)
+            // Сохраняем текущую выбранную кнопку
             if (selectedButton != button5 && selectedButton != button6)
             {
                 currentSelectedButton = selectedButton;

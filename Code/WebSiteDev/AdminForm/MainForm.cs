@@ -7,7 +7,6 @@ namespace WebSiteDev
 {
     /// <summary>
     /// Главная форма приложения для администраторов
-    /// Содержит меню навигации для управления пользователями, категориями, ролями, статусами, услугами и заказами
     /// </summary>
     public partial class MainForm : Form
     {
@@ -17,9 +16,6 @@ namespace WebSiteDev
         private Button currentSelectedButton = null;
         private UserControl currentControl = null;
 
-        /// <summary>
-        /// Конструктор главной формы, инициализирует данные пользователя
-        /// </summary>
         public MainForm(string fullName, string roleName, int userID = 0)
         {
             InitializeComponent();
@@ -28,11 +24,10 @@ namespace WebSiteDev
             this.userID = userID;
         }
 
-        /// <summary>
-        /// При загрузке формы - выводит данные текущего пользователя
-        /// </summary>
         private void MainForm_Load(object sender, EventArgs e)
         {
+            Inactivity.OnFormLoad(this);
+
             label2.Text = $"Сотрудник: {fullName}";
             label3.Text = $"Доступ: {roleName}";
         }
@@ -64,7 +59,7 @@ namespace WebSiteDev
         }
 
         /// <summary>
-        /// Кнопка "Пользователи" - загружает контрол управления пользователями
+        /// Кнопка "Пользователи" загружает контрол управления пользователями
         /// </summary>
         private void button1_Click(object sender, EventArgs e)
         {
@@ -79,7 +74,7 @@ namespace WebSiteDev
         }
 
         /// <summary>
-        /// Кнопка "Категории" - загружает контрол управления категориями
+        /// Кнопка "Категории" загружает контрол управления категориями
         /// </summary>
         private void button2_Click(object sender, EventArgs e)
         {
@@ -94,7 +89,7 @@ namespace WebSiteDev
         }
 
         /// <summary>
-        /// Кнопка "Роли" - загружает контрол управления ролями
+        /// Кнопка "Роли" загружает контрол управления ролями
         /// </summary>
         private void button3_Click(object sender, EventArgs e)
         {
@@ -109,7 +104,7 @@ namespace WebSiteDev
         }
 
         /// <summary>
-        /// Кнопка "Статусы" - загружает контрол управления статусами
+        /// Кнопка "Статусы" загружает контрол управления статусами
         /// </summary>
         private void button4_Click(object sender, EventArgs e)
         {
@@ -124,7 +119,7 @@ namespace WebSiteDev
         }
 
         /// <summary>
-        /// Кнопка "Смена учётной записи" - выход и возврат на форму авторизации
+        /// Кнопка "Смена учётной записи" выход и возврат на форму авторизации
         /// </summary>
         private void button5_Click(object sender, EventArgs e)
         {
@@ -149,7 +144,7 @@ namespace WebSiteDev
         }
 
         /// <summary>
-        /// Кнопка "Выход" - закрывает приложение
+        /// Кнопка "Выход" закрывает приложение
         /// </summary>
         private void button6_Click(object sender, EventArgs e)
         {
@@ -168,7 +163,7 @@ namespace WebSiteDev
         }
 
         /// <summary>
-        /// Кнопка "Услуги" - загружает контрол управления услугами
+        /// Кнопка "Услуги" загружает контрол управления услугами
         /// </summary>
         private void button7_Click(object sender, EventArgs e)
         {
@@ -183,7 +178,7 @@ namespace WebSiteDev
         }
 
         /// <summary>
-        /// Кнопка "Заказы" - загружает контрол управления заказами
+        /// Кнопка "Заказы" загружает контрол управления заказами
         /// </summary>
         private void button8_Click(object sender, EventArgs e)
         {
@@ -199,7 +194,6 @@ namespace WebSiteDev
 
         /// <summary>
         /// Выделяет нажатую кнопку и убирает выделение с других
-        /// Кнопка "Выход" всегда красного цвета
         /// </summary>
         private void SelectButton(Button selectedButton)
         {
@@ -248,6 +242,11 @@ namespace WebSiteDev
             {
                 currentSelectedButton = selectedButton;
             }
+        }
+
+        private void MainForm_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            Inactivity.OnFormClosing(this);
         }
     }
 }

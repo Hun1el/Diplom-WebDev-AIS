@@ -6,24 +6,24 @@ using System.Windows.Forms;
 namespace WebSiteDev
 {
     /// <summary>
-    /// Форма для просмотра состава заказа - отображает все товары в заказе с их характеристиками
+    /// Форма для просмотра состава заказа отображает все товары в заказе с их характеристиками
     /// </summary>
     public partial class OrderProductForm : Form
     {
         private int orderID;
 
-        /// <summary>
-        /// Конструктор - инициализирует форму с ID заказа
-        /// </summary>
         public OrderProductForm(int orderID)
         {
             InitializeComponent();
+
             this.orderID = orderID;
             label1.Text = $"Состав заказа №{orderID}";
         }
 
         private void OrderProductForm_Load(object sender, EventArgs e)
         {
+            Inactivity.OnFormLoad(this);
+
             LoadOrderProducts();
         }
 
@@ -52,7 +52,7 @@ namespace WebSiteDev
                     orderDataCmd.Parameters.AddWithValue("@OrderID", orderID);
                     MySqlDataReader orderDataReader = orderDataCmd.ExecuteReader();
 
-                    // Выводим информацию о дате, сотруднике и клиенте
+                    // Выводим информацию о дате сотруднике и клиенте
                     if (orderDataReader.Read())
                     {
                         label8.Text = $"Дата заказа: {Convert.ToDateTime(orderDataReader["OrderDate"]):dd.MM.yyyy}";
@@ -160,7 +160,7 @@ namespace WebSiteDev
         }
 
         /// <summary>
-        /// Обновляет итоговую информацию о стоимости - сумму, скидку, надбавку
+        /// Обновляет итоговую информацию о стоимости сумму, скидку, надбавку
         /// </summary>
         private void UpdateSummaryPanel(decimal totalBasePrice, decimal discount, decimal surcharge)
         {
@@ -195,7 +195,7 @@ namespace WebSiteDev
         }
 
         /// <summary>
-        /// Создаёт панель с информацией о товаре - название, категория, цена, количество, фото
+        /// Создаёт панель с информацией о товаре
         /// </summary>
         private Panel CreateProductPanel(string productName, string categoryName, string photoPath, decimal price, int quantity)
         {
@@ -307,11 +307,16 @@ namespace WebSiteDev
         }
 
         /// <summary>
-        /// Кнопка "Закрыть" - закрывает форму
+        /// Кнопка "Закрыть" закрывает форму
         /// </summary>
         private void button1_Click(object sender, EventArgs e)
         {
             this.Close();
+        }
+
+        private void OrderProductForm_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            Inactivity.OnFormClosing(this);
         }
     }
 }

@@ -6,7 +6,6 @@ namespace WebSiteDev.AddForm
 {
     /// <summary>
     /// Форма для добавления нового клиента в систему
-    /// Включает заполнение ФИО, email и номера телефона
     /// </summary>
     public partial class AddClientsForm : Form
     {
@@ -17,11 +16,13 @@ namespace WebSiteDev.AddForm
 
         private void AddClientsForm_Load(object sender, EventArgs e)
         {
+            Inactivity.OnFormLoad(this);
+
             comboBox1.SelectedIndex = 0;
         }
 
         /// <summary>
-        /// Кнопка отмена - закрывает форму
+        /// Кнопка отмена
         /// </summary>
         private void button1_Click(object sender, EventArgs e)
         {
@@ -85,7 +86,7 @@ namespace WebSiteDev.AddForm
         }
 
         /// <summary>
-        /// Кнопка добавить - проверяет данные и добавляет клиента в БД
+        /// Кнопка добавить
         /// </summary>
         private void button2_Click(object sender, EventArgs e)
         {
@@ -104,7 +105,6 @@ namespace WebSiteDev.AddForm
                 return;
             }
 
-            // Проверяем выбор домена email
             if (comboBox1.SelectedIndex <= 0)
             {
                 MessageBox.Show("Выберите домен электронной почты!", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
@@ -174,9 +174,13 @@ namespace WebSiteDev.AddForm
             }
             catch (Exception ex)
             {
-                // Обработка исключений при работе с БД
                 MessageBox.Show("Ошибка при добавлении клиента:\n" + ex.Message, "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
+        }
+
+        private void AddClientsForm_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            Inactivity.OnFormClosing(this);
         }
     }
 }

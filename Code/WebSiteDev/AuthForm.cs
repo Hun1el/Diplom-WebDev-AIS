@@ -13,9 +13,6 @@ namespace WebSiteDev
     /// </summary>
     public partial class AuthForm : Form
     {
-        /// <summary>
-        /// Инициализирует форму авторизации и папку для изображений
-        /// </summary>
         public AuthForm()
         {
             InitializeComponent();
@@ -35,7 +32,7 @@ namespace WebSiteDev
             string password = textBox2.Text;
             string hashedPassword = GetSha256(password);
 
-            // Проверяем, что оба поля заполнены
+            // Проверяем что оба поля заполнены
             if (string.IsNullOrEmpty(login) || string.IsNullOrEmpty(password))
             {
                 MessageBox.Show("Введите логин и пароль!", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Warning);
@@ -68,14 +65,13 @@ namespace WebSiteDev
                 {
                     con.Open();
 
-                    // SQL запрос для получения данных пользователя
+                    // Запрос для получения данных пользователя
                     string query = @"SELECT u.UserID, u.FirstName, u.Surname, u.MiddleName, r.RoleName 
                              FROM Users u JOIN Role r ON u.RoleID = r.RoleID 
                              WHERE u.UserLogin = @login AND u.UserPassword = @password
                              LIMIT 1;";
 
                     MySqlCommand cmd = new MySqlCommand(query, con);
-                    // Параметризованный запрос для защиты от SQL инъекций
                     cmd.Parameters.AddWithValue("@login", login);
                     cmd.Parameters.AddWithValue("@password", hashedPassword);
 
@@ -147,38 +143,37 @@ namespace WebSiteDev
         /// </summary>
         private void HandleDatabaseError(MySqlException ex)
         {
-            string errorMessage = "";
+            string ErrorMessage = "";
 
             // Определяем тип ошибки по коду и выводим соответствующее сообщение
             switch (ex.Number)
             {
                 case 0:
-                    errorMessage = "Не удаётся подключиться к серверу базы данных.\n\nПроверьте:\n• Адрес хоста\n• Доступность сервера";
+                    ErrorMessage = "Не удаётся подключиться к серверу базы данных.\n\nПроверьте:\n• Адрес хоста\n• Доступность сервера";
                     break;
 
                 case 1045:
-                    errorMessage = "Ошибка доступа отклонена!\n\nПроверьте:\n• Имя пользователя\n• Пароль";
+                    ErrorMessage = "Ошибка доступа отклонена!\n\nПроверьте:\n• Имя пользователя\n• Пароль";
                     break;
 
                 case 1049:
-                    errorMessage = "База данных не найдена!\n\nПроверьте имя базы данных в настройках.";
+                    ErrorMessage = "База данных не найдена!\n\nПроверьте имя базы данных в настройках.";
                     break;
 
                 case 2003:
-                    errorMessage = "Не удаётся подключиться к MySQL серверу.\n\nПроверьте:\n• IP адрес хоста\n• Работает ли сервер MySQL";
+                    ErrorMessage = "Не удаётся подключиться к MySQL серверу.\n\nПроверьте:\n• IP адрес хоста\n• Работает ли сервер MySQL";
                     break;
 
                 case 2006:
-                    errorMessage = "MySQL сервер отключен.\n\nПожалуйста, проверьте состояние сервера.";
+                    ErrorMessage = "MySQL сервер отключен.\n\nПожалуйста, проверьте состояние сервера.";
                     break;
 
                 default:
-                    // Для неизвестных ошибок выводим код и описание
-                    errorMessage = $"Ошибка базы данных (код: {ex.Number}):\n{ex.Message}";
+                    ErrorMessage = $"Ошибка базы данных (код: {ex.Number}):\n{ex.Message}";
                     break;
             }
 
-            MessageBox.Show(errorMessage, "Ошибка подключения", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            MessageBox.Show(ErrorMessage, "Ошибка подключения", MessageBoxButtons.OK, MessageBoxIcon.Error);
         }
 
         /// <summary>
@@ -189,7 +184,6 @@ namespace WebSiteDev
             // Запрашиваем подтверждение у пользователя
             var result = MessageBox.Show("Вы действительно хотите выйти из приложения?", "Подтверждение", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
 
-            // Если пользователь согласен - закрываем приложение
             if (result == DialogResult.Yes)
             {
                 this.DialogResult = DialogResult.OK;
@@ -202,7 +196,7 @@ namespace WebSiteDev
         /// </summary>
         private void pictureBox2_Click(object sender, EventArgs e)
         {
-            // Если пароль скрыт - показываем его и меняем иконку
+            // Если пароль скрыт показываем его и меняем иконку
             if (textBox2.UseSystemPasswordChar)
             {
                 textBox2.UseSystemPasswordChar = false;
@@ -244,24 +238,16 @@ namespace WebSiteDev
         private void pictureBox3_Click(object sender, EventArgs e)
         {
             SettingsForm settingsForm = new SettingsForm();
-            // Скрываем форму авторизации на время открытия настроек
             this.Visible = false;
             settingsForm.ShowDialog();
-            // Показываем форму авторизации обратно
             this.Visible = true;
         }
 
-        /// <summary>
-        /// Ограничивает ввод в поле логина только английским буквам, цифрам и спецсимволам
-        /// </summary>
         private void textBox1_KeyPress(object sender, KeyPressEventArgs e)
         {
             InputRest.EnglishDigitsAndSpecial(e);
         }
 
-        /// <summary>
-        /// Ограничивает ввод в поле пароля только английским буквам, цифрам и спецсимволам
-        /// </summary>
         private void textBox2_KeyPress(object sender, KeyPressEventArgs e)
         {
             InputRest.EnglishDigitsAndSpecial(e);

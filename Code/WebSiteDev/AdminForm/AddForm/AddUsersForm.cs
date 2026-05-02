@@ -15,9 +15,6 @@ namespace WebSiteDev.AddForm
         private DataManipulation dataManipulation;
         static readonly Random rand = new Random();
 
-        /// <summary>
-        /// Инициализирует форму и заполняет комбо-бокс ролями
-        /// </summary>
         public AddUsersForm(DataManipulation dm)
         {
             InitializeComponent();
@@ -27,9 +24,6 @@ namespace WebSiteDev.AddForm
             dataManipulation.FillComboBoxWithRoles(comboBox1, "Выберите роль");
         }
 
-        /// <summary>
-        /// Обработчик кнопки закрытия формы
-        /// </summary>
         private void button1_Click(object sender, EventArgs e)
         {
             this.Close();
@@ -101,7 +95,6 @@ namespace WebSiteDev.AddForm
 
         /// <summary>
         /// Обработчик кнопки добавления нового пользователя
-        /// Проверяет все данные, проверяет уникальность и добавляет в БД
         /// </summary>
         private void button2_Click(object sender, EventArgs e)
         {
@@ -120,23 +113,19 @@ namespace WebSiteDev.AddForm
             // Проверяем что логин не совпадает с логином администратора
             if (!string.IsNullOrWhiteSpace(adminLogin) && string.Equals(UserLogin, adminLogin, StringComparison.OrdinalIgnoreCase))
             {
-                MessageBox.Show(
-                    $"Логин \"{adminLogin}\" зарезервирован для встроенного администратора.\nВыберите другой логин.",
-                    "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                MessageBox.Show($"Логин \"{adminLogin}\" зарезервирован для встроенного администратора.\nВыберите другой логин.", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
 
-            // Хешируем пароль перед сохранением в БД
+            // Хешируем пароль перед сохранением
             string hashedPassword = GetSha256(UserPassword);
 
-            // Проверяем корректность номера телефона
             if (!maskedTextBox1.MaskFull)
             {
                 MessageBox.Show("Введите корректный номер телефона!", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return;
             }
 
-            // Проверяем что все обязательные поля заполнены
             if (SurName == "" || FirstName == "" || UserLogin == "" || UserPassword == "" || comboBox1.SelectedIndex <= 0 || PhoneNumber == "")
             {
                 MessageBox.Show("Заполните все обязательные поля!", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
@@ -196,7 +185,6 @@ namespace WebSiteDev.AddForm
             }
             catch (Exception ex)
             {
-                // Обработка исключений при работе с БД
                 MessageBox.Show("Ошибка при добавлении пользователя:\n" + ex.Message, "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
@@ -255,6 +243,7 @@ namespace WebSiteDev.AddForm
                 int j = rand.Next(i);
                 (chars[i], chars[j]) = (chars[j], chars[i]);
             }
+
             return new string(chars);
         }
 
@@ -281,7 +270,7 @@ namespace WebSiteDev.AddForm
             password.Append(numbers[random.Next(numbers.Length)]);
             password.Append(upper[random.Next(upper.Length)]);
 
-            // Добавляем оставшиеся символы случайно (всего 12 символов)
+            // Добавляем оставшиеся символы случайно
             for (int i = 4; i < 12; i++)
             {
                 password.Append(allChars[random.Next(allChars.Length)]);
@@ -290,6 +279,16 @@ namespace WebSiteDev.AddForm
             // Перемешиваем пароль и выводим его в поле
             string shufflepass = Shuffle(Convert.ToString(password));
             textBox6.Text = shufflepass;
+        }
+
+        private void AddUsersForm_Load(object sender, EventArgs e)
+        {
+            Inactivity.OnFormLoad(this);
+        }
+
+        private void AddUsersForm_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            Inactivity.OnFormClosing(this);
         }
     }
 }
