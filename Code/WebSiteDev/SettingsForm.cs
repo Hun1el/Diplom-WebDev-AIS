@@ -1,40 +1,26 @@
 ﻿using MySql.Data.MySqlClient;
 using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace WebSiteDev
 {
-    /// <summary>
-    /// Форма настроек подключения к базе данных
-    /// Позволяет указать хост, пользователя, пароль и имя БД
-    /// </summary>
+    // Форма настроек подключения к базе данных и времени неактивности
     public partial class SettingsForm : Form
     {
-        /// <summary>
-        /// Инициализирует форму и загружает сохранённые настройки
-        /// </summary>
         public SettingsForm()
         {
             InitializeComponent();
             LoadSettings();
         }
 
-        /// <summary>
-        /// Загружает настройки подключения из application settings
-        /// </summary>
+        // Загружает настройки подключения и время неактивности из application settings
         private void LoadSettings()
         {
             textBox1.Text = Properties.Settings.Default.DbHost;
             textBox2.Text = Properties.Settings.Default.DbUser;
             textBox3.Text = Properties.Settings.Default.DbPassword;
             textBox4.Text = Properties.Settings.Default.DbName;
+            textBox5.Text = Properties.Settings.Default.InactivityTime.ToString();
         }
 
         /// <summary>
@@ -52,27 +38,37 @@ namespace WebSiteDev
         }
 
         /// <summary>
-        /// Кнопка "Сохранить" - сохраняет все параметры подключения
+        /// Кнопка "Сохранить" - сохраняет все параметры подключения и время неактивности
         /// </summary>
         private void button1_Click(object sender, EventArgs e)
         {
             // Проверяем что все обязательные поля заполнены
-            if (string.IsNullOrWhiteSpace(textBox1.Text) ||
-                string.IsNullOrWhiteSpace(textBox2.Text) ||
-                string.IsNullOrWhiteSpace(textBox4.Text))
+            if (string.IsNullOrWhiteSpace(textBox1.Text) || string.IsNullOrWhiteSpace(textBox2.Text) || string.IsNullOrWhiteSpace(textBox4.Text))
             {
                 MessageBox.Show("Заполните все поля!", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
 
-            // Сохраняем настройки в application settings
+            // Время неактивности (если пусто - 30 сек, если > 1800 - 1800 сек)
+            int InactivityTimeout = ValidateInactivityTimeout(textBox5.Text);
+
+            // Сохраняем все настройки в application settings
             Properties.Settings.Default.DbHost = textBox1.Text;
             Properties.Settings.Default.DbUser = textBox2.Text;
             Properties.Settings.Default.DbPassword = textBox3.Text;
             Properties.Settings.Default.DbName = textBox4.Text;
+            Properties.Settings.Default.InactivityTime = InactivityTimeout;
             Properties.Settings.Default.Save();
 
-            MessageBox.Show("Все настройки сохранены!", "Сохранение настроек", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            // Обновляем время неактивности в работающей системе блокировки
+            BlockForms blockForms = Program.GetBlockForms();
+
+            if (blockForms != null)
+            {
+                blockForms.UpdateTimeout(InactivityTimeout);
+            }
+
+            MessageBox.Show($"Все настройки сохранены!\nВремя неактивности: {InactivityTimeout} сек", "Сохранение настроек", MessageBoxButtons.OK, MessageBoxIcon.Information);
             this.Close();
         }
 
@@ -112,67 +108,135 @@ namespace WebSiteDev
                 return;
             }
 
-            // Формируем строку подключения
+            // Строка подключения
             string connStr = $"host={host};database={dbname};uid={user};pwd={password};";
 
-            using (MySqlConnection conn = new MySqlConnection(connStr))
+            using (MySqlConnection con = new MySqlConnection(connStr))
             {
                 try
                 {
-                    // Пытаемся подключиться к БД
-                    conn.Open();
+                    con.Open();
+
                     MessageBox.Show("Подключение успешно!", "Проверка подключения", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 }
-                catch (MySqlException mySqlEx)
+                catch (MySqlException MySqlEx)
                 {
-                    // Обработка ошибок MySQL
-                    HandleDatabaseError(mySqlEx);
+                    HandleDatabaseError(MySqlEx);
                 }
                 catch (Exception ex)
                 {
-                    // Обработка неожиданных ошибок
                     MessageBox.Show("Неожиданная ошибка:\n" + ex.Message, "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 }
             }
         }
 
         /// <summary>
-        /// Обрабатывает ошибки БД и выводит понятные сообщения
+        /// Обрабатывает ошибки БД
         /// </summary>
         private void HandleDatabaseError(MySqlException ex)
         {
-            string errorMessage = "";
+            string ErrorMessage = "";
 
             // Определяем тип ошибки по коду и выводим подходящее сообщение
             switch (ex.Number)
             {
                 case 0:
-                    errorMessage = "Не удаётся подключиться к серверу базы данных.\n\nПроверьте:\n• Адрес хоста (может быть localhost или IP)\n• Доступность сервера";
+                    ErrorMessage = "Не удаётся подключиться к серверу базы данных.\n\nПроверьте:\nАдрес хоста (может быть localhost или ip)\nДоступность сервера";
                     break;
 
                 case 1045:
-                    errorMessage = "Ошибка доступа отклонена!\n\nПроверьте:\n• Имя пользователя\n• Пароль";
+                    ErrorMessage = "Ошибка доступа отклонена!\n\nПроверьте:\nИмя пользователя\nПароль";
                     break;
 
                 case 1049:
-                    errorMessage = "База данных не найдена!\n\nПроверьте имя базы данных.";
+                    ErrorMessage = "База данных не найдена!\n\nПроверьте имя базы данных.";
                     break;
 
                 case 2003:
-                    errorMessage = "Не удаётся подключиться к MySQL серверу.\n\nПроверьте:\n• IP адрес хоста\n• Работает ли сервер MySQL";
+                    ErrorMessage = "Не удаётся подключиться к MySQL серверу.\n\nПроверьте:\nip адрес хоста\n• Работает ли сервер MySQL";
                     break;
 
                 case 2006:
-                    errorMessage = "MySQL сервер отключен или потеряна связь.\n\nПожалуйста, проверьте состояние сервера.";
+                    ErrorMessage = "MySQL сервер отключен или потеряна связь.\n\nПожалуйста, проверьте состояние сервера.";
                     break;
 
                 default:
                     // Для неизвестных ошибок выводим код и описание
-                    errorMessage = $"Ошибка базы данных (код: {ex.Number}):\n{ex.Message}";
+                    ErrorMessage = string.Format("Ошибка базы данных (код: {0}):\n{1}", ex.Number, ex.Message);
                     break;
             }
 
-            MessageBox.Show(errorMessage, "Ошибка подключения", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            MessageBox.Show(ErrorMessage, "Ошибка подключения", MessageBoxButtons.OK, MessageBoxIcon.Error);
+        }
+
+        /// <summary>
+        /// Если пусто - устанавливает 30 сек по умолчанию
+        /// Если < 1 или > 1800 - показывает предупреждение и выставляет граничное значение
+        /// </summary>
+        private int ValidateInactivityTimeout(string input)
+        {
+            int Timeout = 30;
+
+            if (string.IsNullOrWhiteSpace(input))
+            {
+                return Timeout;
+            }
+
+            // Пытаемся преобразовать строку в число
+            if (int.TryParse(input, out int ParsedValue))
+            {
+                // Проверяем минимальное значение
+                if (ParsedValue < 1)
+                {
+                    MessageBox.Show("Время неактивности должно быть минимум 30 секунд.\nУстановлено 30 секунд по умолчанию.", "Предупреждение", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    textBox5.Text = "30";
+                    return 30;
+                }
+
+                // Проверяем максимальное значение (1800 сек = 30 минут)
+                if (ParsedValue > 1800)
+                {
+                    MessageBox.Show("Время неактивности не может быть больше 1800 секунд (30 минут).\nУстановлено 1800 секунд.", "Предупреждение", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    textBox5.Text = "1800";
+                    return 1800;
+                }
+
+                // Значение корректное
+                Timeout = ParsedValue;
+            }
+            else
+            {
+                // Пользователь ввёл не число
+                MessageBox.Show("Введите корректное число!\nУстановлено 30 секунд по умолчанию.", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                textBox5.Text = "30";
+                return 30;
+            }
+
+            return Timeout;
+        }
+
+        /// <summary>
+        /// Загрузка формы
+        /// </summary>
+        private void SettingsForm_Load(object sender, EventArgs e)
+        {
+            Inactivity.OnFormLoad(this);
+        }
+
+        /// <summary>
+        /// Закрытие формы
+        /// </summary>
+        private void SettingsForm_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            Inactivity.OnFormClosing(this);
+        }
+
+        /// <summary>
+        /// Обработчик нажатия кнопок в поле ввода
+        /// </summary>
+        private void textBox5_KeyPress(object sender, KeyPressEventArgs e)
+        {
+            InputRest.OnlyNumbers(e);
         }
     }
 }

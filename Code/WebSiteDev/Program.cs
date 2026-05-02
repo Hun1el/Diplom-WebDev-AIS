@@ -8,15 +8,32 @@ namespace WebSiteDev
 {
     internal static class Program
     {
-        /// <summary>
-        /// Главная точка входа для приложения.
-        /// </summary>
+        private static BlockForms blockForms;
+
         [STAThread]
         static void Main()
         {
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
-            Application.Run(new AuthForm());
+
+            Properties.Settings.Default.Reload();
+
+            AuthForm authForm = new AuthForm();
+
+            blockForms = new BlockForms(authForm);
+            blockForms.OnInactivityDetected += BlockForms_OnInactivityDetected;
+
+            Application.Run(authForm);
+        }
+
+        private static void BlockForms_OnInactivityDetected(object sender, EventArgs e)
+        {
+            blockForms.LockAllForms();
+        }
+
+        public static BlockForms GetBlockForms()
+        {
+            return blockForms;
         }
     }
 }
