@@ -9,9 +9,6 @@ namespace WebSiteDev.AddForm
     /// </summary>
     public partial class AddStatusForm : Form
     {
-        /// <summary>
-        /// Инициализирует форму добавления статуса
-        /// </summary>
         public AddStatusForm()
         {
             InitializeComponent();
@@ -69,7 +66,6 @@ namespace WebSiteDev.AddForm
                     {
                         int count = Convert.ToInt32(checkCmd.ExecuteScalar());
 
-                        // Если статус найден - показываем ошибку
                         if (count > 0)
                         {
                             MessageBox.Show("Такой статус уже существует!", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Warning);
@@ -91,9 +87,18 @@ namespace WebSiteDev.AddForm
             }
             catch (Exception ex)
             {
-                // Обработка исключений при работе с БД
                 MessageBox.Show("Ошибка при добавлении статуса:\n" + ex.Message, "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
+        }
+
+        private void AddStatusForm_Load(object sender, EventArgs e)
+        {
+            Inactivity.OnFormLoad(this);
+        }
+
+        private void AddStatusForm_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            Inactivity.OnFormClosing(this);
         }
     }
 }

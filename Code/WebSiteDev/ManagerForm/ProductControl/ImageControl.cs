@@ -8,7 +8,7 @@ using WebSiteDev;
 namespace WebSiteDev
 {
     /// <summary>
-    /// Контрол для управления изображениями товара - загрузка, сохранение и отображение фото
+    /// Контрол для управления изображениями товара
     /// </summary>
     public partial class ImageControl : UserControl
     {
@@ -39,9 +39,6 @@ namespace WebSiteDev
             button1.Visible = show;
         }
 
-        /// <summary>
-        /// Инициализирует контрол - загружает текущее изображение товара
-        /// </summary>
         public void InitializeImage(string currentImagePath)
         {
             CurrentImagePath = currentImagePath;
@@ -59,7 +56,7 @@ namespace WebSiteDev
         }
 
         /// <summary>
-        /// Кнопка изменить - открывает диалог выбора файла и загружает новое изображение
+        /// Кнопка изменить открывает диалог выбора файла и загружает новое изображение
         /// </summary>
         private void button1_Click(object sender, EventArgs e)
         {
@@ -74,8 +71,9 @@ namespace WebSiteDev
 
                     try
                     {
-                        // Проверяем размер файла - не более 2 МБ
+                        // Проверяем размер файла не более 2 МБ
                         FileInfo fileInfo = new FileInfo(sourcePath);
+
                         if (fileInfo.Length > 2 * 1024 * 1024)
                         {
                             MessageBox.Show("Изображение не должно превышать 2 МБ!", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
@@ -94,7 +92,7 @@ namespace WebSiteDev
                             {
                                 byte[] oldImageBytes = File.ReadAllBytes(oldFullPath);
 
-                                // Сравниваем побайтово - если идентичны, отменяем операцию
+                                // Сравниваем побайтово
                                 if (oldImageBytes.Length == newImageBytes.Length)
                                 {
                                     bool isIdentical = true;
@@ -134,7 +132,7 @@ namespace WebSiteDev
         /// </summary>
         public void SaveImage(int productID)
         {
-            // Если изображение не было выбрано - выходим
+            // Если изображение не было выбрано выходим
             if (string.IsNullOrEmpty(selectedImagePath))
             {
                 return;
@@ -160,7 +158,7 @@ namespace WebSiteDev
                 string destPath = Path.Combine(imagesFolder, fileName + extension);
                 string finalFileName = fileName + extension;
 
-                // Если файл уже существует - проверяем содержимое или генерируем новое имя
+                // Если файл уже существует проверяем содержимое или генерируем новое имя
                 if (File.Exists(destPath))
                 {
                     byte[] existingImageBytes = File.ReadAllBytes(destPath);
@@ -180,20 +178,22 @@ namespace WebSiteDev
                         }
                     }
 
-                    // Если идентичны - используем существующий файл
+                    // Если идентичны используем существующий файл
                     if (isIdentical)
                     {
                         finalFileName = Path.GetFileName(destPath);
                     }
                     else
                     {
-                        // Если различаются - добавляем номер к имени файла
+                        // Если различаются добавляем номер к имени файла
                         int n = 1;
+
                         while (File.Exists(destPath))
                         {
                             destPath = Path.Combine(imagesFolder, fileName + " (" + n.ToString() + ")" + extension);
                             n++;
                         }
+
                         File.Copy(selectedImagePath, destPath, false);
                         finalFileName = Path.GetFileName(destPath);
                     }
@@ -227,12 +227,7 @@ namespace WebSiteDev
             }
             catch (UnauthorizedAccessException)
             {
-                MessageBox.Show(
-                    "Нет прав доступа к папке изображений!\n\n" +
-                    "Запустите программу от имени администратора.",
-                    "Ошибка доступа",
-                    MessageBoxButtons.OK,
-                    MessageBoxIcon.Error);
+                MessageBox.Show("Нет прав доступа к папке изображений!\n\nЗапустите программу от имени администратора.", "Ошибка доступа", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
             catch (Exception ex)
             {
@@ -240,9 +235,6 @@ namespace WebSiteDev
             }
         }
 
-        /// <summary>
-        /// Отменяет редактирование - восстанавливает оригинальное изображение
-        /// </summary>
         public void CancelEdit()
         {
             selectedImagePath = null;
@@ -280,13 +272,13 @@ namespace WebSiteDev
                 }
                 catch
                 {
-                    // Если ошибка при загрузке - показываем изображение по умолчанию
+                    // Если ошибка при загрузке показываем изображение по умолчанию
                     pictureBox1.Image = Properties.Resources.no_image;
                 }
             }
             else
             {
-                // Если файл не найден - показываем изображение по умолчанию
+                // Если файл не найден показываем изображение по умолчанию
                 pictureBox1.Image = Properties.Resources.no_image;
             }
         }

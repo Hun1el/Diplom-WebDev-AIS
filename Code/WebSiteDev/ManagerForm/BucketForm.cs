@@ -7,7 +7,7 @@ using WebSiteDev.ManagerForm;
 namespace WebSiteDev
 {
     /// <summary>
-    /// Форма оформления заказа - управление корзиной скидками и надбавками
+    /// Форма оформления заказа
     /// </summary>
     public partial class BucketForm : Form
     {
@@ -27,12 +27,14 @@ namespace WebSiteDev
 
         private void BucketForm_Load(object sender, EventArgs e)
         {
+            Inactivity.OnFormLoad(this);
+
             DateTime dateTimeNow = DateTime.Now;
             textBox1.Text = dateTimeNow.ToString("yyyy.MM.dd");
             dateTimePicker1.Value = dateTimeNow.AddDays(7);
             dateTimePicker1.MinDate = dateTimeNow.AddDays(3);
 
-            // Отключение автоматическое изменение состояния чекбоксов (управляем вручную)
+            // Отключение автоматическое изменение состояния чекбоксов
             checkbox1.AutoCheck = false;
             checkbox2.AutoCheck = false;
             checkbox3.AutoCheck = false;
@@ -97,7 +99,7 @@ namespace WebSiteDev
         }
 
         /// <summary>
-        /// Создаёт панель с информацией о товаре в корзине (фото, цена, скидки)
+        /// Создаёт панель с информацией о услуге
         /// </summary>
         private Panel CreateCartItemPanel(ProductControl.OrderItem item)
         {
@@ -362,7 +364,7 @@ namespace WebSiteDev
         }
 
         /// <summary>
-        /// Проверяет постоянного ли клиента (более 3 заказов) - если да, применяет скидку 5%
+        /// Проверяет постоянного ли клиента (более 3 заказов) если да, применяет скидку 5%
         /// </summary>
         private void CheckLoyalClient()
         {
@@ -392,7 +394,7 @@ namespace WebSiteDev
         }
 
         /// <summary>
-        /// Проверяет срочность заказа (менее 7 дней) - если срочно, применяет надбавку 15%
+        /// Проверяет срочность заказа (менее 7 дней) если срочно, применяет надбавку 15%
         /// </summary>
         private void CheckUrgency()
         {
@@ -414,7 +416,7 @@ namespace WebSiteDev
         }
 
         /// <summary>
-        /// Проверяет количество товаров (3+) - если много, применяет скидку 7%
+        /// Проверяет количество товаров (3+) если много, применяет скидку 7%
         /// </summary>
         private void CheckQuantityDiscount()
         {
@@ -530,7 +532,7 @@ namespace WebSiteDev
         }
 
         /// <summary>
-        /// Оформить заказ - создаёт заказ в БД и опционально печатает чек
+        /// Оформить заказ
         /// </summary>
         private void button2_Click(object sender, EventArgs e)
         {
@@ -697,6 +699,11 @@ namespace WebSiteDev
                 LoadCartItems();
                 UpdateTotal();
             }
+        }
+
+        private void BucketForm_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            Inactivity.OnFormClosing(this);
         }
     }
 }

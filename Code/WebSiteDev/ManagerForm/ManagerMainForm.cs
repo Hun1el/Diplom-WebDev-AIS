@@ -5,7 +5,7 @@ using System.Windows.Forms;
 namespace WebSiteDev.ManagerForm
 {
     /// <summary>
-    /// Главная форма менеджера - содержит меню навигации для работы с клиентами, услугами и заказами
+    /// Главная форма менеджера
     /// </summary>
     public partial class ManagerMainForm : Form
     {
@@ -33,6 +33,8 @@ namespace WebSiteDev.ManagerForm
 
         private void ManagerMainForm_Load(object sender, EventArgs e)
         {
+            Inactivity.OnFormLoad(this);
+
             label2.Text = $"Сотрудник: {fullName}";
             label3.Text = $"Доступ: {roleName}";
         }
@@ -72,7 +74,7 @@ namespace WebSiteDev.ManagerForm
         }
 
         /// <summary>
-        /// Кнопка "Клиенты" - загружает контрол для управления клиентами
+        /// Кнопка "Клиенты" загружает контрол для управления клиентами
         /// </summary>
         private void button1_Click(object sender, EventArgs e)
         {
@@ -88,11 +90,11 @@ namespace WebSiteDev.ManagerForm
         }
 
         /// <summary>
-        /// Кнопка "Услуги" - загружает контрол для просмотра и управления услугами
+        /// Кнопка "Услуги" загружает контрол для просмотра и управления услугами
         /// </summary>
         private void button2_Click(object sender, EventArgs e)
         {
-            // Если уже открыт этот контрол - ничего не делаем
+            // Если уже открыт этот контрол ничего не делаем
             if (currentSelectedButton == button2)
             {
                 return;
@@ -104,7 +106,7 @@ namespace WebSiteDev.ManagerForm
         }
 
         /// <summary>
-        /// Кнопка "Заказы" - загружает контрол для управления заказами
+        /// Кнопка "Заказы" загружает контрол для управления заказами
         /// </summary>
         private void button3_Click(object sender, EventArgs e)
         {
@@ -120,7 +122,7 @@ namespace WebSiteDev.ManagerForm
         }
 
         /// <summary>
-        /// Кнопка "Смена учётной записи" - закрывает форму менеджера и возвращает на форму входа
+        /// Кнопка "Смена учётной записи" закрывает форму менеджера и возвращает на форму входа
         /// </summary>
         private void button5_Click(object sender, EventArgs e)
         {
@@ -144,13 +146,13 @@ namespace WebSiteDev.ManagerForm
             }
             else
             {
-                // Если отказали - выбираем предыдущую кнопку
+                // Если отказали выбираем предыдущую кнопку
                 SelectButton(currentSelectedButton);
             }
         }
 
         /// <summary>
-        /// Кнопка "Выход" - закрывает приложение полностью
+        /// Кнопка "Выход" закрывает приложение полностью
         /// </summary>
         private void button6_Click(object sender, EventArgs e)
         {
@@ -166,13 +168,12 @@ namespace WebSiteDev.ManagerForm
             }
             else
             {
-                // Если отказали - выбираем предыдущую кнопку
                 SelectButton(currentSelectedButton);
             }
         }
 
         /// <summary>
-        /// Выбирает кнопку и изменяет её оформление - отмечает активную кнопку
+        /// Выбирает кнопку и изменяет её оформление отмечает активную кнопку
         /// </summary>
         private void SelectButton(Button selectedButton)
         {
@@ -186,7 +187,7 @@ namespace WebSiteDev.ManagerForm
                     btn.BackColor = Color.FromArgb(45, 156, 219);
                     btn.FlatStyle = FlatStyle.Flat;
 
-                    // Кнопка выхода - красная
+                    // Кнопка выхода красная
                     if (btn == button6)
                     {
                         btn.ForeColor = Color.White;
@@ -194,34 +195,39 @@ namespace WebSiteDev.ManagerForm
                     }
                     else
                     {
-                        // Остальные кнопки - белый текст на голубом фоне
+                        // Остальные кнопки белый текст на голубом фоне
                         btn.ForeColor = Color.White;
                     }
                 }
                 else
                 {
-                    // Невыбранные кнопки - стандартное оформление
+                    // Невыбранные кнопки стандартное оформление
                     btn.BackColor = SystemColors.Control;
                     btn.FlatStyle = FlatStyle.Standard;
 
-                    // Кнопка выхода - красный текст
+                    // Кнопка выхода красный текст
                     if (btn == button6)
                     {
                         btn.ForeColor = Color.Red;
                     }
                     else
                     {
-                        // Остальные кнопки - чёрный текст
+                        // Остальные кнопки чёрный текст
                         btn.ForeColor = Color.Black;
                     }
                 }
             }
 
-            // Сохраняем текущую выбранную кнопку (кроме кнопок смены учётной записи и выхода)
+            // Сохраняем текущую выбранную кнопку
             if (selectedButton != button5 && selectedButton != button6)
             {
                 currentSelectedButton = selectedButton;
             }
+        }
+
+        private void ManagerMainForm_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            Inactivity.OnFormClosing(this);
         }
     }
 }

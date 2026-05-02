@@ -6,7 +6,6 @@ namespace WebSiteDev
 {
     /// <summary>
     /// Контрол-карточка товара с отображением информации и возможностью редактирования
-    /// Поддерживает два режима просмотр (для администраторов и менеджеров) и редактирование
     /// </summary>
     public partial class ProductCard : UserControl
     {
@@ -48,7 +47,6 @@ namespace WebSiteDev
             decimal price = Convert.ToDecimal(row["BasePrice"]);
             label4.Text = "Цена: " + price.ToString("0.00") + " руб.";
 
-            // Для менеджеров показываем кнопку "Добавить в корзину", для администраторов - редактировать/удалить
             if (userRole == "Менеджер")
             {
                 button1.Visible = false;
@@ -64,7 +62,7 @@ namespace WebSiteDev
                 button6.Visible = false;
             }
 
-            // Если описание длинное - показываем кнопку "Полное описание"
+            // Если описание длинное показываем кнопку "Полное описание"
             if (productDesc.Length > 285)
             {
                 button5.Visible = true;
@@ -78,7 +76,7 @@ namespace WebSiteDev
         }
 
         /// <summary>
-        /// Кнопка "Полное описание" - открывает отдельное окно с полным описанием товара
+        /// Кнопка "Полное описание" открывает отдельное окно с полным описанием товара
         /// </summary>
         private void button5_Click(object sender, EventArgs e)
         {
@@ -93,7 +91,7 @@ namespace WebSiteDev
         }
 
         /// <summary>
-        /// Кнопка "Добавить в корзину" - вызывает событие для добавления товара в корзину
+        /// Кнопка "Добавить в корзину" вызывает событие для добавления товара в корзину
         /// </summary>
         private void button6_Click(object sender, EventArgs e)
         {
@@ -104,7 +102,7 @@ namespace WebSiteDev
         }
 
         /// <summary>
-        /// Кнопка "Редактировать" - вызывает событие редактирования товара
+        /// Кнопка "Редактировать" вызывает событие редактирования товара
         /// </summary>
         private void button1_Click(object sender, EventArgs e)
         {
@@ -115,7 +113,7 @@ namespace WebSiteDev
         }
 
         /// <summary>
-        /// Кнопка "Удалить" - вызывает событие удаления товара
+        /// Кнопка "Удалить" вызывает событие удаления товара
         /// </summary>
         private void button2_Click(object sender, EventArgs e)
         {
@@ -126,7 +124,7 @@ namespace WebSiteDev
         }
 
         /// <summary>
-        /// Кнопка "Сохранить" - вызывает событие сохранения изменений товара
+        /// Кнопка "Сохранить" вызывает событие сохранения изменений товара
         /// </summary>
         private void button3_Click(object sender, EventArgs e)
         {
@@ -137,7 +135,7 @@ namespace WebSiteDev
         }
 
         /// <summary>
-        /// Кнопка "Отмена" - отменяет редактирование и восстанавливает оригинальное изображение
+        /// Кнопка "Отмена" отменяет редактирование и восстанавливает оригинальное изображение
         /// </summary>
         private void button4_Click(object sender, EventArgs e)
         {
@@ -157,7 +155,7 @@ namespace WebSiteDev
         }
 
         /// <summary>
-        /// Переходит в режим редактирования - показывает поля ввода для изменения данных товара
+        /// Переходит в режим редактирования показывает поля ввода для изменения данных товара
         /// </summary>
         public void ShowEditMode(DataManipulation dataManipulation)
         {
@@ -181,7 +179,7 @@ namespace WebSiteDev
 
             comboBox1.Items.Clear();
 
-            // Заполняем список категорий из всех товаров (без дублей)
+            // Заполняем список категорий из всех товаров
             DataTable fullTable = dataManipulation.table;
 
             for (int i = 0; i < fullTable.Rows.Count; i++)
@@ -189,6 +187,7 @@ namespace WebSiteDev
                 string cat = fullTable.Rows[i]["Category"].ToString();
 
                 bool categoryExists = false;
+
                 for (int j = 0; j < comboBox1.Items.Count; j++)
                 {
                     if (comboBox1.Items[j].ToString() == cat)
@@ -273,9 +272,6 @@ namespace WebSiteDev
             return imageControl1;
         }
 
-        /// <summary>
-        /// Обновляет состояние кнопки "Добавить в корзину" - отключает если товар уже в корзине
-        /// </summary>
         public void UpdateAddToCartButtonState(bool isProductInCart, string userRole)
         {
             if (userRole != "Менеджер")
@@ -290,9 +286,6 @@ namespace WebSiteDev
             }
         }
 
-        /// <summary>
-        /// Правый клик на карточку - добавляет товар в корзину
-        /// </summary>
         private void ProductCard_MouseDown(object sender, MouseEventArgs e)
         {
             if (e.Button == MouseButtons.Right)
@@ -327,7 +320,7 @@ namespace WebSiteDev
         }
 
         /// <summary>
-        /// При вводе названия товара - делает первую букву заглавной
+        /// При вводе названия товара делает первую букву заглавной
         /// </summary>
         private void textBox1_TextChanged(object sender, EventArgs e)
         {
@@ -335,7 +328,7 @@ namespace WebSiteDev
         }
 
         /// <summary>
-        /// При вводе описания товара - делает первую букву заглавной
+        /// При вводе описания товара делает первую букву заглавной
         /// </summary>
         private void textBox2_TextChanged(object sender, EventArgs e)
         {
@@ -376,9 +369,6 @@ namespace WebSiteDev
             }
         }
 
-        /// <summary>
-        /// Обработка правого клика на кнопку описания - отключает контекстное меню
-        /// </summary>
         private void button5_MouseDown(object sender, MouseEventArgs e)
         {
             if (e.Button == MouseButtons.Right)

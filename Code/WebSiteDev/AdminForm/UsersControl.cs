@@ -10,7 +10,6 @@ namespace WebSiteDev.AdminForm
 {
     /// <summary>
     /// Контрол для управления пользователями с маскированием чувствительных данных
-    /// Чувствительные данные (логины, телефоны, имена) маскируются и показываются на 20 секунд при двойном клике
     /// </summary>
     public partial class UsersControl : UserControl
     {
@@ -18,15 +17,12 @@ namespace WebSiteDev.AdminForm
         private DataManipulation dataManipulation;
         private int selectedUserID = -1;
         private int currentUserID = 0;
+
         static readonly Random rand = new Random();
 
-        // Индекс открытой в данный момент строки с видимыми данными
         private int lastRevealedRowIndex = -1;
         private DataSecurity dataSecurity = new DataSecurity();
 
-        /// <summary>
-        /// Конструктор контрола, получает ID текущего пользователя
-        /// </summary>
         public UsersControl(int userID = 0)
         {
             InitializeComponent();
@@ -34,9 +30,6 @@ namespace WebSiteDev.AdminForm
             GetDate();
         }
 
-        /// <summary>
-        /// Инициализирует интерфейс: скрывает столбцы, настраивает таймер и ширину колонок
-        /// </summary>
         private void UsersControl_Load(object sender, EventArgs e)
         {
             dataGridView1.Columns["UserID"].Visible = false;
@@ -126,7 +119,7 @@ namespace WebSiteDev.AdminForm
 
             int userID = Convert.ToInt32(dataGridView1.Rows[e.RowIndex].Cells["UserID"].Value);
 
-            // Если строка открыта (данные видны) - показываем оригинальные значения
+            // Если строка открыта показываем оригинальные значения
             if (e.RowIndex == lastRevealedRowIndex)
             {
                 if (dataGridView1.Columns[e.ColumnIndex].Name == "UserLogin")
@@ -172,6 +165,7 @@ namespace WebSiteDev.AdminForm
             if (dataGridView1.Columns[e.ColumnIndex].Name == "UserLogin")
             {
                 string original = dataSecurity.GetOriginalLogin(userID);
+
                 if (e.Value != null && original != null)
                 {
                     e.Value = DataSecurity.MaskLogin(original);
@@ -181,6 +175,7 @@ namespace WebSiteDev.AdminForm
             else if (dataGridView1.Columns[e.ColumnIndex].Name == "PhoneNumber")
             {
                 string original = dataSecurity.GetOriginalPhone(userID);
+
                 if (e.Value != null && original != null)
                 {
                     e.Value = DataSecurity.MaskPhone(original);
@@ -190,6 +185,7 @@ namespace WebSiteDev.AdminForm
             else if (dataGridView1.Columns[e.ColumnIndex].Name == "FirstName")
             {
                 string original = dataSecurity.GetOriginalFirstName(userID);
+
                 if (e.Value != null && original != null)
                 {
                     e.Value = DataSecurity.MaskName(original);
@@ -199,6 +195,7 @@ namespace WebSiteDev.AdminForm
             else if (dataGridView1.Columns[e.ColumnIndex].Name == "MiddleName")
             {
                 string original = dataSecurity.GetOriginalMiddleName(userID);
+
                 if (e.Value != null && original != null)
                 {
                     e.Value = DataSecurity.MaskName(original);
@@ -208,7 +205,7 @@ namespace WebSiteDev.AdminForm
         }
 
         /// <summary>
-        /// Двойной клик на ячейку - показывает/скрывает чувствительные данные на 20 секунд
+        /// Двойной клик на ячейку показывает/скрывает чувствительные данные на 20 секунд
         /// </summary>
         private void DataGridView1_CellDoubleClick(object sender, DataGridViewCellEventArgs e)
         {
@@ -217,7 +214,7 @@ namespace WebSiteDev.AdminForm
                 return;
             }
 
-            // Если нажали на уже открытую строку - закрываем её
+            // Если нажали на уже открытую строку закрываем её
             if (e.RowIndex == lastRevealedRowIndex)
             {
                 lastRevealedRowIndex = -1;
@@ -244,7 +241,7 @@ namespace WebSiteDev.AdminForm
         }
 
         /// <summary>
-        /// Изменение текста в поле поиска - применяет фильтры
+        /// Изменение текста в поле поиска применяет фильтры
         /// </summary>
         private void textBox1_TextChanged(object sender, EventArgs e)
         {
@@ -277,7 +274,7 @@ namespace WebSiteDev.AdminForm
         }
 
         /// <summary>
-        /// При входе в поле телефона - устанавливаем позицию курсора правильно
+        /// При входе в поле телефона устанавливаем позицию курсора правильно
         /// </summary>
         private void maskedTextBox1_Enter(object sender, EventArgs e)
         {
@@ -285,7 +282,7 @@ namespace WebSiteDev.AdminForm
         }
 
         /// <summary>
-        /// При клике на поле телефона - устанавливаем позицию курсора правильно
+        /// При клике на поле телефона устанавливаем позицию курсора правильно
         /// </summary>
         private void maskedTextBox1_Click(object sender, EventArgs e)
         {
@@ -317,7 +314,7 @@ namespace WebSiteDev.AdminForm
         }
 
         /// <summary>
-        /// Изменение выбора роли в фильтре - применяет фильтр
+        /// Изменение выбора роли в фильтре применяет фильтр
         /// </summary>
         private void comboBox1_SelectedIndexChanged(object sender, EventArgs e)
         {
@@ -329,7 +326,7 @@ namespace WebSiteDev.AdminForm
         }
 
         /// <summary>
-        /// Изменение сортировки - применяет новый порядок
+        /// Изменение сортировки применяет новый порядок
         /// </summary>
         private void comboBox3_SelectedIndexChanged(object sender, EventArgs e)
         {
@@ -340,7 +337,7 @@ namespace WebSiteDev.AdminForm
             ClearUserFields();
         }
 
-        // Ограничение ввода в поле поиска - только русский и дефис
+        // Ограничение ввода в поле поиска только русский и дефис
         private void textBox1_KeyPress(object sender, KeyPressEventArgs e)
         {
             InputRest.OnlyRussianAndDash(e, textBox1);
@@ -364,19 +361,19 @@ namespace WebSiteDev.AdminForm
             InputRest.FirstLetter(textBox4);
         }
 
-        // Ограничение ввода фамилии - только русский и дефис
+        // Ограничение ввода фамилии только русский и дефис
         private void textBox2_KeyPress(object sender, KeyPressEventArgs e)
         {
             InputRest.OnlyRussianAndDash(e, textBox2);
         }
 
-        // Ограничение ввода имени - только русский и дефис
+        // Ограничение ввода имени только русский и дефис
         private void textBox3_KeyPress(object sender, KeyPressEventArgs e)
         {
             InputRest.OnlyRussianAndDash(e, textBox3);
         }
 
-        // Ограничение ввода отчества - только русский
+        // Ограничение ввода отчества только русский
         private void textBox4_KeyPress(object sender, KeyPressEventArgs e)
         {
             InputRest.OnlyRussian(e);
@@ -388,7 +385,7 @@ namespace WebSiteDev.AdminForm
             InputRest.LoginInput(e);
         }
 
-        // Ограничение ввода пароля - английский, цифры и спецсимволы
+        // Ограничение ввода пароля английский, цифры и спецсимволы
         private void textBox6_KeyPress(object sender, KeyPressEventArgs e)
         {
             InputRest.EnglishDigitsAndSpecial(e);
@@ -413,16 +410,13 @@ namespace WebSiteDev.AdminForm
             }
         }
 
-        /// <summary>
-        /// Клик на строку таблицы - загружает данные пользователя в поля редактирования
-        /// </summary>
         private void dataGridView1_CellClick(object sender, DataGridViewCellEventArgs e)
         {
             if (e.RowIndex >= 0)
             {
                 selectedUserID = Convert.ToInt32(dataGridView1.Rows[e.RowIndex].Cells["UserID"].Value);
 
-                // Если открыта эта строка - перезапускаем таймер
+                // Если открыта эта строка перезапускаем таймер
                 if (e.RowIndex == lastRevealedRowIndex)
                 {
                     timer1.Stop();
@@ -494,7 +488,6 @@ namespace WebSiteDev.AdminForm
 
         /// <summary>
         /// Кнопка сохранить изменения пользователя
-        /// Проверяет все данные перед сохранением
         /// </summary>
         private void button6_Click(object sender, EventArgs e)
         {
@@ -542,9 +535,7 @@ namespace WebSiteDev.AdminForm
             {
                 if (string.Equals(newLogin, adminLogin, StringComparison.OrdinalIgnoreCase))
                 {
-                    MessageBox.Show(
-                        $"Логин \"{adminLogin}\" зарезервирован для встроенного администратора.\nВыберите другой логин.",
-                        "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    MessageBox.Show($"Логин \"{adminLogin}\" зарезервирован системой.\nВыберите другой логин.", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                     return;
                 }
             }
@@ -714,7 +705,7 @@ namespace WebSiteDev.AdminForm
         }
 
         /// <summary>
-        /// Таймер срабатывает через 20 секунд - скрывает открытые чувствительные данные
+        /// Таймер срабатывает через 20 секунд скрывает открытые чувствительные данные
         /// </summary>
         private void timer1_Tick(object sender, EventArgs e)
         {

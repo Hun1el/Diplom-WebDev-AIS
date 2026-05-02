@@ -7,8 +7,7 @@ using System.Windows.Forms;
 namespace WebSiteDev.AddForm
 {
     /// <summary>
-    /// Форма для добавления новой услуги (товара) в систему
-    /// Включает загрузку изображения, заполнение описания и цены
+    /// Форма для добавления новой услуги в систему
     /// </summary>
     public partial class AddProductForm : Form
     {
@@ -16,9 +15,6 @@ namespace WebSiteDev.AddForm
         private string SelectedFileName = null;
         public string CurrentImagePath { get; set; }
 
-        /// <summary>
-        /// Инициализирует форму и заполняет комбо-бокс категориями
-        /// </summary>
         public AddProductForm(DataManipulation dm)
         {
             InitializeComponent();
@@ -69,7 +65,7 @@ namespace WebSiteDev.AddForm
         }
 
         /// <summary>
-        /// Разрешает вводить только цифры в поле рублей (не допускает 0 в начале)
+        /// Разрешает вводить только цифры в поле рублей
         /// </summary>
         private void textBox3_KeyPress(object sender, KeyPressEventArgs e)
         {
@@ -119,7 +115,7 @@ namespace WebSiteDev.AddForm
                     // Читаем новое изображение в память
                     byte[] newImageBytes = File.ReadAllBytes(sourcePath);
 
-                    // Если уже выбрано изображение - проверяем что это не одно и то же
+                    // Если уже выбрано изображение проверяем что это не одно и то же
                     if (!string.IsNullOrEmpty(SelectedFileName))
                     {
                         if (File.Exists(SelectedFileName))
@@ -142,7 +138,7 @@ namespace WebSiteDev.AddForm
                                         }
                                     }
 
-                                    // Если изображения идентичны - прерываем
+                                    // Если изображения идентичны прерываем
                                     if (isIdentical)
                                     {
                                         MessageBox.Show("Данное изображение уже выбрано!", "Информация", MessageBoxButtons.OK, MessageBoxIcon.Information);
@@ -194,7 +190,6 @@ namespace WebSiteDev.AddForm
             string rublesText = textBox3.Text.Trim();
             int categoryId = Convert.ToInt32(comboBox1.SelectedValue);
 
-            // Проверяем название услуги
             if (ProductName == "")
             {
                 MessageBox.Show("Заполните название услуги!", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
@@ -207,7 +202,6 @@ namespace WebSiteDev.AddForm
                 return;
             }
 
-            // Проверяем описание услуги
             if (ProductDesc == "")
             {
                 MessageBox.Show("Заполните описание услуги!", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
@@ -220,14 +214,12 @@ namespace WebSiteDev.AddForm
                 return;
             }
 
-            // Проверяем выбор категории
             if (comboBox1.SelectedIndex <= 0)
             {
                 MessageBox.Show("Выберите категорию услуги!", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return;
             }
 
-            // Проверяем цену
             if (rublesText == "")
             {
                 MessageBox.Show("Заполните цену!", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
@@ -261,7 +253,7 @@ namespace WebSiteDev.AddForm
 
             string ProductPhoto = "";
 
-            // Если изображение выбрано - копируем его в папку AppData
+            // Если изображение выбрано копируем его в папку AppData
             if (!string.IsNullOrEmpty(SelectedFileName))
             {
                 string fileName = Path.GetFileNameWithoutExtension(SelectedFileName);
@@ -301,14 +293,14 @@ namespace WebSiteDev.AddForm
                             }
                         }
 
-                        // Если файлы идентичны - используем существующий
+                        // Если файлы идентичны используем существующий
                         if (isIdentical)
                         {
                             ProductPhoto = Path.GetFileName(destPath);
                         }
                         else
                         {
-                            // Если разные - добавляем номер к имени файла
+                            // Если разные добавляем номер к имени файла
                             int n = 1;
                             while (File.Exists(destPath))
                             {
@@ -328,12 +320,7 @@ namespace WebSiteDev.AddForm
                 }
                 catch (UnauthorizedAccessException)
                 {
-                    MessageBox.Show(
-                        "Нет прав доступа к папке изображений!\n\n" +
-                        "Запустите программу от имени администратора.",
-                        "Ошибка доступа",
-                        MessageBoxButtons.OK,
-                        MessageBoxIcon.Error);
+                    MessageBox.Show("Нет прав доступа к папке изображений!\n\nЗапустите программу от имени администратора.", "Ошибка доступа", MessageBoxButtons.OK, MessageBoxIcon.Error);
                     return;
                 }
                 catch (Exception ex)
@@ -456,6 +443,16 @@ namespace WebSiteDev.AddForm
                     e.Handled = true;
                 }
             }
+        }
+
+        private void AddProductForm_Load(object sender, EventArgs e)
+        {
+            Inactivity.OnFormLoad(this);
+        }
+
+        private void AddProductForm_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            Inactivity.OnFormClosing(this);
         }
     }
 }

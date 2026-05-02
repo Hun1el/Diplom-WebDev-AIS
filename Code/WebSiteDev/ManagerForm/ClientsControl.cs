@@ -176,7 +176,7 @@ namespace WebSiteDev.ManagerForm
         }
 
         /// <summary>
-        /// При клике на строку - загружает данные клиента в поля редактирования
+        /// При клике на строку загружает данные клиента в поля редактирования
         /// </summary>
         private void dataGridView1_CellClick(object sender, DataGridViewCellEventArgs e)
         {
@@ -458,7 +458,7 @@ namespace WebSiteDev.ManagerForm
 
             int clientID = Convert.ToInt32(dataGridView1.Rows[e.RowIndex].Cells["ClientID"].Value);
 
-            // Если строка открыта - показываем оригинальные значения
+            // Если строка открыта показываем оригинальные значения
             if (e.RowIndex == lastRevealedRowIndex)
             {
                 if (dataGridView1.Columns[e.ColumnIndex].Name == "PhoneNumber")
@@ -522,7 +522,7 @@ namespace WebSiteDev.ManagerForm
         }
 
         /// <summary>
-        /// Двойной клик на ячейку - показывает/скрывает чувствительные данные на 20 секунд
+        /// Двойной клик на ячейку показывает/скрывает чувствительные данные на 20 секунд
         /// </summary>
         private void dataGridView1_CellDoubleClick(object sender, DataGridViewCellEventArgs e)
         {
@@ -556,7 +556,7 @@ namespace WebSiteDev.ManagerForm
         }
 
         /// <summary>
-        /// Таймер срабатывает через 20 секунд - скрывает открытые чувствительные данные
+        /// Таймер срабатывает через 20 секунд скрывает открытые чувствительные данные
         /// </summary>
         private void timer1_Tick(object sender, EventArgs e)
         {
