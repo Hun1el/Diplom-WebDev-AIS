@@ -1,4 +1,4 @@
--- MySQL dump 10.13  Distrib 8.0.39, for Win64 (x86_64)
+-- MySQL dump 10.13  Distrib 8.0.45, for Win64 (x86_64)
 --
 -- Host: localhost    Database: DBWebShop
 -- ------------------------------------------------------
@@ -238,7 +238,6 @@ CREATE TABLE `Users` (
   `PhoneNumber` varchar(20) NOT NULL,
   PRIMARY KEY (`UserID`),
   UNIQUE KEY `UserLogin_UNIQUE` (`UserLogin`),
-  UNIQUE KEY `UserPassword_UNIQUE` (`UserPassword`),
   KEY `fk_user_role_idx` (`RoleID`),
   CONSTRAINT `fk_user_role` FOREIGN KEY (`RoleID`) REFERENCES `Role` (`RoleID`)
 ) ENGINE=InnoDB AUTO_INCREMENT=41 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
@@ -253,6 +252,10 @@ LOCK TABLES `Users` WRITE;
 INSERT INTO `Users` VALUES (1,'Солоников','Антон','Сергеевич','1','6b86b273ff34fce19d6b804eff5a3f5747ada4eaa22f1d49c01e52ddb7875b4b',1,'+7 (986) 769-19-66'),(2,'Муравьев','Максим','Алексеевич','2','d4735e3a265e16eee03f59718b9b5d03019c07d8b6c51f90da3a666eec13ab35',2,'+7 (930) 751-12-12'),(3,'Сидоркин','Даниил','Дмитриевич','Sidorkin1','8c6976e5b5410415bde908bd4dee15dfb167a9c873fc4bb8a81f6f2ab448a918',1,'+7 (930) 112-12-65'),(5,'Беляева','Кристина','Олеговна','3','4e07408562bedb8b60ce05c1decfe3ad16b72230967de01f640b7e4729b49fce',3,'+7 (980) 222-21-31'),(6,'Иванов','Иван','Иванович','loginBDgfd2025','fdbabf061aadd0bc7f2eb9bb6c6588cb132addd6e97e046b8ccde7df51f923a3',2,'+7 (930) 451-55-51'),(13,'Беляев','Андрей','Андреевич','loginBDpga2025','6dfed725e346893774e1517b779e98e6bab42452bc09fe0a4cf8b2a7631645ca',2,'+7 (211) 769-11-12'),(19,'Ширяева','Валерия','Павловна','loginBDzzz2025','2d0a3d55e369ba93b5e21787ea0a1eb16430c2047298cb4dccc204a3a2ff2509',1,'+7 (930) 739-19-21'),(28,'Егорова','Виктория','Дмитриевна','loginBDpps2025','837415d9be86d98841e560e604a231c730ffe0913eca63676e6eb9a35f998530',2,'+7 (901) 722-19-22'),(31,'Шиханова','Дарья','Сергеевна','loginBDoiu2025','b390e506a89e4be4ea1be6ffd58e9d1dcbdd6d9fce55c368f4681c4de42662da',1,'+7 (333) 702-19-11'),(35,'Мартынова','Екатерина','Олеговна','loginEO2025','236ce6028a39cbca9311b198d004ac06d2f0e141cf8915ec012c129ab73828fb',2,'+7 (901) 100-22-35'),(38,'Егорова','Дарья','Павловна','loginDP2025','01bff976f3351845be753a796da87e0776b1409ec402090315e09290e0ad1aaf',3,'+7 (901) 100-22-38'),(40,'Богданова','Ирина','Александровна','loginIA2025','075e5ccfe524c85ec85bd50225f238c5b337d11b67753998abc3b41b62d691ec',3,'+7 (901) 100-22-40');
 /*!40000 ALTER TABLE `Users` ENABLE KEYS */;
 UNLOCK TABLES;
+
+--
+-- Dumping routines for database 'DBWebShop'
+--
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
 /*!40101 SET SQL_MODE=@OLD_SQL_MODE */;
@@ -263,4 +266,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2025-12-09 10:26:32
+-- Dump completed on 2026-05-03 11:27:42
