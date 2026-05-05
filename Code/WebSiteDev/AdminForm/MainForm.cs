@@ -178,26 +178,11 @@ namespace WebSiteDev
         }
 
         /// <summary>
-        /// Кнопка "Заказы" загружает контрол управления заказами
-        /// </summary>
-        private void button8_Click(object sender, EventArgs e)
-        {
-            if (currentSelectedButton == button8)
-            {
-                return;
-            }
-
-            LoadControl(new OrderControl(roleName));
-            this.Text = "Список заказов";
-            SelectButton(button8);
-        }
-
-        /// <summary>
         /// Выделяет нажатую кнопку и убирает выделение с других
         /// </summary>
         private void SelectButton(Button selectedButton)
         {
-            Button[] buttons = { button1, button2, button3, button4, button5, button6, button7, button8 };
+            Button[] buttons = { button1, button2, button3, button4, button5, button6, button7 };
 
             // Перебираем все кнопки
             foreach (Button btn in buttons)
