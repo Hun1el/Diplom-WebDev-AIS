@@ -220,6 +220,7 @@ namespace WebSiteDev
         private void SettingsForm_Load(object sender, EventArgs e)
         {
             Inactivity.OnFormLoad(this);
+            LabelColor.ApplyRedStar(this);
         }
 
         /// <summary>
