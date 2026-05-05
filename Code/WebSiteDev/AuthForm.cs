@@ -34,6 +34,7 @@ namespace WebSiteDev
             blockForms.Start();
 
             HideCaptcha();
+            LabelColor.ApplyRedStar(this);
         }
 
         private void button1_Click(object sender, EventArgs e)
@@ -70,6 +71,7 @@ namespace WebSiteDev
                     if (failedAttempts >= 2)
                     {
                         MessageBox.Show("Вход заблокирован на 10 секунд!", "Блокировка", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                       
                         StartLockout();
                     }
                     else
@@ -78,6 +80,7 @@ namespace WebSiteDev
                     }
 
                     textBox3.Clear();
+
                     return;
                 }
             }
@@ -198,7 +201,6 @@ namespace WebSiteDev
             else if (failedAttempts >= 2)
             {
                 MessageBox.Show("Неверный логин или пароль!\nВход заблокирован на 10 секунд!", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                
                 StartLockout();
             }
 
@@ -220,10 +222,8 @@ namespace WebSiteDev
         {
             SetCaptchaVisibility(true);
 
-            if (this.Width != 930)
-            {
-                this.Width = 930;
-            }
+            button1.Location = new Point(348, 455);
+            button2.Location = new Point(348, 510);
 
             UpdateCaptcha();
         }
@@ -232,10 +232,8 @@ namespace WebSiteDev
         {
             SetCaptchaVisibility(false);
 
-            if (this.Width != 660)
-            {
-                this.Width = 660;
-            }
+            button1.Location = new Point(348, 255);
+            button2.Location = new Point(348, 510);
 
             textBox3.Clear();
         }
@@ -245,7 +243,6 @@ namespace WebSiteDev
             pictureBox4.Visible = isVisible;
             textBox3.Visible = isVisible;
             pictureBox5.Visible = isVisible;
-            label5.Visible = isVisible;
             label6.Visible = isVisible;
         }
 
@@ -333,7 +330,7 @@ namespace WebSiteDev
         private void button2_Click(object sender, EventArgs e)
         {
             DialogResult result = MessageBox.Show("Вы действительно хотите выйти?", "Подтверждение", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
-            
+
             if (result == DialogResult.Yes)
             {
                 this.DialogResult = DialogResult.OK;
@@ -375,8 +372,9 @@ namespace WebSiteDev
 
         private void textBox3_KeyPress(object sender, KeyPressEventArgs e)
         {
-            string allowedChars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-            if (allowedChars.IndexOf(e.KeyChar) == -1 && !char.IsControl(e.KeyChar))
+            string AllowedChars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+            
+            if (AllowedChars.IndexOf(e.KeyChar) == -1 && !char.IsControl(e.KeyChar))
             {
                 e.Handled = true;
             }
