@@ -50,7 +50,7 @@ namespace WebSiteDev
 
             if (string.IsNullOrEmpty(login) || string.IsNullOrEmpty(password))
             {
-                MessageBox.Show("Введите логин и пароль!", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                MessageBox.Show("Необходимо заполнить поля отмеченные \"*\"", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
 
@@ -243,7 +243,7 @@ namespace WebSiteDev
             pictureBox4.Visible = isVisible;
             textBox3.Visible = isVisible;
             pictureBox5.Visible = isVisible;
-            label6.Visible = isVisible;
+            label3.Visible = isVisible;
         }
 
         private void ClearInputs()

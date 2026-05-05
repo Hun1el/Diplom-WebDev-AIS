@@ -30,10 +30,10 @@
             this.pictureBox4 = new System.Windows.Forms.PictureBox();
             this.textBox3 = new System.Windows.Forms.TextBox();
             this.pictureBox5 = new System.Windows.Forms.PictureBox();
+            this.label3 = new System.Windows.Forms.Label();
+            this.label4 = new System.Windows.Forms.Label();
+            this.label5 = new System.Windows.Forms.Label();
             this.label6 = new System.Windows.Forms.Label();
-            this.labelTitle = new System.Windows.Forms.Label();
-            this.labelSubtitle = new System.Windows.Forms.Label();
-            this.labelFooter = new System.Windows.Forms.Label();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox2)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox3)).BeginInit();
@@ -192,50 +192,50 @@
             this.pictureBox5.Visible = false;
             this.pictureBox5.Click += new System.EventHandler(this.pictureBox5_Click);
             // 
+            // label3
+            // 
+            this.label3.AutoSize = true;
+            this.label3.Font = new System.Drawing.Font("Segoe UI Semibold", 14.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            this.label3.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(51)))), ((int)(((byte)(65)))), ((int)(((byte)(85)))));
+            this.label3.Location = new System.Drawing.Point(346, 227);
+            this.label3.Name = "label3";
+            this.label3.Size = new System.Drawing.Size(90, 25);
+            this.label3.TabIndex = 23;
+            this.label3.Text = "Captcha*";
+            this.label3.Visible = false;
+            // 
+            // label4
+            // 
+            this.label4.AutoSize = true;
+            this.label4.Font = new System.Drawing.Font("Segoe UI", 21.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            this.label4.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(30)))), ((int)(((byte)(41)))), ((int)(((byte)(59)))));
+            this.label4.Location = new System.Drawing.Point(341, 20);
+            this.label4.Name = "label4";
+            this.label4.Size = new System.Drawing.Size(235, 40);
+            this.label4.TabIndex = 24;
+            this.label4.Text = "Вход в систему";
+            // 
+            // label5
+            // 
+            this.label5.AutoSize = true;
+            this.label5.Font = new System.Drawing.Font("Segoe UI", 11.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            this.label5.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(100)))), ((int)(((byte)(116)))), ((int)(((byte)(139)))));
+            this.label5.Location = new System.Drawing.Point(344, 60);
+            this.label5.Name = "label5";
+            this.label5.Size = new System.Drawing.Size(253, 20);
+            this.label5.TabIndex = 25;
+            this.label5.Text = "Пожалуйста, введите ваши данные";
+            // 
             // label6
             // 
-            this.label6.AutoSize = true;
-            this.label6.Font = new System.Drawing.Font("Segoe UI Semibold", 14.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.label6.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(51)))), ((int)(((byte)(65)))), ((int)(((byte)(85)))));
-            this.label6.Location = new System.Drawing.Point(346, 227);
+            this.label6.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            this.label6.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(148)))), ((int)(((byte)(163)))), ((int)(((byte)(184)))));
+            this.label6.Location = new System.Drawing.Point(336, 553);
             this.label6.Name = "label6";
-            this.label6.Size = new System.Drawing.Size(90, 25);
-            this.label6.TabIndex = 23;
-            this.label6.Text = "Captcha*";
-            this.label6.Visible = false;
-            // 
-            // labelTitle
-            // 
-            this.labelTitle.AutoSize = true;
-            this.labelTitle.Font = new System.Drawing.Font("Segoe UI", 21.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.labelTitle.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(30)))), ((int)(((byte)(41)))), ((int)(((byte)(59)))));
-            this.labelTitle.Location = new System.Drawing.Point(341, 20);
-            this.labelTitle.Name = "labelTitle";
-            this.labelTitle.Size = new System.Drawing.Size(235, 40);
-            this.labelTitle.TabIndex = 24;
-            this.labelTitle.Text = "Вход в систему";
-            // 
-            // labelSubtitle
-            // 
-            this.labelSubtitle.AutoSize = true;
-            this.labelSubtitle.Font = new System.Drawing.Font("Segoe UI", 11.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.labelSubtitle.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(100)))), ((int)(((byte)(116)))), ((int)(((byte)(139)))));
-            this.labelSubtitle.Location = new System.Drawing.Point(344, 60);
-            this.labelSubtitle.Name = "labelSubtitle";
-            this.labelSubtitle.Size = new System.Drawing.Size(253, 20);
-            this.labelSubtitle.TabIndex = 25;
-            this.labelSubtitle.Text = "Пожалуйста, введите ваши данные";
-            // 
-            // labelFooter
-            // 
-            this.labelFooter.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.labelFooter.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(148)))), ((int)(((byte)(163)))), ((int)(((byte)(184)))));
-            this.labelFooter.Location = new System.Drawing.Point(336, 553);
-            this.labelFooter.Name = "labelFooter";
-            this.labelFooter.Size = new System.Drawing.Size(340, 22);
-            this.labelFooter.TabIndex = 26;
-            this.labelFooter.Text = "АИС: Ведение базы данных разработки web-сайтов (.NET)";
-            this.labelFooter.TextAlign = System.Drawing.ContentAlignment.BottomLeft;
+            this.label6.Size = new System.Drawing.Size(340, 22);
+            this.label6.TabIndex = 26;
+            this.label6.Text = "АИС: Ведение базы данных разработки web-сайтов (.NET)";
+            this.label6.TextAlign = System.Drawing.ContentAlignment.BottomLeft;
             // 
             // AuthForm
             // 
@@ -243,10 +243,10 @@
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.White;
             this.ClientSize = new System.Drawing.Size(699, 580);
-            this.Controls.Add(this.labelFooter);
-            this.Controls.Add(this.labelSubtitle);
-            this.Controls.Add(this.labelTitle);
             this.Controls.Add(this.label6);
+            this.Controls.Add(this.label5);
+            this.Controls.Add(this.label4);
+            this.Controls.Add(this.label3);
             this.Controls.Add(this.pictureBox5);
             this.Controls.Add(this.textBox3);
             this.Controls.Add(this.pictureBox4);
@@ -294,10 +294,10 @@
         private System.Windows.Forms.PictureBox pictureBox4;
         private System.Windows.Forms.TextBox textBox3;
         private System.Windows.Forms.PictureBox pictureBox5;
-        private System.Windows.Forms.Label label6;
+        private System.Windows.Forms.Label label3;
 
-        private System.Windows.Forms.Label labelTitle;
-        private System.Windows.Forms.Label labelSubtitle;
-        private System.Windows.Forms.Label labelFooter;
+        private System.Windows.Forms.Label label4;
+        private System.Windows.Forms.Label label5;
+        private System.Windows.Forms.Label label6;
     }
 }
