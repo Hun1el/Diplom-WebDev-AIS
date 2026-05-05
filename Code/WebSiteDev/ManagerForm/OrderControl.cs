@@ -47,14 +47,6 @@ namespace WebSiteDev.ManagerForm
             dateTimePicker1.CustomFormat = "yyyy.MM.dd";
 
             dataGridView1.ContextMenuStrip = contextMenuStrip1;
-
-            // Администраторы не могут создавать заказы только просматривать
-            if (userRole == "Администратор")
-            {
-                button5.Visible = false;
-                button1.Visible = false;
-                button2.Visible = false;
-            }
         }
 
         void GetDate()
