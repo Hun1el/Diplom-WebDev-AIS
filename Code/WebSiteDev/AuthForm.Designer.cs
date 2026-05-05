@@ -209,7 +209,7 @@
             this.label4.AutoSize = true;
             this.label4.Font = new System.Drawing.Font("Segoe UI", 21.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
             this.label4.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(30)))), ((int)(((byte)(41)))), ((int)(((byte)(59)))));
-            this.label4.Location = new System.Drawing.Point(341, 20);
+            this.label4.Location = new System.Drawing.Point(341, 12);
             this.label4.Name = "label4";
             this.label4.Size = new System.Drawing.Size(235, 40);
             this.label4.TabIndex = 24;
@@ -220,7 +220,7 @@
             this.label5.AutoSize = true;
             this.label5.Font = new System.Drawing.Font("Segoe UI", 11.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
             this.label5.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(100)))), ((int)(((byte)(116)))), ((int)(((byte)(139)))));
-            this.label5.Location = new System.Drawing.Point(344, 60);
+            this.label5.Location = new System.Drawing.Point(344, 52);
             this.label5.Name = "label5";
             this.label5.Size = new System.Drawing.Size(253, 20);
             this.label5.TabIndex = 25;
@@ -263,8 +263,6 @@
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.Margin = new System.Windows.Forms.Padding(6);
-            this.MaximizeBox = false;
-            this.MinimizeBox = false;
             this.Name = "AuthForm";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "Авторизация";
