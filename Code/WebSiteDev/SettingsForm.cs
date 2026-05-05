@@ -5,7 +5,7 @@ using System.Windows.Forms;
 namespace WebSiteDev
 {
     // Форма настроек подключения к базе данных и времени неактивности
-    public partial class SettingsForm : Form
+    public partial class SettingsForm : ScalableForm
     {
         public SettingsForm()
         {
