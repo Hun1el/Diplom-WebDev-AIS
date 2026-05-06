@@ -108,6 +108,12 @@
     <Compile Include="AdminForm\UsersControl.Designer.cs">
       <DependentUpon>UsersControl.cs</DependentUpon>
     </Compile>
+    <Compile Include="ScalableForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="ScalableForm.Designer.cs">
+      <DependentUpon>ScalableForm.cs</DependentUpon>
+    </Compile>
     <Compile Include="Utils\CaptchaGenerator.cs" />
     <Compile Include="Utils\BlockForms.cs" />
     <Compile Include="Data\DataSecurity.cs" />
@@ -286,6 +292,9 @@
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="ScalableForm.resx">
+      <DependentUpon>ScalableForm.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="SettingsForm.resx">
       <DependentUpon>SettingsForm.cs</DependentUpon>

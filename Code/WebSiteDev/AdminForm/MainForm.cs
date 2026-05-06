@@ -8,7 +8,7 @@ namespace WebSiteDev
     /// <summary>
     /// Главная форма приложения для администраторов
     /// </summary>
-    public partial class MainForm : Form
+    public partial class MainForm : ScalableForm
     {
         private string fullName;
         private string roleName;

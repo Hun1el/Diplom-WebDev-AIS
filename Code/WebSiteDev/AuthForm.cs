@@ -8,7 +8,7 @@ using WebSiteDev.ManagerForm;
 
 namespace WebSiteDev
 {
-    public partial class AuthForm : Form
+    public partial class AuthForm : ScalableForm
     {
         private BlockForms blockForms;
         private string captchaText;
@@ -29,12 +29,64 @@ namespace WebSiteDev
 
         private void AuthForm_Load(object sender, EventArgs e)
         {
+            label6.AutoSize = false;
+            label6.Size = new Size(340, 25);
+            label6.Location = new Point(325, 560);
+            label6.TextAlign = ContentAlignment.TopCenter;
+
+            AddRightCenterRule(pictureBox2, textBox2, 8);       // глазик справа от поля пароля
+            AddTopRightFormRule(pictureBox3, 18, 18);           // шестеренка в правом верхнем углу
+            AddBottomCenterRule(pictureBox5, pictureBox4, 6);   // обновление капчи под картинкой
+
             blockForms = Program.GetBlockForms();
             blockForms.RegisterForm(this);
             blockForms.Start();
 
             HideCaptcha();
             LabelColor.ApplyRedStar(this);
+        }
+
+        private void ShowCaptcha()
+        {
+            SetCaptchaVisibility(true);
+
+            ChangeControlOriginalLocation(button1, new Point(348, 455));
+            ChangeControlOriginalLocation(button2, new Point(348, 510));
+
+            UpdateCaptcha();
+        }
+
+        private void HideCaptcha()
+        {
+            SetCaptchaVisibility(false);
+
+            ChangeControlOriginalLocation(button1, new Point(348, 235));
+            ChangeControlOriginalLocation(button2, new Point(348, 510));
+
+            textBox3.Clear();
+        }
+
+        private void UpdateCaptcha()
+        {
+            if (pictureBox4.Width <= 0 || pictureBox4.Height <= 0)
+            {
+                return;
+            }
+
+            if (pictureBox4.Image != null)
+            {
+                pictureBox4.Image.Dispose();
+            }
+
+            pictureBox4.Image = CaptchaGenerator.GenerateImage(pictureBox4.Width, pictureBox4.Height, 6, out captchaText);
+        }
+
+        private void SetCaptchaVisibility(bool isVisible)
+        {
+            pictureBox4.Visible = isVisible;
+            textBox3.Visible = isVisible;
+            pictureBox5.Visible = isVisible;
+            label3.Visible = isVisible;
         }
 
         private void button1_Click(object sender, EventArgs e)
@@ -71,7 +123,7 @@ namespace WebSiteDev
                     if (failedAttempts >= 2)
                     {
                         MessageBox.Show("Вход заблокирован на 10 секунд!", "Блокировка", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                       
+                        
                         StartLockout();
                     }
                     else
@@ -80,7 +132,7 @@ namespace WebSiteDev
                     }
 
                     textBox3.Clear();
-
+                    
                     return;
                 }
             }
@@ -195,7 +247,7 @@ namespace WebSiteDev
             {
                 MessageBox.Show("Неверный логин или пароль!\nДля дальнейших попыток требуется ввод CAPTCHA.", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 captchaRequired = true;
-
+                
                 ShowCaptcha();
             }
             else if (failedAttempts >= 2)
@@ -208,44 +260,6 @@ namespace WebSiteDev
             textBox3.Clear();
         }
 
-        private void UpdateCaptcha()
-        {
-            if (pictureBox4.Image != null)
-            {
-                pictureBox4.Image.Dispose();
-            }
-
-            pictureBox4.Image = CaptchaGenerator.GenerateImage(pictureBox4.Width, pictureBox4.Height, 6, out captchaText);
-        }
-
-        private void ShowCaptcha()
-        {
-            SetCaptchaVisibility(true);
-
-            button1.Location = new Point(348, 455);
-            button2.Location = new Point(348, 510);
-
-            UpdateCaptcha();
-        }
-
-        private void HideCaptcha()
-        {
-            SetCaptchaVisibility(false);
-
-            button1.Location = new Point(348, 255);
-            button2.Location = new Point(348, 510);
-
-            textBox3.Clear();
-        }
-
-        private void SetCaptchaVisibility(bool isVisible)
-        {
-            pictureBox4.Visible = isVisible;
-            textBox3.Visible = isVisible;
-            pictureBox5.Visible = isVisible;
-            label3.Visible = isVisible;
-        }
-
         private void ClearInputs()
         {
             textBox1.Clear();
@@ -255,7 +269,7 @@ namespace WebSiteDev
         private void pictureBox5_Click(object sender, EventArgs e)
         {
             UpdateCaptcha();
-
+            
             textBox3.Clear();
             textBox3.Focus();
         }
@@ -276,7 +290,7 @@ namespace WebSiteDev
             {
                 lockoutTimer.Stop();
                 ToggleControls(true);
-                button1.Text = "Вход";
+                button1.Text = "Авторизоваться";
                 UpdateCaptcha();
                 textBox3.Clear();
                 textBox3.Focus();
@@ -298,7 +312,7 @@ namespace WebSiteDev
         private void HandleDatabaseError(MySqlException ex)
         {
             string ErrorMessage = "";
-
+            
             if (ex.Number == 0)
             {
                 ErrorMessage = "Не удаётся подключиться к серверу базы данных.";
@@ -330,7 +344,7 @@ namespace WebSiteDev
         private void button2_Click(object sender, EventArgs e)
         {
             DialogResult result = MessageBox.Show("Вы действительно хотите выйти?", "Подтверждение", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
-
+            
             if (result == DialogResult.Yes)
             {
                 this.DialogResult = DialogResult.OK;
