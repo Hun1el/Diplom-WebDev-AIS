@@ -97,19 +97,6 @@ namespace WebSiteDev.AdminForm
         }
 
         /// <summary>
-        /// Обработчик кнопки добавления нового статуса
-        /// </summary>
-        private void button2_Click(object sender, EventArgs e)
-        {
-            AddStatusForm addStatusForm = new AddStatusForm();
-            addStatusForm.ShowDialog();
-            // Перезагружаем данные после добавления
-            GetDate();
-            dataGridView1.ClearSelection();
-            ClearStatusFields();
-        }
-
-        /// <summary>
         /// Обработчик кнопки сброса фильтров
         /// </summary>
         private void button4_Click(object sender, EventArgs e)

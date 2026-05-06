@@ -100,20 +100,6 @@ namespace WebSiteDev.AdminForm
         }
 
         /// <summary>
-        /// Обработчик кнопки добавления новой роли
-        /// Открывает диалоговую форму и перезагружает данные
-        /// </summary>
-        private void button2_Click(object sender, EventArgs e)
-        {
-            AddRoleForm addRoleForm = new AddRoleForm();
-            addRoleForm.ShowDialog();
-            // Перезагружаем данные после добавления
-            GetDate();
-            dataGridView1.ClearSelection();
-            ClearRoleFields();
-        }
-
-        /// <summary>
         /// Обработчик кнопки сброса фильтров
         /// Возвращает таблицу в исходное состояние
         /// </summary>

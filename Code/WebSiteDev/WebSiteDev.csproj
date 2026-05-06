@@ -60,18 +60,6 @@
     <Compile Include="AdminForm\AddForm\AddCategoryForm.Designer.cs">
       <DependentUpon>AddCategoryForm.cs</DependentUpon>
     </Compile>
-    <Compile Include="AdminForm\AddForm\AddRoleForm.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="AdminForm\AddForm\AddRoleForm.Designer.cs">
-      <DependentUpon>AddRoleForm.cs</DependentUpon>
-    </Compile>
-    <Compile Include="AdminForm\AddForm\AddStatusForm.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="AdminForm\AddForm\AddStatusForm.Designer.cs">
-      <DependentUpon>AddStatusForm.cs</DependentUpon>
-    </Compile>
     <Compile Include="AdminForm\AddForm\AddUsersForm.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -113,6 +101,12 @@
     </Compile>
     <Compile Include="ScalableForm.Designer.cs">
       <DependentUpon>ScalableForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="ServiceForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="ServiceForm.Designer.cs">
+      <DependentUpon>ServiceForm.cs</DependentUpon>
     </Compile>
     <Compile Include="Utils\CaptchaGenerator.cs" />
     <Compile Include="Utils\BlockForms.cs" />
@@ -223,12 +217,6 @@
     <EmbeddedResource Include="AdminForm\AddForm\AddCategoryForm.resx">
       <DependentUpon>AddCategoryForm.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="AdminForm\AddForm\AddRoleForm.resx">
-      <DependentUpon>AddRoleForm.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="AdminForm\AddForm\AddStatusForm.resx">
-      <DependentUpon>AddStatusForm.cs</DependentUpon>
-    </EmbeddedResource>
     <EmbeddedResource Include="AdminForm\AddForm\AddUsersForm.resx">
       <DependentUpon>AddUsersForm.cs</DependentUpon>
     </EmbeddedResource>
@@ -295,6 +283,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="ScalableForm.resx">
       <DependentUpon>ScalableForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="ServiceForm.resx">
+      <DependentUpon>ServiceForm.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="SettingsForm.resx">
       <DependentUpon>SettingsForm.cs</DependentUpon>
