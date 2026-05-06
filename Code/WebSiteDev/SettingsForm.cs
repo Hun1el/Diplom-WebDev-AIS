@@ -13,6 +13,17 @@ namespace WebSiteDev
             LoadSettings();
         }
 
+        /// <summary>
+        /// Загрузка формы
+        /// </summary>
+        private void SettingsForm_Load(object sender, EventArgs e)
+        {
+            AddRightCenterRule(pictureBox1, textBox3, 8);       // глазик справа от поля пароля
+
+            Inactivity.OnFormLoad(this);
+            LabelColor.ApplyRedStar(this);
+        }
+
         // Загружает настройки подключения и время неактивности из application settings
         private void LoadSettings()
         {
@@ -212,15 +223,6 @@ namespace WebSiteDev
             }
 
             return Timeout;
-        }
-
-        /// <summary>
-        /// Загрузка формы
-        /// </summary>
-        private void SettingsForm_Load(object sender, EventArgs e)
-        {
-            Inactivity.OnFormLoad(this);
-            LabelColor.ApplyRedStar(this);
         }
 
         /// <summary>

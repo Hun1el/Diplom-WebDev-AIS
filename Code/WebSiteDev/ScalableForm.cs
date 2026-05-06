@@ -7,6 +7,9 @@ namespace WebSiteDev
 {
     public partial class ScalableForm : Form
     {
+        // Минимальный масштаб
+        private const float MinScale = 0.8f;
+
         private Size OriginalSize;
         private bool Initialized = false;
         private bool IsScaling = false;
@@ -33,7 +36,11 @@ namespace WebSiteDev
             Initialized = true;
             OriginalSize = this.ClientSize;
 
-            this.MinimumSize = this.Size;
+            // Устанавливаем физический предел уменьшения самого окна
+            this.MinimumSize = new Size(
+                (int)Math.Round(this.Size.Width * MinScale),
+                (int)Math.Round(this.Size.Height * MinScale)
+            );
 
             SaveBoundsRecursive(this);
         }
@@ -68,6 +75,16 @@ namespace WebSiteDev
 
                 float ScaleX = (float)this.ClientSize.Width / OriginalSize.Width;
                 float ScaleY = (float)this.ClientSize.Height / OriginalSize.Height;
+
+                if (ScaleX < MinScale)
+                {
+                    ScaleX = MinScale;
+                }
+
+                if (ScaleY < MinScale)
+                {
+                    ScaleY = MinScale;
+                }
 
                 control.Location = new Point(
                     (int)Math.Round(NewOriginalLocation.X * ScaleX),
@@ -115,6 +132,11 @@ namespace WebSiteDev
 
             RelativeRules.Add(rule);
             ApplyRelativeRule(rule);
+        }
+
+        protected void RefreshRelativeRules()
+        {
+            ApplyRelativeRules();
         }
 
         private void ApplyRelativeRules()
@@ -171,6 +193,18 @@ namespace WebSiteDev
 
             float ScaleX = (float)this.ClientSize.Width / OriginalSize.Width;
             float ScaleY = (float)this.ClientSize.Height / OriginalSize.Height;
+
+            // Ограничиваем масштаб минимальным значением
+            if (ScaleX < MinScale)
+            {
+                ScaleX = MinScale;
+            }
+
+            if (ScaleY < MinScale)
+            {
+                ScaleY = MinScale;
+            }
+
             float FontScale = Math.Min(ScaleX, ScaleY);
 
             foreach (var kvp in OriginalBounds)

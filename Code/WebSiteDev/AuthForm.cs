@@ -29,12 +29,6 @@ namespace WebSiteDev
 
         private void AuthForm_Load(object sender, EventArgs e)
         {
-            pictureBox2.BackgroundImageLayout = ImageLayout.Zoom; // Иконка глазика
-            pictureBox3.BackgroundImageLayout = ImageLayout.Zoom; // Шестеренка
-            pictureBox5.BackgroundImageLayout = ImageLayout.Zoom; // Обновить капчу
-            pictureBox1.SizeMode = PictureBoxSizeMode.Zoom;       // Главная картинка слева
-            pictureBox4.SizeMode = PictureBoxSizeMode.StretchImage;
-
             label6.AutoSize = false;
             label6.Size = new Size(340, 25);
             label6.Location = new Point(325, 560);

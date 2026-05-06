@@ -134,7 +134,7 @@
             // pictureBox2
             // 
             this.pictureBox2.BackgroundImage = ((System.Drawing.Image)(resources.GetObject("pictureBox2.BackgroundImage")));
-            this.pictureBox2.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch;
+            this.pictureBox2.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Zoom;
             this.pictureBox2.Cursor = System.Windows.Forms.Cursors.Hand;
             this.pictureBox2.Location = new System.Drawing.Point(648, 191);
             this.pictureBox2.Name = "pictureBox2";
@@ -147,7 +147,7 @@
             // pictureBox3
             // 
             this.pictureBox3.BackgroundImage = global::WebSiteDev.Properties.Resources.setting;
-            this.pictureBox3.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch;
+            this.pictureBox3.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Zoom;
             this.pictureBox3.Cursor = System.Windows.Forms.Cursors.Hand;
             this.pictureBox3.Location = new System.Drawing.Point(645, 12);
             this.pictureBox3.Name = "pictureBox3";
@@ -164,6 +164,7 @@
             this.pictureBox4.Location = new System.Drawing.Point(348, 296);
             this.pictureBox4.Name = "pictureBox4";
             this.pictureBox4.Size = new System.Drawing.Size(294, 110);
+            this.pictureBox4.SizeMode = System.Windows.Forms.PictureBoxSizeMode.StretchImage;
             this.pictureBox4.TabIndex = 18;
             this.pictureBox4.TabStop = false;
             this.pictureBox4.Visible = false;
@@ -184,7 +185,7 @@
             // pictureBox5
             // 
             this.pictureBox5.BackgroundImage = global::WebSiteDev.Properties.Resources.reload;
-            this.pictureBox5.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch;
+            this.pictureBox5.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Zoom;
             this.pictureBox5.Cursor = System.Windows.Forms.Cursors.Hand;
             this.pictureBox5.Location = new System.Drawing.Point(471, 412);
             this.pictureBox5.Name = "pictureBox5";
