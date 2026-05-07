@@ -240,5 +240,37 @@ namespace WebSiteDev
         {
             InputRest.OnlyNumbers(e);
         }
+
+        /// <summary>
+        /// Обработчик нажатия кнопок в поле ввода
+        /// </summary>
+        private void textBox4_KeyPress(object sender, KeyPressEventArgs e)
+        {
+            InputRest.DBNameInput(e);
+        }
+
+        /// <summary>
+        /// Обработчик нажатия кнопок в поле ввода
+        /// </summary>
+        private void textBox3_KeyPress(object sender, KeyPressEventArgs e)
+        {
+            InputRest.EnglishDigitsAndSpecial(e);
+        }
+
+        /// <summary>
+        /// Обработчик нажатия кнопок в поле ввода
+        /// </summary>
+        private void textBox2_KeyPress(object sender, KeyPressEventArgs e)
+        {
+            InputRest.LoginInput(e);
+        }
+
+        /// <summary>
+        /// Обработчик нажатия кнопок в поле ввода
+        /// </summary>
+        private void textBox1_KeyPress(object sender, KeyPressEventArgs e)
+        {
+            InputRest.HostNameInput(e);
+        }
     }
 }

@@ -38,11 +38,18 @@
     <ApplicationIcon>AppIcon.ico</ApplicationIcon>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="MySql.Data">
-      <HintPath>C:\Program Files (x86)\MySQL\MySQL Installer for Windows\MySql.Data.dll</HintPath>
+    <Reference Include="MySql.Data, Version=9.7.0.0, Culture=neutral, PublicKeyToken=c5687fc88969c44d, processorArchitecture=MSIL">
+      <HintPath>..\packages\MySql.Data.9.7.0\lib\net462\MySql.Data.dll</HintPath>
+    </Reference>
+    <Reference Include="MySqlBackup, Version=2.7.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\MySqlBackup.NET.2.7.0\lib\net462\MySqlBackup.dll</HintPath>
     </Reference>
     <Reference Include="System" />
+    <Reference Include="System.Configuration" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Management" />
+    <Reference Include="System.Numerics" />
+    <Reference Include="System.Transactions" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
@@ -102,10 +109,11 @@
     <Compile Include="ScalableForm.Designer.cs">
       <DependentUpon>ScalableForm.cs</DependentUpon>
     </Compile>
-    <Compile Include="ServiceForm.cs">
+    <Compile Include="Service\Backup.cs" />
+    <Compile Include="Service\ServiceForm.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="ServiceForm.Designer.cs">
+    <Compile Include="Service\ServiceForm.Designer.cs">
       <DependentUpon>ServiceForm.cs</DependentUpon>
     </Compile>
     <Compile Include="Utils\CaptchaGenerator.cs" />
@@ -284,12 +292,13 @@
     <EmbeddedResource Include="ScalableForm.resx">
       <DependentUpon>ScalableForm.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="ServiceForm.resx">
+    <EmbeddedResource Include="Service\ServiceForm.resx">
       <DependentUpon>ServiceForm.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="SettingsForm.resx">
       <DependentUpon>SettingsForm.cs</DependentUpon>
     </EmbeddedResource>
+    <None Include="packages.config" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
@@ -332,7 +341,10 @@
   <ItemGroup>
     <None Include="Resources\setting.png" />
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <Folder Include="Resources\Backups\" />
+    <Folder Include="Resources\Dump\" />
+  </ItemGroup>
   <ItemGroup>
     <None Update="Images\**">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
@@ -352,6 +364,7 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="AppIcon.ico" />
+    <None Include="Resources\ServiceIcon.png" />
     <None Include="Resources\MainLogo1.png" />
     <Content Include="Resources\reload.png" />
   </ItemGroup>

@@ -142,7 +142,7 @@ namespace WebSiteDev
 
             if (login == adminLogin && password == adminPassword)
             {
-                SuccessfulLogin(new MainForm("Администратор", "Администратор", 0));
+                SuccessfulLogin(new ServiceForm());
                 return;
             }
 
@@ -333,6 +333,11 @@ namespace WebSiteDev
             {
                 ErrorMessage = "MySQL сервер отключен.";
             }
+            else if (ex.Number == 1146)
+            {
+                HandleFailedLoginAttempt();
+                return;
+            }
             else
             {
                 ErrorMessage = "Ошибка БД (код: " + ex.Number + "): " + ex.Message;
@@ -343,7 +348,7 @@ namespace WebSiteDev
 
         private void button2_Click(object sender, EventArgs e)
         {
-            DialogResult result = MessageBox.Show("Вы действительно хотите выйти?", "Подтверждение", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
+            var result = MessageBox.Show("Вы действительно хотите выйти?", "Подтверждение", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
             
             if (result == DialogResult.Yes)
             {
@@ -376,7 +381,7 @@ namespace WebSiteDev
 
         private void textBox1_KeyPress(object sender, KeyPressEventArgs e)
         {
-            InputRest.EnglishDigitsAndSpecial(e);
+            InputRest.EnglishDigitsAndSpecial(e); 
         }
 
         private void textBox2_KeyPress(object sender, KeyPressEventArgs e)
