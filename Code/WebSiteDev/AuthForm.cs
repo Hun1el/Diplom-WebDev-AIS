@@ -142,7 +142,7 @@ namespace WebSiteDev
 
             if (login == adminLogin && password == adminPassword)
             {
-                SuccessfulLogin(new MainForm("Администратор", "Администратор", 0));
+                SuccessfulLogin(new ServiceForm());
                 return;
             }
 
@@ -376,7 +376,7 @@ namespace WebSiteDev
 
         private void textBox1_KeyPress(object sender, KeyPressEventArgs e)
         {
-            InputRest.EnglishDigitsAndSpecial(e);
+            InputRest.EnglishDigitsAndSpecial(e); 
         }
 
         private void textBox2_KeyPress(object sender, KeyPressEventArgs e)

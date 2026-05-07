@@ -352,6 +352,7 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="AppIcon.ico" />
+    <None Include="Resources\ServiceIcon.png" />
     <None Include="Resources\MainLogo1.png" />
     <Content Include="Resources\reload.png" />
   </ItemGroup>
