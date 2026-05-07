@@ -333,6 +333,11 @@ namespace WebSiteDev
             {
                 ErrorMessage = "MySQL сервер отключен.";
             }
+            else if (ex.Number == 1146)
+            {
+                HandleFailedLoginAttempt();
+                return;
+            }
             else
             {
                 ErrorMessage = "Ошибка БД (код: " + ex.Number + "): " + ex.Message;

@@ -7,6 +7,9 @@ namespace WebSiteDev.Service
 {
     public static class Backup
     {
+        /// <summary>
+        /// Создание ручной резевной копии базы данных
+        /// </summary>
         public static string MakeBackup()
         {
             string PathProject = string.Join("\\", Directory.GetCurrentDirectory().Split('\\').TakeWhile(item => item != "bin"));
@@ -31,6 +34,24 @@ namespace WebSiteDev.Service
             }
 
             return FileName;
+        }
+
+        /// <summary>
+        /// Восстановление базы данных из sql файла
+        /// </summary>
+        public static void RestoreBackup(string filePath)
+        {
+            using (MySqlConnection con = new MySqlConnection(Data.GetConnectionString()))
+            {
+                using (MySqlCommand cmd = con.CreateCommand())
+                {
+                    using (MySqlBackup mb = new MySqlBackup(cmd))
+                    {
+                        con.Open();
+                        mb.ImportFromFile(filePath);
+                    }
+                }
+            }
         }
     }
 }

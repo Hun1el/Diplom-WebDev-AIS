@@ -24,7 +24,30 @@ namespace WebSiteDev
         /// </summary>
         private void button1_Click(object sender, EventArgs e)
         {
-            
+            try
+            {
+                OpenFileDialog openFileDialog = new OpenFileDialog();
+                openFileDialog.Title = "Выберите файл восстановления базы данных";
+                openFileDialog.Filter = "SQL-файл (*.sql)|*.sql";
+
+                if (openFileDialog.ShowDialog() == DialogResult.OK)
+                {
+                    string FilePath = openFileDialog.FileName;
+
+                    var result = MessageBox.Show("Вы уверены, что хотите восстановить базу данных из файла:\n" + FilePath + "\n\nДействие не может быть отменено.", "Внимание", MessageBoxButtons.YesNoCancel, MessageBoxIcon.Warning);
+
+                    if (result == DialogResult.Yes)
+                    {
+                        Backup.RestoreBackup(FilePath);
+
+                        MessageBox.Show("База данных успешно восстановлена!", "Успех", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Не удалось восстановить базу данных!\nОшибка: " + ex.Message, "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
         }
 
         private void button2_Click(object sender, EventArgs e)
