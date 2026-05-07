@@ -31,6 +31,28 @@ namespace WebSiteDev
         }
 
         /// <summary>
+        /// Разрешает ввод символов для имени базы данных - буквы, цифры, подчёркивание
+        /// </summary>
+        public static void DBNameInput(KeyPressEventArgs e)
+        {
+            if (!((e.KeyChar >= 'A' && e.KeyChar <= 'Z') || (e.KeyChar >= 'a' && e.KeyChar <= 'z') || char.IsDigit(e.KeyChar) || e.KeyChar == '_' || e.KeyChar == '\b'))
+            {
+                e.Handled = true;
+            }
+        }
+
+        /// <summary>
+        /// Разрешает ввод символов для имени названия сервера - буквы, цифры, точка, подчёркивание, тире
+        /// </summary>
+        public static void HostNameInput(KeyPressEventArgs e)
+        {
+            if (!((e.KeyChar >= 'A' && e.KeyChar <= 'Z') || (e.KeyChar >= 'a' && e.KeyChar <= 'z') || char.IsDigit(e.KeyChar) || e.KeyChar == '.' || e.KeyChar == '-' || e.KeyChar == '_' || e.KeyChar == '\b'))
+            {
+                e.Handled = true;
+            }
+        }
+
+        /// <summary>
         /// Разрешает ввод символов для логина - буквы, цифры, подчёркивание, точка, дефис
         /// </summary>
         public static void LoginInput(KeyPressEventArgs e)
