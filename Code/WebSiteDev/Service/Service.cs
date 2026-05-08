@@ -123,5 +123,37 @@ namespace WebSiteDev.Service
                 }
             }
         }
+
+        /// <summary>
+        /// Импорт данных из csv в БД
+        /// </summary>
+        public static int Import(string TableName, string separator, string FilePath, bool SkipHeader)
+        {
+            CsvImporter.ValidateFile(FilePath, separator, TableName, SkipHeader);
+
+            using (MySqlConnection con = new MySqlConnection(Data.GetConnectionStringInFile()))
+            {
+                con.Open();
+
+                MySqlBulkLoader loader = new MySqlBulkLoader(con);
+                loader.Local = true;
+                loader.TableName = TableName;
+                loader.FileName = FilePath;
+                loader.FieldTerminator = separator;
+                loader.LineTerminator = "\n";
+                loader.CharacterSet = "cp1251";
+
+                if (SkipHeader)
+                {
+                    loader.NumberOfLinesToSkip = 1;
+                }
+                else
+                {
+                    loader.NumberOfLinesToSkip = 0;
+                }
+
+                return loader.Load();
+            }
+        }
     }
 }

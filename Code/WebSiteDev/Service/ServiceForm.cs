@@ -46,9 +46,15 @@ namespace WebSiteDev
             }
         }
 
+        /// <summary>
+        /// Кнопка "Импорт данных"
+        /// </summary>
         private void button2_Click(object sender, EventArgs e)
         {
-
+            ImportForm importForm = new ImportForm();
+            this.Hide();
+            importForm.ShowDialog();
+            this.Show();
         }
 
         /// <summary>
@@ -68,6 +74,9 @@ namespace WebSiteDev
             }
         }
 
+        /// <summary>
+        /// Кнопка "Экспорт данных"
+        /// </summary>
         private void button4_Click(object sender, EventArgs e)
         {
             ExportForm exportForm = new ExportForm();
