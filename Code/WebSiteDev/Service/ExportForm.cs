@@ -22,6 +22,14 @@ namespace WebSiteDev.Service
             LoadTables();
         }
 
+        private void DisableGridSorting()
+        {
+            for (int i = 0; i < dataGridView1.Columns.Count; i++)
+            {
+                dataGridView1.Columns[i].SortMode = DataGridViewColumnSortMode.NotSortable;
+            }
+        }
+
         private void LoadTables()
         {
             try
@@ -78,6 +86,9 @@ namespace WebSiteDev.Service
                 }
 
                 dataGridView1.DataSource = dt;
+                
+                DisableGridSorting();
+                UpdateGridLayout();
             }
             catch (Exception ex)
             {
@@ -93,6 +104,7 @@ namespace WebSiteDev.Service
                 {
                     dataGridView1.DataSource = null;
                     dataGridView1.Columns.Clear();
+                    
                     return;
                 }
 
@@ -111,7 +123,7 @@ namespace WebSiteDev.Service
                 SaveFileDialog saveFileDialog = new SaveFileDialog();
                 saveFileDialog.Title = "Выберите файл для сохранения";
                 saveFileDialog.Filter = "CSV-файлы (*.csv)|*.csv";
-                saveFileDialog.FileName = "export_" + DateTime.Now.ToString("yyyyMMdd_HHmmss") + ".csv";
+                saveFileDialog.FileName = $"Export_" + DateTime.Now.ToString("yyyyMMdd_HHmmss") + ".csv";
 
                 if (saveFileDialog.ShowDialog() == DialogResult.OK)
                 {
@@ -129,6 +141,7 @@ namespace WebSiteDev.Service
             if (comboBox1.SelectedItem == null || comboBox1.SelectedItem.ToString() == "- -" || string.IsNullOrEmpty(textBox1.Text))
             {
                 MessageBox.Show("Заполните поля, отмеченные *", "Внимание", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                
                 return;
             }
 
@@ -151,6 +164,41 @@ namespace WebSiteDev.Service
         private void button1_Click(object sender, EventArgs e)
         {
             this.Close();
+        }
+
+        private void UpdateGridLayout()
+        {
+            if (dataGridView1.Columns.Count == 0)
+            {
+                return;
+            }
+
+            int TotalWidth = 0;
+            int i;
+
+            dataGridView1.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.None;
+
+            for (i = 0; i < dataGridView1.Columns.Count; i++)
+            {
+                int PreferredWidth = dataGridView1.Columns[i].GetPreferredWidth(DataGridViewAutoSizeColumnMode.AllCells, true);
+                
+                dataGridView1.Columns[i].Width = PreferredWidth;
+                TotalWidth += PreferredWidth;
+            }
+
+            if (TotalWidth < dataGridView1.ClientSize.Width)
+            {
+                dataGridView1.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
+            }
+            else
+            {
+                dataGridView1.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.None;
+            }
+        }
+
+        private void ExportForm_SizeChanged(object sender, EventArgs e)
+        {
+            UpdateGridLayout();
         }
     }
 }
