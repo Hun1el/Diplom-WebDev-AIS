@@ -273,7 +273,6 @@ namespace WebSiteDev.Service
                 }
 
                 dataGridView1.DataSource = dt;
-                dataGridView1.RowHeadersVisible = false;
 
                 DisableGridSorting();
                 UpdateGridLayout();
