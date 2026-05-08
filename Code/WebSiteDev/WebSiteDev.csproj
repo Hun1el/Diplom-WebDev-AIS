@@ -109,7 +109,13 @@
     <Compile Include="ScalableForm.Designer.cs">
       <DependentUpon>ScalableForm.cs</DependentUpon>
     </Compile>
-    <Compile Include="Service\Backup.cs" />
+    <Compile Include="Service\ExportForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Service\ExportForm.Designer.cs">
+      <DependentUpon>ExportForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Service\Service.cs" />
     <Compile Include="Service\ServiceForm.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -291,6 +297,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="ScalableForm.resx">
       <DependentUpon>ScalableForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Service\ExportForm.resx">
+      <DependentUpon>ExportForm.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Service\ServiceForm.resx">
       <DependentUpon>ServiceForm.cs</DependentUpon>
