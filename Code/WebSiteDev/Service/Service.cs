@@ -70,7 +70,7 @@ namespace WebSiteDev.Service
 
                 using (MySqlDataReader rdr = cmd.ExecuteReader())
                 {
-                    using (StreamWriter writer = new StreamWriter(FilePath, false, new UTF8Encoding(false)))
+                    using (StreamWriter writer = new StreamWriter(FilePath, false, Encoding.GetEncoding("windows-1251")))
                     {
                         // Заголовки
                         for (int i = 0; i < rdr.FieldCount; i++)

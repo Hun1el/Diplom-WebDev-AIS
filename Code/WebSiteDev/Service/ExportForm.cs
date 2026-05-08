@@ -16,8 +16,9 @@ namespace WebSiteDev.Service
 
         private void ExportForm_Load(object sender, EventArgs e)
         {
-            comboBox2.Items.AddRange(new string[] { ";", ",", "|", ":" });
+            comboBox2.Items.AddRange(new string[] { ";", ",", ":", "|" });
             comboBox2.SelectedIndex = 0;
+            LabelColor.ApplyRedStar(this);
 
             LoadTables();
         }
@@ -120,10 +121,17 @@ namespace WebSiteDev.Service
         {
             try
             {
+                string TableName = "table";
+
+                if (comboBox1.SelectedItem != null && comboBox1.SelectedItem.ToString() != "- -")
+                {
+                    TableName = comboBox1.SelectedItem.ToString();
+                }
+
                 SaveFileDialog saveFileDialog = new SaveFileDialog();
                 saveFileDialog.Title = "Выберите файл для сохранения";
                 saveFileDialog.Filter = "CSV-файлы (*.csv)|*.csv";
-                saveFileDialog.FileName = $"Export_" + DateTime.Now.ToString("yyyyMMdd_HHmmss") + ".csv";
+                saveFileDialog.FileName = $"Export_{TableName}_" + DateTime.Now.ToString("yyyyMMdd_HHmmss") + ".csv";
 
                 if (saveFileDialog.ShowDialog() == DialogResult.OK)
                 {
