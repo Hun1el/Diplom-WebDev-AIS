@@ -171,7 +171,12 @@ namespace WebSiteDev.Service
 
         private void button1_Click(object sender, EventArgs e)
         {
-            this.Close();
+            var result = MessageBox.Show("Вы действительно хотите выйти в меню?", "Подтверждение", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
+
+            if (result == DialogResult.Yes)
+            {
+                this.Close();
+            }
         }
 
         private void UpdateGridLayout()

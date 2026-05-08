@@ -163,7 +163,13 @@ namespace WebSiteDev.Service
 
         private void button1_Click(object sender, EventArgs e)
         {
-            this.Close();
+            var result = MessageBox.Show("Вы действительно хотите выйти?", "Подтверждение", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
+
+            if (result == DialogResult.Yes)
+            {
+                this.DialogResult = DialogResult.OK;
+                this.Close();
+            }
         }
 
         private void UpdateGridLayout()
