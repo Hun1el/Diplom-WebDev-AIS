@@ -1,6 +1,7 @@
 ﻿using MySql.Data.MySqlClient;
 using System;
 using System.Data;
+using System.IO;
 using System.Windows.Forms;
 
 namespace WebSiteDev.Service
@@ -63,40 +64,6 @@ namespace WebSiteDev.Service
             }
         }
 
-        private void LoadColumns(string TableName)
-        {
-            try
-            {
-                DataTable dt = new DataTable();
-
-                using (MySqlConnection con = new MySqlConnection(Data.GetConnectionString()))
-                {
-                    string ColumnCmd = @"SHOW COLUMNS FROM `" + TableName + "`;";
-
-                    con.Open();
-
-                    MySqlCommand cmd = new MySqlCommand(ColumnCmd, con);
-
-                    using (MySqlDataReader rdr = cmd.ExecuteReader())
-                    {
-                        while (rdr.Read())
-                        {
-                            dt.Columns.Add(rdr.GetValue(0).ToString());
-                        }
-                    }
-                }
-
-                dataGridView1.DataSource = dt;
-
-                DisableGridSorting();
-                UpdateGridLayout();
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show("Не удалось загрузить колонки таблицы\nОшибка: " + ex.Message, "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
-            }
-        }
-
         private void comboBox1_SelectedIndexChanged(object sender, EventArgs e)
         {
             try
@@ -109,11 +76,11 @@ namespace WebSiteDev.Service
                     return;
                 }
 
-                LoadColumns(comboBox1.SelectedItem.ToString());
+                LoadCsvPreview();
             }
             catch (Exception ex)
             {
-                MessageBox.Show("Не удалось загрузить колонки\nОшибка: " + ex.Message, "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show("Не удалось загрузить данные\nОшибка: " + ex.Message, "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
@@ -128,12 +95,18 @@ namespace WebSiteDev.Service
                 if (openFileDialog.ShowDialog() == DialogResult.OK)
                 {
                     textBox1.Text = openFileDialog.FileName;
+                    LoadCsvPreview();
                 }
             }
             catch (Exception ex)
             {
                 MessageBox.Show("Ошибка выбора файла\nОшибка: " + ex.Message, "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
+        }
+
+        private void comboBox2_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            LoadCsvPreview();
         }
 
         private void button2_Click(object sender, EventArgs e)
@@ -205,6 +178,115 @@ namespace WebSiteDev.Service
         private void ImportForm_SizeChanged(object sender, EventArgs e)
         {
             UpdateGridLayout();
+        }
+
+        private void dataGridView1_SelectionChanged(object sender, EventArgs e)
+        {
+            dataGridView1.ClearSelection();
+            dataGridView1.CurrentCell = null;
+        }
+
+        private void LoadCsvPreview()
+        {
+            if (comboBox1.SelectedItem == null || comboBox1.SelectedItem.ToString() == "- -")
+            {
+                dataGridView1.DataSource = null;
+                dataGridView1.Columns.Clear();
+
+                return;
+            }
+
+            if (string.IsNullOrEmpty(textBox1.Text) || !File.Exists(textBox1.Text))
+            {
+                return;
+            }
+
+            try
+            {
+                string FilePath = textBox1.Text;
+                string separator;
+                bool SkipHeader = checkBox1.Checked;
+
+                if (comboBox2.SelectedItem != null)
+                {
+                    separator = comboBox2.SelectedItem.ToString();
+                }
+                else
+                {
+                    separator = ";";
+                }
+
+                DataTable dt = new DataTable();
+
+                using (StreamReader reader = new StreamReader(FilePath, System.Text.Encoding.Default))
+                {
+                    int RowCount = 0;
+                    bool IsFirstRow = true;
+
+                    while (!reader.EndOfStream && RowCount < 10)
+                    {
+                        string line = reader.ReadLine();
+
+                        if (string.IsNullOrEmpty(line))
+                        {
+                            continue;
+                        }
+
+                        string[] values = line.Split(new string[] { separator }, StringSplitOptions.None);
+
+                        if (IsFirstRow)
+                        {
+                            for (int i = 0; i < values.Length; i++)
+                            {
+                                string ColName = values[i];
+
+                                while (dt.Columns.Contains(ColName))
+                                {
+                                    ColName += "_1";
+                                }
+
+                                dt.Columns.Add(ColName);
+                            }
+
+                            IsFirstRow = false;
+
+                            if (SkipHeader)
+                            {
+                                continue;
+                            }
+                        }
+
+                        if (values.Length > dt.Columns.Count)
+                        {
+                            Array.Resize(ref values, dt.Columns.Count);
+                        }
+                        else if (values.Length < dt.Columns.Count)
+                        {
+                            string[] NewValues = new string[dt.Columns.Count];
+                            Array.Copy(values, NewValues, values.Length);
+                            values = NewValues;
+                        }
+
+                        dt.Rows.Add(values);
+                        RowCount++;
+                    }
+                }
+
+                dataGridView1.DataSource = dt;
+                dataGridView1.RowHeadersVisible = false;
+
+                DisableGridSorting();
+                UpdateGridLayout();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Не удалось загрузить предпросмотр CSV\nОшибка: " + ex.Message, "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
+        private void checkBox1_CheckedChanged(object sender, EventArgs e)
+        {
+            LoadCsvPreview();
         }
     }
 }
