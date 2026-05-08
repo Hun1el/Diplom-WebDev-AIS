@@ -28,5 +28,17 @@ namespace WebSiteDev
                    $"uid={Properties.Settings.Default.DbUser};" +
                    $"pwd={Properties.Settings.Default.DbPassword};";
         }
+
+        /// <summary>
+        /// Получает строку подключения к MySQL серверу для импорта
+        /// </summary>
+        public static string GetConnectionStringInFile()
+        {
+            return $"host={Properties.Settings.Default.DbHost};" +
+                   $"uid={Properties.Settings.Default.DbUser};" +
+                   $"pwd={Properties.Settings.Default.DbPassword};" +
+                   $"database={Properties.Settings.Default.DbName};" +
+                   $"AllowLoadLocalInfile=true;";
+        }
     }
 }

@@ -1,8 +1,8 @@
 ﻿using MySql.Data.MySqlClient;
+using MySqlX.XDevAPI.Relational;
 using System;
 using System.Data;
-using System.IO;
-using System.Text;
+using System.Net.Sockets;
 using System.Windows.Forms;
 
 namespace WebSiteDev.Service
@@ -63,7 +63,7 @@ namespace WebSiteDev.Service
             }
         }
 
-        private void LoadColumns(string TableName)
+        private void LoadPreviewData(string TableName)
         {
             try
             {
@@ -71,29 +71,24 @@ namespace WebSiteDev.Service
 
                 using (MySqlConnection con = new MySqlConnection(Data.GetConnectionString()))
                 {
-                    string ColumnCmd = @"SHOW COLUMNS FROM `" + TableName + "`;";
+                    string SelectCmd = $"SELECT * FROM `{TableName}` LIMIT 10;";
 
                     con.Open();
 
-                    MySqlCommand cmd = new MySqlCommand(ColumnCmd, con);
-
-                    using (MySqlDataReader rdr = cmd.ExecuteReader())
+                    using (MySqlDataAdapter da = new MySqlDataAdapter(SelectCmd, con))
                     {
-                        while (rdr.Read())
-                        {
-                            dt.Columns.Add(rdr.GetValue(0).ToString());
-                        }
+                        da.Fill(dt);
                     }
                 }
 
                 dataGridView1.DataSource = dt;
-                
+
                 DisableGridSorting();
                 UpdateGridLayout();
             }
             catch (Exception ex)
             {
-                MessageBox.Show("Не удалось загрузить колонки таблицы\nОшибка: " + ex.Message, "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show("Не удалось загрузить предпросмотр данных\nОшибка: " + ex.Message, "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
@@ -105,15 +100,15 @@ namespace WebSiteDev.Service
                 {
                     dataGridView1.DataSource = null;
                     dataGridView1.Columns.Clear();
-                    
+
                     return;
                 }
 
-                LoadColumns(comboBox1.SelectedItem.ToString());
+                LoadPreviewData(comboBox1.SelectedItem.ToString());
             }
             catch (Exception ex)
             {
-                MessageBox.Show("Не удалось загрузить колонки\nОшибка: " + ex.Message, "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show("Не удалось загрузить данные\nОшибка: " + ex.Message, "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
@@ -149,7 +144,7 @@ namespace WebSiteDev.Service
             if (comboBox1.SelectedItem == null || comboBox1.SelectedItem.ToString() == "- -" || string.IsNullOrEmpty(textBox1.Text))
             {
                 MessageBox.Show("Заполните поля, отмеченные *", "Внимание", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                
+
                 return;
             }
 
@@ -171,7 +166,12 @@ namespace WebSiteDev.Service
 
         private void button1_Click(object sender, EventArgs e)
         {
-            this.Close();
+            var result = MessageBox.Show("Вы действительно хотите выйти в меню?", "Подтверждение", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
+
+            if (result == DialogResult.Yes)
+            {
+                this.Close();
+            }
         }
 
         private void UpdateGridLayout()
@@ -189,7 +189,7 @@ namespace WebSiteDev.Service
             for (i = 0; i < dataGridView1.Columns.Count; i++)
             {
                 int PreferredWidth = dataGridView1.Columns[i].GetPreferredWidth(DataGridViewAutoSizeColumnMode.AllCells, true);
-                
+
                 dataGridView1.Columns[i].Width = PreferredWidth;
                 TotalWidth += PreferredWidth;
             }
@@ -207,6 +207,12 @@ namespace WebSiteDev.Service
         private void ExportForm_SizeChanged(object sender, EventArgs e)
         {
             UpdateGridLayout();
+        }
+
+        private void dataGridView1_SelectionChanged(object sender, EventArgs e)
+        {
+            dataGridView1.ClearSelection();
+            dataGridView1.CurrentCell = null;
         }
     }
 }
