@@ -1,8 +1,5 @@
 ﻿using MySql.Data.MySqlClient;
 using System;
-using System.Data;
-using System.Drawing;
-using System.Text;
 using System.Windows.Forms;
 using WebSiteDev.Service;
 
@@ -13,6 +10,23 @@ namespace WebSiteDev
         public ServiceForm()
         {
             InitializeComponent();
+        }
+
+        private (string ErrorMessage, string ErrorCode) CanOpenForm()
+        {
+            try
+            {
+                using (MySqlConnection con = new MySqlConnection(Data.GetConnectionString()))
+                {
+                    con.Open();
+                }
+
+                return (null, null);
+            }
+            catch (MySqlException ex)
+            {
+                return ("Ошибка подключения: " + ex.Message, ex.Number.ToString());
+            }
         }
 
         /// <summary>
@@ -34,7 +48,7 @@ namespace WebSiteDev
 
                     if (result == DialogResult.Yes)
                     {
-                         Service.Service.RestoreBackup(FilePath);
+                        Service.Service.RestoreBackup(FilePath);
 
                         MessageBox.Show("База данных успешно восстановлена!", "Успех", MessageBoxButtons.OK, MessageBoxIcon.Information);
                     }
@@ -51,10 +65,19 @@ namespace WebSiteDev
         /// </summary>
         private void button2_Click(object sender, EventArgs e)
         {
-            ImportForm importForm = new ImportForm();
-            this.Hide();
-            importForm.ShowDialog();
-            this.Show();
+            var result = CanOpenForm();
+
+            if (result.ErrorCode == null)
+            {
+                ImportForm importForm = new ImportForm();
+                this.Hide();
+                importForm.ShowDialog();
+                this.Show();
+            }
+            else
+            {
+                MessageBox.Show("Не удалось открыть форму импорта!\nКод ошибки: " + result.ErrorCode + "\n" + result.ErrorMessage, "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
         }
 
         /// <summary>
@@ -62,15 +85,24 @@ namespace WebSiteDev
         /// </summary>
         private void button3_Click(object sender, EventArgs e)
         {
-            try
+            var result = CanOpenForm();
+
+            if (result.ErrorCode == null)
             {
-                string Path = Service.Service.MakeBackup();
-                
-                MessageBox.Show($"Резервная копия создана по пути: {Path}", "Успех", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                try
+                {
+                    string Path = Service.Service.MakeBackup();
+
+                    MessageBox.Show($"Резервная копия создана по пути: {Path}", "Успех", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show($"Не удалось создать резервную копию\nОшибка: {ex.Message}", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }
             }
-            catch (Exception ex)
+            else
             {
-                MessageBox.Show($"Не удалось создать резервную копию\nОшибка: {ex.Message}", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show("Не удалось создать резервную копию!\nКод ошибки: " + result.ErrorCode + "\n" + result.ErrorMessage, "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
@@ -79,10 +111,19 @@ namespace WebSiteDev
         /// </summary>
         private void button4_Click(object sender, EventArgs e)
         {
-            ExportForm exportForm = new ExportForm();
-            this.Hide();
-            exportForm.ShowDialog();
-            this.Show();
+            var result = CanOpenForm();
+
+            if (result.ErrorCode == null)
+            {
+                ExportForm exportForm = new ExportForm();
+                this.Hide();
+                exportForm.ShowDialog();
+                this.Show();
+            }
+            else
+            {
+                MessageBox.Show("Не удалось открыть форму импорта!\nКод ошибки: " + result.ErrorCode + "\n" + result.ErrorMessage, "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
         }
 
         /// <summary>

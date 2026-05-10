@@ -42,7 +42,7 @@ namespace WebSiteDev.Service
         /// </summary>
         public static void RestoreBackup(string FilePath)
         {
-            using (MySqlConnection con = new MySqlConnection(Data.GetConnectionString()))
+            using (MySqlConnection con = new MySqlConnection(Data.GetConnectionStringNoDB()))
             {
                 using (MySqlCommand cmd = con.CreateCommand())
                 {
