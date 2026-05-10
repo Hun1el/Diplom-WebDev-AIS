@@ -13,10 +13,11 @@ namespace WebSiteDev.Doc
         {
             // Диалог сохранения файла
             SaveFileDialog sfd = new SaveFileDialog();
-            sfd.Filter = "Word 2007-2025 (*.docx)|*.docx|Word 97-2003 (*.doc)|*.doc";
+            sfd.Filter = "PDF (*.pdf)|*.pdf|Word 2007-20026 (*.docx)|*.docx|Word 97-2003 (*.doc)|*.doc";
             sfd.FilterIndex = 1;
             sfd.Title = "Сохранить чек заказа";
             sfd.FileName = "Чек_Заказа_№" + orderID;
+            sfd.DefaultExt = "pdf";
 
             if (sfd.ShowDialog() != DialogResult.OK)
             {
@@ -380,7 +381,13 @@ namespace WebSiteDev.Doc
                 // Определяем формат для сохранения
                 string ext = System.IO.Path.GetExtension(sfd.FileName).ToLower();
 
-                if (ext == ".doc")
+                if (ext == ".pdf")
+                {
+                    // PDF
+                    doc.SaveAs(sfd.FileName, 17);
+                    doc.Saved = true;
+                }
+                else if (ext == ".doc")
                 {
                     // Сохраняем в старом формате Word 97-2003
                     doc.SaveAs(sfd.FileName, GetWdFormatDocument97());
@@ -391,8 +398,8 @@ namespace WebSiteDev.Doc
                     doc.SaveAs(sfd.FileName, GetWdFormatDocumentDefault());
                 }
 
-                doc.Close();
-                app.Quit();
+                doc.Close(false);
+                app.Quit(false);
 
                 // Показываем сообщение об успехе
                 MessageBox.Show("Чек успешно сформирован!\n\nПуть сохранения:\n" + sfd.FileName, "Успех", MessageBoxButtons.OK, MessageBoxIcon.Information);

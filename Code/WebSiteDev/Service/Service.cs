@@ -8,6 +8,23 @@ namespace WebSiteDev.Service
 {
     public static class Service
     {
+        public static (string ErrorMessage, string ErrorCode) CanOpenForm()
+        {
+            try
+            {
+                using (MySqlConnection con = new MySqlConnection(Data.GetConnectionString()))
+                {
+                    con.Open();
+                }
+
+                return (null, null);
+            }
+            catch (MySqlException ex)
+            {
+                return ("Ошибка подключения: " + ex.Message, ex.Number.ToString());
+            }
+        }
+
         /// <summary>
         /// Создание ручной резевной копии базы данных
         /// </summary>

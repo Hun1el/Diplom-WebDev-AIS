@@ -348,12 +348,20 @@ namespace WebSiteDev
 
         private void button2_Click(object sender, EventArgs e)
         {
-            var result = MessageBox.Show("Вы действительно хотите выйти?", "Подтверждение", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
-            
-            if (result == DialogResult.Yes)
+            var result1 = MessageBox.Show("Вы действительно хотите выйти?", "Подтверждение", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
+            var result2 = Service.Service.CanOpenForm();
+
+            if (result1 == DialogResult.Yes)
             {
-                this.DialogResult = DialogResult.OK;
-                this.Close();
+                if (result2.ErrorCode == null)
+                {
+                    Service.Service.MakeBackup();
+                    this.Close();
+                }
+                else
+                {
+                    this.Close();
+                }
             }
         }
 
