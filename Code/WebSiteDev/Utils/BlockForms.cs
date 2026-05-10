@@ -25,77 +25,75 @@ namespace WebSiteDev
         {
             loginForm = login;
             monitoredForms = new List<Form>();
-            inactivityTimeoutSeconds = Properties.Settings.Default.InactivityTime; // время бездействия из настроек
+            inactivityTimeoutSeconds = Properties.Settings.Default.InactivityTime;
             lastActivityTime = DateTime.Now;
-            isRunning = false; // система не запущена
+            isRunning = false;
 
-            // инициализация таймера
             inactivityTimer = new Timer();
-            inactivityTimer.Interval = 1000; // тикает каждую секунду
-            inactivityTimer.Tick += InactivityTimer_Tick; // подписка на событие
+            inactivityTimer.Interval = 1000;
+            inactivityTimer.Tick += InactivityTimer_Tick;
         }
 
-        /// <summary>
-        /// Регистрирует форму для отслеживания активности
-        /// </summary>
         public void RegisterForm(Form form)
         {
-            monitoredForms.Add(form);
-            SubscribeToActivityEvents(form);
+            if (!monitoredForms.Contains(form))
+            {
+                monitoredForms.Add(form);
+                SubscribeToActivityEvents(form);
+
+                // Дополнительные события для отслеживания изменения формы (масштабирование)
+                form.Resize += Activity_Detected;
+                form.LocationChanged += Activity_Detected;
+                form.Activated += Activity_Detected; // Когда окно становится активным
+            }
         }
 
-        /// <summary>
-        /// Удаляет форму из отслеживания
-        /// </summary>
         public void UnregisterForm(Form form)
         {
+            form.Resize -= Activity_Detected;
+            form.LocationChanged -= Activity_Detected;
+            form.Activated -= Activity_Detected;
+
             monitoredForms.Remove(form);
         }
 
-        /// <summary>
-        /// Подписка на события активности для контрола и всех его элементов
-        /// </summary>
         private void SubscribeToActivityEvents(Control parent)
         {
+            // Убираем старые подписки чтобы не было дублей при динамическом изменении контролов
+            parent.MouseMove -= Activity_Detected;
+            parent.MouseClick -= Activity_Detected;
+            parent.KeyDown -= Activity_Detected;
+
             parent.MouseMove += Activity_Detected;
             parent.MouseClick += Activity_Detected;
             parent.KeyDown += Activity_Detected;
 
-            // Проход по всем событиям
+            // Если это контейнер подписываемся на события добавления новых контролов
+            parent.ControlAdded += (s, e) => SubscribeToActivityEvents(e.Control);
+
             foreach (Control child in parent.Controls)
             {
                 SubscribeToActivityEvents(child);
             }
         }
 
-        /// <summary>
-        /// Обработчик любого события активности пользователя
-        /// Обновляет время последней активности
-        /// </summary>
         private void Activity_Detected(object sender, EventArgs e)
         {
             lastActivityTime = DateTime.Now;
         }
 
-        /// <summary>
-        /// Обработчик тика таймера
-        /// Проверяет прошло ли время бездействия
-        /// </summary>
         private void InactivityTimer_Tick(object sender, EventArgs e)
         {
             TimeSpan inactivityDuration = DateTime.Now - lastActivityTime;
 
-            // Если время бездействия превысило лимит
             if (inactivityDuration.TotalSeconds >= inactivityTimeoutSeconds)
             {
+                // Проверяем, не открыто окно MessageBox и т.д
                 OnInactivityDetected?.Invoke(this, EventArgs.Empty);
                 Stop();
             }
         }
 
-        /// <summary>
-        /// Запускает мониторинг
-        /// </summary>
         public void Start()
         {
             lastActivityTime = DateTime.Now;
@@ -103,43 +101,31 @@ namespace WebSiteDev
             inactivityTimer.Start();
         }
 
-        /// <summary>
-        /// Останавливает мониторинг
-        /// </summary>
         public void Stop()
         {
             isRunning = false;
             inactivityTimer.Stop();
         }
 
-        /// <summary>
-        /// Перезапускает мониторинг (stop + start)
-        /// </summary>
         public void Restart()
         {
             Stop();
-            lastActivityTime = DateTime.Now;
             Start();
         }
 
-        /// <summary>
-        /// Блокирует все отслеживаемые формы и показывает форму авторизации
-        /// </summary>
         public void LockAllForms()
         {
-            foreach (Form form in monitoredForms.ToList())
+            // Используем ToList для избежания ошибок при модификации коллекции во время цикла
+            var formsToClose = Application.OpenForms.Cast<Form>().ToList();
+
+            foreach (Form form in formsToClose)
             {
-                if (form != null && !form.IsDisposed)
+                if (form != loginForm && form.Name != "AuthForm")
                 {
-                    // Закрываем все формы кроме AuthForm
-                    if (form.GetType().Name != "AuthForm")
-                    {
-                        form.Close();
-                    }
+                    form.Close();
                 }
             }
 
-            // Показываем форму авторизации
             if (loginForm != null && !loginForm.IsDisposed)
             {
                 loginForm.Show();
@@ -147,9 +133,6 @@ namespace WebSiteDev
             }
         }
 
-        /// <summary>
-        /// Обновляет время таймаута и сохраняет в настройках
-        /// </summary>
         public void UpdateTimeout(int newTimeoutSeconds)
         {
             inactivityTimeoutSeconds = newTimeoutSeconds;
