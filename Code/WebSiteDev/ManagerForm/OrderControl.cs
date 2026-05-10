@@ -574,9 +574,9 @@ namespace WebSiteDev.ManagerForm
         {
             string[] paths =
             {
-        @"SOFTWARE\Microsoft\Windows\CurrentVersion\App Paths\WINWORD.EXE",
-        @"SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\App Paths\WINWORD.EXE"
-    };
+                @"SOFTWARE\Microsoft\Windows\CurrentVersion\App Paths\WINWORD.EXE",
+                @"SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\App Paths\WINWORD.EXE"
+            };
 
             foreach (string path in paths)
             {
@@ -585,6 +585,7 @@ namespace WebSiteDev.ManagerForm
                     if (key != null)
                     {
                         object value = key.GetValue("");
+
                         if (value != null)
                         {
                             string wordPath = value.ToString();

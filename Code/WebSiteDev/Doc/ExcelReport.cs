@@ -6,12 +6,15 @@ namespace WebSiteDev
 {
     public class ExcelReport
     {
-        public static void ExportToExcel(DataGridView dataGridView, List<decimal> orderCosts, DateTime dateFrom, DateTime dateTo,
-            string searchText, string selectedStatus, string selectedSort)
+        public static void ExportToExcel(DataGridView dataGridView, List<decimal> orderCosts, DateTime dateFrom, DateTime dateTo, string searchText, string selectedStatus, string selectedSort)
         {
+            dynamic excelApp = null;
+            dynamic workbook = null;
+            dynamic worksheet = null;
+
             // Диалог сохранения файла
             SaveFileDialog saveFileDialog = new SaveFileDialog();
-            saveFileDialog.Filter = "Excel 2007-2025 (*.xlsx)|*.xlsx|Excel 97-2003 (*.xls)|*.xls";
+            saveFileDialog.Filter = "PDF (*.pdf)|*.pdf|Excel 2007-2026 (*.xlsx)|*.xlsx|Excel 97-2003 (*.xls)|*.xls";
             saveFileDialog.FilterIndex = 1;
             saveFileDialog.Title = "Сохранить отчёт по заказам";
             saveFileDialog.FileName = "Отчет_заказы_" + dateFrom.ToString("dd.MM.yyyy") + "-" + dateTo.ToString("dd.MM.yyyy");
@@ -20,10 +23,6 @@ namespace WebSiteDev
             {
                 return;
             }
-
-            dynamic excelApp = null;
-            dynamic workbook = null;
-            dynamic worksheet = null;
 
             try
             {
@@ -66,7 +65,6 @@ namespace WebSiteDev
                 worksheet.Cells[currentRow, 1].Value = "ПРИМЕНЁННЫЕ ФИЛЬТРЫ:";
                 worksheet.Cells[currentRow, 1].Font.Bold = true;
                 worksheet.Cells[currentRow, 1].Font.Size = 16;
-                worksheet.Cells[currentRow, 1].Interior.Color = System.Drawing.Color.LightGray;
                 currentRow = currentRow + 1;
 
                 bool hasFilters = false;
@@ -168,6 +166,7 @@ namespace WebSiteDev
                     // Получаем номер заказа
                     object orderIDObj = dataGridView.Rows[i].Cells["OrderID"].Value;
                     string orderID = "";
+
                     if (orderIDObj != null)
                     {
                         orderID = orderIDObj.ToString();
@@ -176,6 +175,7 @@ namespace WebSiteDev
                     // Получаем имя клиента
                     object clientNameObj = dataGridView.Rows[i].Cells["ClientName"].Value;
                     string clientName = "";
+
                     if (clientNameObj != null)
                     {
                         clientName = clientNameObj.ToString();
@@ -184,6 +184,7 @@ namespace WebSiteDev
                     // Получаем имя сотрудника
                     object userNameObj = dataGridView.Rows[i].Cells["UserName"].Value;
                     string userName = "";
+
                     if (userNameObj != null)
                     {
                         userName = userNameObj.ToString();
@@ -192,6 +193,7 @@ namespace WebSiteDev
                     // Получаем дату заказа
                     object orderDateObj = dataGridView.Rows[i].Cells["OrderDate"].Value;
                     string orderDate = "";
+
                     if (orderDateObj != null)
                     {
                         DateTime dt = Convert.ToDateTime(orderDateObj);
@@ -201,6 +203,7 @@ namespace WebSiteDev
                     // Получаем срок выполнения
                     object compDateObj = dataGridView.Rows[i].Cells["OrderCompDate"].Value;
                     string compDate = "";
+
                     if (compDateObj != null)
                     {
                         DateTime dt = Convert.ToDateTime(compDateObj);
@@ -210,6 +213,7 @@ namespace WebSiteDev
                     // Получаем список товаров
                     object productNameObj = dataGridView.Rows[i].Cells["ProductName"].Value;
                     string productName = "";
+
                     if (productNameObj != null)
                     {
                         productName = productNameObj.ToString();
@@ -225,6 +229,7 @@ namespace WebSiteDev
                     // Получаем статус
                     object statusNameObj = dataGridView.Rows[i].Cells["StatusName"].Value;
                     string statusName = "";
+
                     if (statusNameObj != null)
                     {
                         statusName = statusNameObj.ToString();
@@ -233,6 +238,7 @@ namespace WebSiteDev
                     // Получаем стоимость
                     object orderCostObj = dataGridView.Rows[i].Cells["OrderCost"].Value;
                     string orderCostStr = "0";
+
                     if (orderCostObj != null)
                     {
                         orderCostStr = orderCostObj.ToString();
@@ -240,6 +246,7 @@ namespace WebSiteDev
 
                     decimal orderCost = 0;
                     bool parsed = decimal.TryParse(orderCostStr, out orderCost);
+
                     if (parsed == true)
                     {
                         totalSum = totalSum + orderCost;
@@ -474,7 +481,27 @@ namespace WebSiteDev
                 // Определяем формат для сохранения
                 string extension = System.IO.Path.GetExtension(saveFileDialog.FileName).ToLower();
 
-                if (extension == ".xls")
+                if (extension == ".pdf")
+                {
+                    // PDF
+                    worksheet.PageSetup.PaperSize = 9; // A4
+                    worksheet.PageSetup.Orientation = 2; // Landscape
+                    worksheet.PageSetup.Zoom = false;
+                    worksheet.PageSetup.FitToPagesWide = 1;
+                    worksheet.PageSetup.FitToPagesTall = false;
+                    worksheet.PageSetup.PrintArea = worksheet.UsedRange.Address;
+                    worksheet.PageSetup.TopMargin = 10;
+                    worksheet.PageSetup.BottomMargin = 10;
+                    worksheet.PageSetup.LeftMargin = 10;
+                    worksheet.PageSetup.RightMargin = 10;
+                    worksheet.PageSetup.HeaderMargin = 0;
+                    worksheet.PageSetup.FooterMargin = 0;
+                    worksheet.PageSetup.CenterHorizontally = false;
+                    worksheet.PageSetup.CenterVertically = false;
+                    workbook.ExportAsFixedFormat(0, saveFileDialog.FileName);
+                    workbook.Saved = true;
+                }
+                else if (extension == ".xls")
                 {
                     // Сохраняем в старом формате Excel 97-2003
                     workbook.SaveAs(saveFileDialog.FileName, GetXlWorkbookNormal());
@@ -485,7 +512,8 @@ namespace WebSiteDev
                     workbook.SaveAs(saveFileDialog.FileName, GetXlOpenXMLWorkbook());
                 }
 
-                // Показываем сообщение об успехе
+                workbook.Close(false);
+        workbook = null;
                 MessageBox.Show("Отчёт успешно сформирован!\n\nПуть сохранения:\n" + saveFileDialog.FileName, "Успех", MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
             catch (Exception ex)
@@ -497,28 +525,26 @@ namespace WebSiteDev
             {
                 try
                 {
-                    // Закрываем книгу
-                    if (workbook != null)
-                    {
-                        workbook.Close(false);
-                    }
-                }
-                catch { }
-
-                try
-                {
-                    // Закрываем приложение Excel
                     if (excelApp != null)
                     {
+                        excelApp.DisplayAlerts = false;
                         excelApp.Quit();
                     }
                 }
                 catch { }
 
-                // Освобождаем ресурсы
                 worksheet = null;
                 workbook = null;
-                excelApp = null;
+
+                if (excelApp != null)
+                {
+                    try 
+                    { 
+                        System.Runtime.InteropServices.Marshal.ReleaseComObject(excelApp);
+                    }
+                    catch { }
+                    excelApp = null;
+                }
 
                 GC.Collect();
                 GC.WaitForPendingFinalizers();

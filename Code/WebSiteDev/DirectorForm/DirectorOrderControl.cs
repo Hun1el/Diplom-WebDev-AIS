@@ -1,8 +1,10 @@
-﻿using MySql.Data.MySqlClient;
+﻿using Microsoft.Win32;
+using MySql.Data.MySqlClient;
 using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Windows.Forms;
+using System.IO;
 
 namespace WebSiteDev.ManagerForm
 {
@@ -286,27 +288,34 @@ namespace WebSiteDev.ManagerForm
         /// </summary>
         private bool IsExcelInstalled()
         {
-            try
+            string[] paths =
             {
-                Type excelType = Type.GetTypeFromProgID("Excel.Application");
-                if (excelType == null)
-                {
-                    return false;
-                }
+                @"SOFTWARE\Microsoft\Windows\CurrentVersion\App Paths\EXCEL.EXE",
+                @"SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\App Paths\EXCEL.EXE"
+            };
 
-                object excelApp = Activator.CreateInstance(excelType);
-                if (excelApp != null)
-                {
-                    System.Runtime.InteropServices.Marshal.ReleaseComObject(excelApp);
-                    return true;
-                }
-
-                return false;
-            }
-            catch
+            foreach (string path in paths)
             {
-                return false;
+                using (RegistryKey key = Registry.LocalMachine.OpenSubKey(path))
+                {
+                    if (key != null)
+                    {
+                        object value = key.GetValue("");
+
+                        if (value != null)
+                        {
+                            string ExcelPath = value.ToString();
+
+                            if (File.Exists(ExcelPath))
+                            {
+                                return true;
+                            }
+                        }
+                    }
+                }
             }
+
+            return false;
         }
 
         /// <summary>
