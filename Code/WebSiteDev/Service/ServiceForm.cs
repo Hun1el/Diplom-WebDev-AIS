@@ -12,23 +12,6 @@ namespace WebSiteDev
             InitializeComponent();
         }
 
-        private (string ErrorMessage, string ErrorCode) CanOpenForm()
-        {
-            try
-            {
-                using (MySqlConnection con = new MySqlConnection(Data.GetConnectionString()))
-                {
-                    con.Open();
-                }
-
-                return (null, null);
-            }
-            catch (MySqlException ex)
-            {
-                return ("Ошибка подключения: " + ex.Message, ex.Number.ToString());
-            }
-        }
-
         /// <summary>
         /// Кнопка "Восстановить базу данных"
         /// </summary>
@@ -65,7 +48,7 @@ namespace WebSiteDev
         /// </summary>
         private void button2_Click(object sender, EventArgs e)
         {
-            var result = CanOpenForm();
+            var result = Service.Service.CanOpenForm();
 
             if (result.ErrorCode == null)
             {
@@ -85,7 +68,7 @@ namespace WebSiteDev
         /// </summary>
         private void button3_Click(object sender, EventArgs e)
         {
-            var result = CanOpenForm();
+            var result = Service.Service.CanOpenForm();
 
             if (result.ErrorCode == null)
             {
@@ -111,7 +94,7 @@ namespace WebSiteDev
         /// </summary>
         private void button4_Click(object sender, EventArgs e)
         {
-            var result = CanOpenForm();
+            var result = Service.Service.CanOpenForm();
 
             if (result.ErrorCode == null)
             {
