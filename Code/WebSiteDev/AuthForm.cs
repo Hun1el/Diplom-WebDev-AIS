@@ -352,7 +352,7 @@ namespace WebSiteDev
             
             if (result == DialogResult.Yes)
             {
-                this.DialogResult = DialogResult.OK;
+                Service.Service.MakeBackup();
                 this.Close();
             }
         }

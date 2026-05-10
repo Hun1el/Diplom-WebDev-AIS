@@ -64,7 +64,7 @@
             this.textBox2.Font = new System.Drawing.Font("Segoe UI", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
             this.textBox2.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(15)))), ((int)(((byte)(23)))), ((int)(((byte)(42)))));
             this.textBox2.Location = new System.Drawing.Point(12, 184);
-            this.textBox2.MaxLength = 50;
+            this.textBox2.MaxLength = 64;
             this.textBox2.Name = "textBox2";
             this.textBox2.Size = new System.Drawing.Size(350, 33);
             this.textBox2.TabIndex = 10;
@@ -76,7 +76,7 @@
             this.textBox1.Font = new System.Drawing.Font("Segoe UI", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
             this.textBox1.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(15)))), ((int)(((byte)(23)))), ((int)(((byte)(42)))));
             this.textBox1.Location = new System.Drawing.Point(12, 115);
-            this.textBox1.MaxLength = 50;
+            this.textBox1.MaxLength = 128;
             this.textBox1.Name = "textBox1";
             this.textBox1.Size = new System.Drawing.Size(350, 33);
             this.textBox1.TabIndex = 9;
@@ -110,7 +110,7 @@
             this.textBox3.Font = new System.Drawing.Font("Segoe UI", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
             this.textBox3.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(15)))), ((int)(((byte)(23)))), ((int)(((byte)(42)))));
             this.textBox3.Location = new System.Drawing.Point(12, 254);
-            this.textBox3.MaxLength = 50;
+            this.textBox3.MaxLength = 255;
             this.textBox3.Name = "textBox3";
             this.textBox3.Size = new System.Drawing.Size(311, 33);
             this.textBox3.TabIndex = 14;
@@ -123,7 +123,7 @@
             this.textBox4.Font = new System.Drawing.Font("Segoe UI", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
             this.textBox4.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(15)))), ((int)(((byte)(23)))), ((int)(((byte)(42)))));
             this.textBox4.Location = new System.Drawing.Point(12, 323);
-            this.textBox4.MaxLength = 50;
+            this.textBox4.MaxLength = 255;
             this.textBox4.Name = "textBox4";
             this.textBox4.Size = new System.Drawing.Size(350, 33);
             this.textBox4.TabIndex = 13;
