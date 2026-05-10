@@ -1,6 +1,8 @@
-﻿using MySql.Data.MySqlClient;
+﻿using Microsoft.Win32;
+using MySql.Data.MySqlClient;
 using System;
 using System.Data;
+using System.IO;
 using System.Windows.Forms;
 
 namespace WebSiteDev.ManagerForm
@@ -570,27 +572,32 @@ namespace WebSiteDev.ManagerForm
         /// </summary>
         private bool IsWordInstalled()
         {
-            try
+            string[] paths =
             {
-                Type wordType = Type.GetTypeFromProgID("Word.Application");
-                if (wordType == null)
-                {
-                    return false;
-                }
+        @"SOFTWARE\Microsoft\Windows\CurrentVersion\App Paths\WINWORD.EXE",
+        @"SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\App Paths\WINWORD.EXE"
+    };
 
-                object wordApp = Activator.CreateInstance(wordType);
-                if (wordApp != null)
-                {
-                    System.Runtime.InteropServices.Marshal.ReleaseComObject(wordApp);
-                    return true;
-                }
-
-                return false;
-            }
-            catch
+            foreach (string path in paths)
             {
-                return false;
+                using (RegistryKey key = Registry.LocalMachine.OpenSubKey(path) ?? Registry.CurrentUser.OpenSubKey(path))
+                {
+                    if (key != null)
+                    {
+                        object value = key.GetValue("");
+                        if (value != null)
+                        {
+                            string wordPath = value.ToString();
+                            if (File.Exists(wordPath))
+                            {
+                                return true;
+                            }
+                        }
+                    }
+                }
             }
+
+            return false;
         }
 
         /// <summary>
