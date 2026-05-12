@@ -1,18 +1,17 @@
-﻿using System;
+﻿using MySql.Data.MySqlClient;
+using System;
 using System.Data;
 using System.Windows.Forms;
-using MySql.Data.MySqlClient;
-using WebSiteDev.AddForm;
+using WebSiteDev.AdminForm.AddForm;
 
 namespace WebSiteDev.AdminForm
 {
     /// <summary>
     /// Пользовательский контрол для управления ролями пользователей
     /// </summary>
-    public partial class RoleControl : UserControl
+    public partial class RoleControl : ScalableUserControl
     {
         private DataManipulation dataManipulation;
-        public bool update = false;
         private int selectedRoleID = -1;
         private int selectedRowIndex = -1;
 
@@ -23,12 +22,11 @@ namespace WebSiteDev.AdminForm
         }
 
         /// <summary>
-        /// Обработчик загрузки контрола
-        /// Очищает выделение в таблице
+        /// Обработчик загрузки
         /// </summary>
         private void RoleControl_Load(object sender, EventArgs e)
         {
-            dataGridView1.ClearSelection();
+            ClearViewSelection();
         }
 
         /// <summary>
@@ -51,11 +49,9 @@ namespace WebSiteDev.AdminForm
                 da.Fill(dt);
 
                 dataGridView1.DataSource = dt;
-                // Скрываем столбец ID
+
                 dataGridView1.Columns["RoleID"].Visible = false;
-                // Устанавливаем текст заголовка столбца
                 dataGridView1.Columns["RoleName"].HeaderText = "Наименование роли";
-                // Отключаем сортировку при клике на заголовок
                 dataGridView1.Columns["RoleName"].SortMode = DataGridViewColumnSortMode.NotSortable;
 
                 dataManipulation = new DataManipulation(dt);
@@ -72,31 +68,34 @@ namespace WebSiteDev.AdminForm
         /// </summary>
         private void textBox1_TextChanged(object sender, EventArgs e)
         {
-            // Применяем фильтр по названию роли
             dataManipulation.ApplySearchRole(textBox1);
             dataManipulation.UpdateRecordCountLabel(label1);
-            // Форматируем первую букву
+
             InputRest.FirstLetter(textBox1);
 
-            // Очищаем выделение и поле редактирования
-            dataGridView1.ClearSelection();
-            textBox2.Clear();
-            selectedRoleID = -1;
-            selectedRowIndex = -1;
+            ClearViewSelection();
         }
 
         private void button1_Click(object sender, EventArgs e)
         {
-            FormControl.Resize(this.FindForm(), 1500);
-            update = true;
-            button1.Enabled = false;
-        }
+            // Проверяем что роль выбрана
+            if (selectedRoleID == -1)
+            {
+                MessageBox.Show("Выберите роль для редактирования!", "Предупреждение", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
 
-        private void button3_Click(object sender, EventArgs e)
-        {
-            FormControl.Resize(this.FindForm(), 1175);
-            update = true;
-            button1.Enabled = true;
+            string roleName = dataGridView1.Rows[selectedRowIndex].Cells["RoleName"].Value.ToString();
+
+            EditRoleForm editRoleForm = new EditRoleForm(selectedRoleID, roleName);
+            editRoleForm.ShowDialog();
+            
+            GetDate();
+
+            if (selectedRowIndex >= 0 && selectedRowIndex < dataGridView1.Rows.Count)
+            {
+                dataGridView1.Rows[selectedRowIndex].Selected = true;
+            }
         }
 
         /// <summary>
@@ -105,22 +104,8 @@ namespace WebSiteDev.AdminForm
         /// </summary>
         private void button4_Click(object sender, EventArgs e)
         {
-            // Сбрасываем все фильтры
             dataManipulation.ResetFilters(textSearch: textBox1);
-
-            // Очищаем выделение
-            dataGridView1.ClearSelection();
-            textBox2.Clear();
-            selectedRoleID = -1;
-            selectedRowIndex = -1;
-        }
-
-        /// <summary>
-        /// Применяет форматирование первой буквы при вводе названия роли
-        /// </summary>
-        private void textBox2_TextChanged(object sender, EventArgs e)
-        {
-            InputRest.FirstLetter(textBox2);
+            ClearViewSelection();
         }
 
         /// <summary>
@@ -132,63 +117,14 @@ namespace WebSiteDev.AdminForm
         }
 
         /// <summary>
-        /// Ограничивает ввод в поле редактирования только русскими буквами
-        /// </summary>
-        private void textBox2_KeyPress(object sender, KeyPressEventArgs e)
-        {
-            InputRest.OnlyRussian(e);
-        }
-
-        /// <summary>
         /// Обработчик клика по ячейке в таблице
-        /// Загружает данные выбранной роли в поле редактирования
         /// </summary>
         private void dataGridView1_CellClick(object sender, DataGridViewCellEventArgs e)
         {
             if (e.RowIndex >= 0)
             {
-                // Сохраняем индекс выбранной строки
-                selectedRowIndex = e.RowIndex;
-                // Получаем ID роли из первого столбца
-                selectedRoleID = Convert.ToInt32(dataGridView1.Rows[e.RowIndex].Cells["RoleID"].Value);
-                // Выводим название роли в поле редактирования
-                textBox2.Text = dataGridView1.Rows[e.RowIndex].Cells["RoleName"].Value.ToString();
-            }
-        }
-
-        /// <summary>
-        /// Обработчик кнопки редактирования выбранной роли
-        /// Проверяет выбор, запрашивает подтверждение и обновляет в БД
-        /// </summary>
-        private void button6_Click(object sender, EventArgs e)
-        {
-            // Проверяем что роль выбрана
-            if (selectedRoleID == -1 || string.IsNullOrWhiteSpace(textBox2.Text))
-            {
-                MessageBox.Show("Выберите роль!", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                return;
-            }
-
-            // Запрашиваем подтверждение
-            var result = MessageBox.Show("Вы действительно хотите изменить роль?", "Подтверждение", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
-
-            if (result == DialogResult.No)
-            {
-                return;
-            }
-
-            // Обновляем роль в БД
-            if (DataUpdate.UpdateRole(selectedRoleID, textBox2.Text.Trim()))
-            {
-                MessageBox.Show("Роль успешно изменена!", "Успех", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                GetDate();
-
-                // Восстанавливаем выделение строки после перезагрузки
-                if (selectedRowIndex >= 0 && selectedRowIndex < dataGridView1.Rows.Count)
-                {
-                    dataGridView1.Rows[selectedRowIndex].Selected = true;
-                    textBox2.Text = dataGridView1.Rows[selectedRowIndex].Cells["RoleName"].Value.ToString();
-                }
+                selectedRowIndex = e.RowIndex; // Сохраняем индекс выбранной строки
+                selectedRoleID = Convert.ToInt32(dataGridView1.Rows[e.RowIndex].Cells["RoleID"].Value); // Получаем ID роли из первого столбца
             }
         }
 
@@ -204,34 +140,26 @@ namespace WebSiteDev.AdminForm
                 return;
             }
 
-            // Запрашиваем подтверждение
             var result = MessageBox.Show("Вы действительно хотите удалить роль?", "Подтверждение", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
 
-            if (result == DialogResult.No)
+            if (result == DialogResult.Yes)
             {
-                return;
-            }
+                // Удаляем роль из БД
+                if (DataDelete.DeleteRole(selectedRoleID))
+                {
+                    MessageBox.Show("Роль успешно удалена!", "Успех", MessageBoxButtons.OK, MessageBoxIcon.Information);
 
-            // Удаляем роль из БД
-            if (DataDelete.DeleteRole(selectedRoleID))
-            {
-                MessageBox.Show("Роль успешно удалена!", "Успех", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                selectedRoleID = -1;
-                selectedRowIndex = -1;
-                textBox2.Clear();
-                // Перезагружаем данные
-                GetDate();
-                dataGridView1.ClearSelection();
+                    GetDate();
+                    ClearViewSelection();
+                }
             }
         }
 
-        /// <summary>
-        /// Очищает поля редактирования и сбрасывает ID выбранной роли
-        /// </summary>
-        private void ClearRoleFields()
+        private void ClearViewSelection()
         {
             selectedRoleID = -1;
-            textBox2.Clear();
+            selectedRowIndex = -1;
+            dataGridView1.ClearSelection();
         }
     }
 }

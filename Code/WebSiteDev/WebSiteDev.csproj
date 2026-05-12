@@ -61,17 +61,29 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="AdminForm\AddForm\AddCategoryForm.cs">
+    <Compile Include="AdminForm\AddForm\AddEditCategoryForm.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="AdminForm\AddForm\AddCategoryForm.Designer.cs">
-      <DependentUpon>AddCategoryForm.cs</DependentUpon>
+    <Compile Include="AdminForm\AddForm\AddEditCategoryForm.Designer.cs">
+      <DependentUpon>AddEditCategoryForm.cs</DependentUpon>
     </Compile>
     <Compile Include="AdminForm\AddForm\AddUsersForm.cs">
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="AdminForm\AddForm\AddUsersForm.Designer.cs">
       <DependentUpon>AddUsersForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="AdminForm\AddForm\EditRoleForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="AdminForm\AddForm\EditRoleForm.Designer.cs">
+      <DependentUpon>EditRoleForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="AdminForm\AddForm\EditStatusForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="AdminForm\AddForm\EditStatusForm.Designer.cs">
+      <DependentUpon>EditStatusForm.cs</DependentUpon>
     </Compile>
     <Compile Include="AuthForm.cs">
       <SubType>Form</SubType>
@@ -103,11 +115,17 @@
     <Compile Include="AdminForm\UsersControl.Designer.cs">
       <DependentUpon>UsersControl.cs</DependentUpon>
     </Compile>
-    <Compile Include="ScalableForm.cs">
+    <Compile Include="Utils\ScalableMode\ScalableForm.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="ScalableForm.Designer.cs">
+    <Compile Include="Utils\ScalableMode\ScalableForm.Designer.cs">
       <DependentUpon>ScalableForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Utils\ScalableMode\ScalableUserControl.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Utils\ScalableMode\ScalableUserControl.Designer.cs">
+      <DependentUpon>ScalableUserControl.cs</DependentUpon>
     </Compile>
     <Compile Include="Service\CsvImporter.cs" />
     <Compile Include="Service\ExportForm.cs">
@@ -235,11 +253,14 @@
     <Compile Include="SettingsForm.Designer.cs">
       <DependentUpon>SettingsForm.cs</DependentUpon>
     </Compile>
-    <EmbeddedResource Include="AdminForm\AddForm\AddCategoryForm.resx">
-      <DependentUpon>AddCategoryForm.cs</DependentUpon>
+    <EmbeddedResource Include="AdminForm\AddForm\AddEditCategoryForm.resx">
+      <DependentUpon>AddEditCategoryForm.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="AdminForm\AddForm\AddUsersForm.resx">
       <DependentUpon>AddUsersForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="AdminForm\AddForm\EditRoleForm.resx">
+      <DependentUpon>EditRoleForm.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="AuthForm.resx">
       <DependentUpon>AuthForm.cs</DependentUpon>
@@ -302,7 +323,7 @@
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
     </EmbeddedResource>
-    <EmbeddedResource Include="ScalableForm.resx">
+    <EmbeddedResource Include="Utils\ScalableMode\ScalableForm.resx">
       <DependentUpon>ScalableForm.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Service\ExportForm.resx">
