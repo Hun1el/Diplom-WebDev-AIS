@@ -41,8 +41,6 @@ namespace WebSiteDev.ManagerForm
 
         public void LoadControl(UserControl control)
         {
-            // Сбрасываем размер окна в исходное состояние
-            FormControl.ResetFormSize(this);
 
             // Скрываем элементы приветствия
             pictureBox2.Visible = false;

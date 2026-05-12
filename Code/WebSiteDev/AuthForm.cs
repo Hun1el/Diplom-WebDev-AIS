@@ -175,8 +175,9 @@ namespace WebSiteDev
                                 int userID = Convert.ToInt32(reader["UserID"]);
                                 string fullName = reader["Surname"].ToString() + " " + reader["FirstName"].ToString() + " " + reader["MiddleName"].ToString();
                                 string role = reader["RoleName"].ToString();
+                                string fullNameForm = reader["Surname"].ToString() + " " + reader["FirstName"].ToString()[0] + "." + reader["MiddleName"].ToString()[0] + ".";
 
-                                Form userForm = GetFormByRole(role, fullName, userID);
+                                Form userForm = GetFormByRole(role, fullName, userID, fullNameForm);
 
                                 if (userForm != null)
                                 {
@@ -203,11 +204,11 @@ namespace WebSiteDev
             }
         }
 
-        private Form GetFormByRole(string role, string fullName, int userID)
+        private Form GetFormByRole(string role, string fullName, int userID, string fullNameForm)
         {
             if (role == "Администратор")
             {
-                return new MainForm(fullName, role, userID);
+                return new MainForm(fullName, role, fullNameForm, userID);
             }
             else if (role == "Менеджер")
             {
