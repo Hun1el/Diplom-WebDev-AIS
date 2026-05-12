@@ -112,8 +112,8 @@ namespace WebSiteDev.AdminForm
         /// </summary>
         private void button2_Click(object sender, EventArgs e)
         {
-            AddCategoryForm addCategoryForm = new AddCategoryForm();
-            addCategoryForm.ShowDialog();
+            AddEditCategoryForm addEditCategoryForm = new AddEditCategoryForm();
+            addEditCategoryForm.ShowDialog();
             // Перезагружаем данные после добавления
             GetDate();
             dataGridView1.ClearSelection();

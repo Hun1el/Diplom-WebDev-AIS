@@ -7,9 +7,9 @@ namespace WebSiteDev.AddForm
     /// <summary>
     /// Форма для добавления новой категории товаров в базу данных
     /// </summary>
-    public partial class AddCategoryForm : Form
+    public partial class AddEditCategoryForm : Form
     {
-        public AddCategoryForm()
+        public AddEditCategoryForm()
         {
             InitializeComponent();
         }

@@ -71,6 +71,7 @@
             // panel1
             // 
             this.panel1.BackColor = System.Drawing.Color.White;
+            this.panel1.Controls.Add(this.label7);
             this.panel1.Controls.Add(this.label6);
             this.panel1.Controls.Add(this.label5);
             this.panel1.Controls.Add(this.pictureBox1);
@@ -84,7 +85,7 @@
             this.panel1.Location = new System.Drawing.Point(0, 0);
             this.panel1.Margin = new System.Windows.Forms.Padding(2);
             this.panel1.Name = "panel1";
-            this.panel1.Size = new System.Drawing.Size(290, 711);
+            this.panel1.Size = new System.Drawing.Size(302, 711);
             this.panel1.TabIndex = 5;
             // 
             // label6
@@ -217,24 +218,23 @@
             // panel2
             // 
             this.panel2.BackColor = System.Drawing.Color.White;
-            this.panel2.Controls.Add(this.label7);
             this.panel2.Controls.Add(this.label3);
             this.panel2.Controls.Add(this.label2);
             this.panel2.Controls.Add(this.label4);
             this.panel2.Controls.Add(this.label1);
             this.panel2.Controls.Add(this.pictureBox2);
             this.panel2.Dock = System.Windows.Forms.DockStyle.Right;
-            this.panel2.Location = new System.Drawing.Point(284, 0);
+            this.panel2.Location = new System.Drawing.Point(302, 0);
             this.panel2.Margin = new System.Windows.Forms.Padding(2);
             this.panel2.Name = "panel2";
-            this.panel2.Size = new System.Drawing.Size(900, 711);
+            this.panel2.Size = new System.Drawing.Size(882, 711);
             this.panel2.TabIndex = 6;
             // 
             // label7
             // 
             this.label7.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(226)))), ((int)(((byte)(232)))), ((int)(((byte)(240)))));
             this.label7.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(226)))), ((int)(((byte)(232)))), ((int)(((byte)(240)))));
-            this.label7.Location = new System.Drawing.Point(6, 0);
+            this.label7.Location = new System.Drawing.Point(290, 0);
             this.label7.Name = "label7";
             this.label7.Size = new System.Drawing.Size(2, 800);
             this.label7.TabIndex = 21;
@@ -246,7 +246,7 @@
             this.label4.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(51)))), ((int)(((byte)(65)))), ((int)(((byte)(85)))));
             this.label4.Location = new System.Drawing.Point(0, 40);
             this.label4.Name = "label4";
-            this.label4.Size = new System.Drawing.Size(900, 30);
+            this.label4.Size = new System.Drawing.Size(882, 30);
             this.label4.TabIndex = 11;
             this.label4.Text = "Добро пожаловать!";
             this.label4.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
@@ -259,7 +259,7 @@
             this.label1.Location = new System.Drawing.Point(0, 0);
             this.label1.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
             this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(900, 40);
+            this.label1.Size = new System.Drawing.Size(882, 40);
             this.label1.TabIndex = 10;
             this.label1.Text = "Главное меню администратора";
             this.label1.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
