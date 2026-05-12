@@ -12,15 +12,17 @@ namespace WebSiteDev
     {
         private string fullName;
         private string roleName;
+        private string fullNameForm;
         private int userID;
         private Button currentSelectedButton = null;
         private UserControl currentControl = null;
 
-        public MainForm(string fullName, string roleName, int userID = 0)
+        public MainForm(string fullName, string roleName, string fullNameForm, int userID = 0)
         {
             InitializeComponent();
             this.fullName = fullName;
             this.roleName = roleName;
+            this.fullNameForm = fullNameForm;
             this.userID = userID;
         }
 
@@ -28,8 +30,11 @@ namespace WebSiteDev
         {
             Inactivity.OnFormLoad(this);
 
+            this.Text = $"Главное меню ({roleName}: {fullNameForm})";
             label2.Text = $"Сотрудник: {fullName}";
             label3.Text = $"Доступ: {roleName}";
+
+            this.ActiveControl = null;
         }
 
         /// <summary>
@@ -134,12 +139,12 @@ namespace WebSiteDev
                     currentControl = null;
                 }
 
-                this.DialogResult = DialogResult.OK;
                 this.Close();
             }
             else
             {
                 SelectButton(currentSelectedButton);
+                this.ActiveControl = null;
             }
         }
 
@@ -153,12 +158,12 @@ namespace WebSiteDev
 
             if (result == DialogResult.Yes)
             {
-                this.DialogResult = DialogResult.OK;
                 Application.Exit();
             }
             else
             {
                 SelectButton(currentSelectedButton);
+                this.ActiveControl = null;
             }
         }
 
@@ -191,7 +196,6 @@ namespace WebSiteDev
                 {
                     // Выделяем нажатую кнопку
                     btn.BackColor = Color.FromArgb(45, 156, 219);
-                    btn.FlatStyle = FlatStyle.Flat;
 
                     // Кнопка выхода всегда красная
                     if (btn == button6)
@@ -207,8 +211,7 @@ namespace WebSiteDev
                 else
                 {
                     // Убираем выделение с остальных кнопок
-                    btn.BackColor = SystemColors.Control;
-                    btn.FlatStyle = FlatStyle.Standard;
+                    btn.BackColor = Color.White;
 
                     // Кнопка выхода красного цвета даже без выделения
                     if (btn == button6)
