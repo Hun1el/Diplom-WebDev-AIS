@@ -173,11 +173,11 @@
       <DependentUpon>ImageControl.cs</DependentUpon>
     </Compile>
     <Compile Include="Data\InputRest.cs" />
-    <Compile Include="AdminForm\MainForm.cs">
+    <Compile Include="AdminForm\AdminMainForm.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="AdminForm\MainForm.Designer.cs">
-      <DependentUpon>MainForm.cs</DependentUpon>
+    <Compile Include="AdminForm\AdminMainForm.Designer.cs">
+      <DependentUpon>AdminMainForm.cs</DependentUpon>
     </Compile>
     <Compile Include="AdminForm\AddForm\AddProductForm.cs">
       <SubType>Form</SubType>
@@ -271,8 +271,8 @@
     <EmbeddedResource Include="ManagerForm\ProductControl\ImageControl.resx">
       <DependentUpon>ImageControl.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="AdminForm\MainForm.resx">
-      <DependentUpon>MainForm.cs</DependentUpon>
+    <EmbeddedResource Include="AdminForm\AdminMainForm.resx">
+      <DependentUpon>AdminMainForm.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="AdminForm\AddForm\AddProductForm.resx">
       <DependentUpon>AddProductForm.cs</DependentUpon>

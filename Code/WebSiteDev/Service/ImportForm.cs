@@ -258,11 +258,17 @@ namespace WebSiteDev.Service
 
                         if (values.Length > dt.Columns.Count)
                         {
-                            Array.Resize(ref values, dt.Columns.Count);
+                            int skip = values.Length - dt.Columns.Count;
+
+                            string[] shifted = new string[dt.Columns.Count];
+                            Array.Copy(values, skip, shifted, 0, dt.Columns.Count);
+
+                            values = shifted;
                         }
                         else if (values.Length < dt.Columns.Count)
                         {
                             string[] NewValues = new string[dt.Columns.Count];
+
                             Array.Copy(values, NewValues, values.Length);
                             values = NewValues;
                         }

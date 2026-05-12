@@ -47,6 +47,7 @@ namespace WebSiteDev
             label1.Visible = false;
             label2.Visible = false;
             label3.Visible = false;
+            label4.Visible = false;
 
             // Удаляем старый контрол если он есть
             if (currentControl != null)
