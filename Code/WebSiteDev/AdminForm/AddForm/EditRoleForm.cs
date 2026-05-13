@@ -57,5 +57,15 @@ namespace WebSiteDev.AdminForm.AddForm
         {
             this.Close();
         }
+
+        private void textBox1_TextChanged(object sender, EventArgs e)
+        {
+            InputRest.FirstLetter(textBox1);
+        }
+
+        private void textBox1_KeyPress(object sender, KeyPressEventArgs e)
+        {
+            InputRest.OnlyRussian(e);
+        }
     }
 }
