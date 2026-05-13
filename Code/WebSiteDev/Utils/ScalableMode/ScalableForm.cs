@@ -7,8 +7,17 @@ namespace WebSiteDev
 {
     public partial class ScalableForm : Form
     {
-        // Минимальный масштаб
-        private const float MinScale = 0.8f;
+        /// <summary>
+        /// Минимальный масштаб для этой формы
+        /// По умолчанию 0.8f
+        /// </summary>
+        protected virtual float MinScale => 0.8f;
+
+        /// <summary>
+        /// Максимальный масштаб для этой формы
+        /// По умолчанию float.MaxValue — без ограничения
+        /// </summary>
+        protected virtual float MaxScale => float.MaxValue;
 
         private Size OriginalSize;
         private bool Initialized = false;
@@ -37,12 +46,40 @@ namespace WebSiteDev
             OriginalSize = this.ClientSize;
 
             // Устанавливаем физический предел уменьшения самого окна
+            float minScale = MinScale;
             this.MinimumSize = new Size(
-                (int)Math.Round(this.Size.Width * MinScale),
-                (int)Math.Round(this.Size.Height * MinScale)
+                (int)Math.Round(this.Size.Width * minScale),
+                (int)Math.Round(this.Size.Height * minScale)
             );
 
+            // Устанавливаем физический предел увеличения окна
+            if (MaxScale < float.MaxValue)
+            {
+                this.MaximumSize = new Size(
+                    (int)Math.Round(this.Size.Width * MaxScale),
+                    (int)Math.Round(this.Size.Height * MaxScale)
+                );
+            }
+
             SaveBoundsRecursive(this);
+        }
+
+        protected override void WndProc(ref Message m)
+        {
+            const int WM_SYSCOMMAND = 0x0112;
+            const int SC_MAXIMIZE = 0xF030;
+
+            if (m.Msg == WM_SYSCOMMAND && m.WParam.ToInt32() == SC_MAXIMIZE && MaxScale < float.MaxValue)
+            {
+                // Вместо Maximize просто устанавливаем размер до лимита и центрируем
+                this.WindowState = FormWindowState.Normal;
+                this.Size = this.MaximumSize;
+                this.CenterToScreen();
+
+                return;
+            }
+
+            base.WndProc(ref m);
         }
 
         private void SaveBoundsRecursive(Control parent)
@@ -76,14 +113,16 @@ namespace WebSiteDev
                 float ScaleX = (float)this.ClientSize.Width / OriginalSize.Width;
                 float ScaleY = (float)this.ClientSize.Height / OriginalSize.Height;
 
-                if (ScaleX < MinScale)
+                float minScale = MinScale;
+
+                if (ScaleX < minScale)
                 {
-                    ScaleX = MinScale;
+                    ScaleX = minScale;
                 }
 
-                if (ScaleY < MinScale)
+                if (ScaleY < minScale)
                 {
-                    ScaleY = MinScale;
+                    ScaleY = minScale;
                 }
 
                 control.Location = new Point(
@@ -203,6 +242,19 @@ namespace WebSiteDev
             if (ScaleY < MinScale)
             {
                 ScaleY = MinScale;
+            }
+
+            // Ограничиваем масштаб максимальным значением
+            float maxScale = MaxScale;
+
+            if (ScaleX > maxScale)
+            {
+                ScaleX = maxScale;
+            }
+
+            if (ScaleY > maxScale)
+            {
+                ScaleY = maxScale;
             }
 
             float FontScale = Math.Min(ScaleX, ScaleY);

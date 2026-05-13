@@ -262,6 +262,9 @@
     <EmbeddedResource Include="AdminForm\AddForm\EditRoleForm.resx">
       <DependentUpon>EditRoleForm.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="AdminForm\AddForm\EditStatusForm.resx">
+      <DependentUpon>EditStatusForm.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="AuthForm.resx">
       <DependentUpon>AuthForm.cs</DependentUpon>
     </EmbeddedResource>

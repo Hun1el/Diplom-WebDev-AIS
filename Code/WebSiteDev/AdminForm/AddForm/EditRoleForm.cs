@@ -7,8 +7,10 @@ using System.Windows.Forms;
 
 namespace WebSiteDev.AdminForm.AddForm
 {
-    public partial class EditRoleForm : Form
+    public partial class EditRoleForm : ScalableForm
     {
+        protected override float MaxScale => 1.6f;
+        protected override float MinScale => 0.9f;
         private int selectedRoleID;
         private string roleName;
 
@@ -22,6 +24,7 @@ namespace WebSiteDev.AdminForm.AddForm
 
         private void EditRoleForm_Load(object sender, EventArgs e)
         {
+            Inactivity.OnFormLoad(this);
             LabelColor.ApplyRedStar(this);
 
             textBox1.Text = roleName;
@@ -54,6 +57,21 @@ namespace WebSiteDev.AdminForm.AddForm
         private void button1_Click(object sender, EventArgs e)
         {
             this.Close();
+        }
+
+        private void textBox1_TextChanged(object sender, EventArgs e)
+        {
+            InputRest.FirstLetter(textBox1);
+        }
+
+        private void textBox1_KeyPress(object sender, KeyPressEventArgs e)
+        {
+            InputRest.OnlyRussian(e);
+        }
+
+        private void EditRoleForm_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            Inactivity.OnFormClosing(this);
         }
     }
 }
