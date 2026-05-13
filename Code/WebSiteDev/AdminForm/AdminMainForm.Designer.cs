@@ -31,6 +31,7 @@
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(MainForm));
             this.button6 = new System.Windows.Forms.Button();
             this.panel1 = new System.Windows.Forms.Panel();
+            this.label7 = new System.Windows.Forms.Label();
             this.label6 = new System.Windows.Forms.Label();
             this.label5 = new System.Windows.Forms.Label();
             this.pictureBox1 = new System.Windows.Forms.PictureBox();
@@ -43,7 +44,6 @@
             this.label3 = new System.Windows.Forms.Label();
             this.label2 = new System.Windows.Forms.Label();
             this.panel2 = new System.Windows.Forms.Panel();
-            this.label7 = new System.Windows.Forms.Label();
             this.label4 = new System.Windows.Forms.Label();
             this.label1 = new System.Windows.Forms.Label();
             this.pictureBox2 = new System.Windows.Forms.PictureBox();
@@ -59,7 +59,7 @@
             this.button6.FlatAppearance.BorderColor = System.Drawing.SystemColors.ControlText;
             this.button6.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.button6.ForeColor = System.Drawing.Color.Red;
-            this.button6.Location = new System.Drawing.Point(14, 658);
+            this.button6.Location = new System.Drawing.Point(14, 645);
             this.button6.Margin = new System.Windows.Forms.Padding(5, 6, 5, 6);
             this.button6.Name = "button6";
             this.button6.Size = new System.Drawing.Size(262, 45);
@@ -88,11 +88,20 @@
             this.panel1.Size = new System.Drawing.Size(302, 711);
             this.panel1.TabIndex = 5;
             // 
+            // label7
+            // 
+            this.label7.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(226)))), ((int)(((byte)(232)))), ((int)(((byte)(240)))));
+            this.label7.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(226)))), ((int)(((byte)(232)))), ((int)(((byte)(240)))));
+            this.label7.Location = new System.Drawing.Point(290, 0);
+            this.label7.Name = "label7";
+            this.label7.Size = new System.Drawing.Size(2, 800);
+            this.label7.TabIndex = 21;
+            // 
             // label6
             // 
             this.label6.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(226)))), ((int)(((byte)(232)))), ((int)(((byte)(240)))));
             this.label6.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(226)))), ((int)(((byte)(232)))), ((int)(((byte)(240)))));
-            this.label6.Location = new System.Drawing.Point(-3, 580);
+            this.label6.Location = new System.Drawing.Point(-3, 571);
             this.label6.Name = "label6";
             this.label6.Size = new System.Drawing.Size(295, 2);
             this.label6.TabIndex = 20;
@@ -172,7 +181,7 @@
             // 
             this.button5.BackColor = System.Drawing.Color.White;
             this.button5.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.button5.Location = new System.Drawing.Point(14, 601);
+            this.button5.Location = new System.Drawing.Point(14, 588);
             this.button5.Margin = new System.Windows.Forms.Padding(5, 6, 5, 6);
             this.button5.Name = "button5";
             this.button5.Size = new System.Drawing.Size(262, 45);
@@ -229,15 +238,6 @@
             this.panel2.Name = "panel2";
             this.panel2.Size = new System.Drawing.Size(882, 711);
             this.panel2.TabIndex = 6;
-            // 
-            // label7
-            // 
-            this.label7.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(226)))), ((int)(((byte)(232)))), ((int)(((byte)(240)))));
-            this.label7.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(226)))), ((int)(((byte)(232)))), ((int)(((byte)(240)))));
-            this.label7.Location = new System.Drawing.Point(290, 0);
-            this.label7.Name = "label7";
-            this.label7.Size = new System.Drawing.Size(2, 800);
-            this.label7.TabIndex = 21;
             // 
             // label4
             // 

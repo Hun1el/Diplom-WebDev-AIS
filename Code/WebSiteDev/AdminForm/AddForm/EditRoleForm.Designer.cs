@@ -102,6 +102,7 @@
             this.Name = "EditRoleForm";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "Изменение роли";
+            this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.EditRoleForm_FormClosing);
             this.Load += new System.EventHandler(this.EditRoleForm_Load);
             this.ResumeLayout(false);
             this.PerformLayout();

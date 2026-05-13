@@ -3,16 +3,16 @@ using System;
 using System.Data;
 using System.Windows.Forms;
 using WebSiteDev.AddForm;
+using WebSiteDev.AdminForm.AddForm;
 
 namespace WebSiteDev.AdminForm
 {
     /// <summary>
     /// Пользовательский контрол для управления категориями товаров
     /// </summary>
-    public partial class CategoryControl : UserControl
+    public partial class CategoryControl : ScalableUserControl
     {
         private DataManipulation dataManipulation;
-        public bool update = false;
         private int selectedCategoryID = -1;
         private int selectedRowIndex = -1;
 
@@ -23,13 +23,12 @@ namespace WebSiteDev.AdminForm
         }
 
         /// <summary>
-        /// Обработчик загрузки контрола
-        /// Устанавливает начальные значения для сортировки и очищает выделение
+        /// Обработчик загрузки
         /// </summary>
         private void CategoryControl_Load(object sender, EventArgs e)
         {
             comboBox3.SelectedIndex = 0;
-            dataGridView1.ClearSelection();
+            ClearViewSelection();
         }
 
         /// <summary>
@@ -37,73 +36,67 @@ namespace WebSiteDev.AdminForm
         /// </summary>
         public void GetDate()
         {
-            using (MySqlConnection con = new MySqlConnection(Data.GetConnectionString()))
+            try
             {
-                con.Open();
+                using (MySqlConnection con = new MySqlConnection(Data.GetConnectionString()))
+                {
+                    string SelectCmd = @"SELECT * FROM Category";
+                    string CountCmd = @"SELECT COUNT(*) FROM Category";
 
-                // Получаем все категории из БД
-                MySqlCommand cmd = new MySqlCommand("SELECT * FROM Category", con);
-                cmd.ExecuteNonQuery();
+                    con.Open();
 
-                // Заполняем таблицу данными
-                MySqlDataAdapter da = new MySqlDataAdapter(cmd);
-                DataTable dt = new DataTable();
+                    // Получаем все категории из БД
+                    MySqlCommand cmd1 = new MySqlCommand(SelectCmd, con);
+                    cmd1.ExecuteNonQuery();
 
-                da.Fill(dt);
+                    // Заполняем таблицу данными
+                    MySqlDataAdapter da = new MySqlDataAdapter(cmd1);
+                    DataTable dt = new DataTable();
 
-                dataGridView1.DataSource = dt;
-                // Скрываем столбец ID
-                dataGridView1.Columns["CategoryID"].Visible = false;
-                // Устанавливаем текст заголовка столбца
-                dataGridView1.Columns["CategoryName"].HeaderText = "Наименование категории";
-                // Отключаем сортировку при клике на заголовок
-                dataGridView1.Columns["CategoryName"].SortMode = DataGridViewColumnSortMode.NotSortable;
+                    da.Fill(dt);
 
-                dataManipulation = new DataManipulation(dt);
+                    dataGridView1.DataSource = dt;
 
-                // Получаем количество категорий и выводим в метку
-                MySqlCommand count = new MySqlCommand("SELECT COUNT(*) FROM Category", con);
-                int resultcount = Convert.ToInt32(count.ExecuteScalar());
-                label1.Text = $"Количество записей: {resultcount}";
+                    dataGridView1.Columns["CategoryID"].Visible = false;
+                    dataGridView1.Columns["CategoryName"].HeaderText = "Наименование категории";
+                    dataGridView1.Columns["CategoryName"].SortMode = DataGridViewColumnSortMode.NotSortable;
+
+                    dataManipulation = new DataManipulation(dt);
+
+                    // Получаем количество категорий и выводим в метку
+                    MySqlCommand cmd2 = new MySqlCommand(CountCmd, con);
+                    int resultcount = Convert.ToInt32(cmd2.ExecuteScalar());
+
+                    label1.Text = $"Количество записей: {resultcount}";
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Ошибка: {ex.Message}", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
         /// <summary>
         /// Обработчик изменения текста в поле поиска
-        /// Применяет фильтр и обновляет таблицу
         /// </summary>
         private void textBox1_TextChanged(object sender, EventArgs e)
         {
-            // Применяем фильтр по названию категории
             dataManipulation.ApplyAllCategory(comboBox3, textBox1);
             dataManipulation.UpdateRecordCountLabel(label1);
             InputRest.FirstLetter(textBox1);
 
-            // Очищаем выделение и поле редактирования
-            dataGridView1.ClearSelection();
-            textBox2.Clear();
-            selectedCategoryID = -1;
-            selectedRowIndex = -1;
+            ClearViewSelection();
         }
 
-        /// <summary>
-        /// Обработчик кнопки расширения окна для редактирования
-        /// </summary>
-        private void button1_Click(object sender, EventArgs e)
+        private void dataGridView1_CellClick(object sender, DataGridViewCellEventArgs e)
         {
-            FormControl.Resize(this.FindForm(), 1500);
-            update = true;
-            button1.Enabled = false;
-        }
-
-        /// <summary>
-        /// Обработчик кнопки сжатия окна после редактирования
-        /// </summary>
-        private void button3_Click(object sender, EventArgs e)
-        {
-            FormControl.Resize(this.FindForm(), 1175);
-            update = true;
-            button1.Enabled = true;
+            if (e.RowIndex >= 0)
+            {
+                selectedRowIndex = e.RowIndex; // Сохраняем индекс выбранной строки
+                selectedCategoryID = Convert.ToInt32(dataGridView1.Rows[e.RowIndex].Cells["CategoryID"].Value); // Получаем ID роли из первого столбца
+                button1.Enabled = true;
+                button7.Enabled = true;
+            }
         }
 
         /// <summary>
@@ -112,12 +105,10 @@ namespace WebSiteDev.AdminForm
         /// </summary>
         private void button2_Click(object sender, EventArgs e)
         {
-            AddEditCategoryForm addEditCategoryForm = new AddEditCategoryForm();
+            AddEditCategoryForm addEditCategoryForm = new AddEditCategoryForm(FormMode.Add);
             addEditCategoryForm.ShowDialog();
-            // Перезагружаем данные после добавления
+
             GetDate();
-            dataGridView1.ClearSelection();
-            ClearCategoryFields();
         }
 
         /// <summary>
@@ -125,15 +116,10 @@ namespace WebSiteDev.AdminForm
         /// </summary>
         private void button4_Click(object sender, EventArgs e)
         {
-            // Сбрасываем все фильтры
             dataManipulation.ResetFilters(textSearch: textBox1, comboSort: comboBox3);
             dataManipulation.ApplyAllCategory(comboBox3, textBox1);
 
-            // Очищаем выделение
-            dataGridView1.ClearSelection();
-            textBox2.Clear();
-            selectedCategoryID = -1;
-            selectedRowIndex = -1;
+            ClearViewSelection();
         }
 
         /// <summary>
@@ -141,23 +127,10 @@ namespace WebSiteDev.AdminForm
         /// </summary>
         private void comboBox3_SelectedIndexChanged(object sender, EventArgs e)
         {
-            // Применяем новую сортировку
             dataManipulation.ApplyAllCategory(comboBox3, textBox1);
             dataManipulation.UpdateRecordCountLabel(label1);
 
-            // Очищаем выделение
-            dataGridView1.ClearSelection();
-            textBox2.Clear();
-            selectedCategoryID = -1;
-            selectedRowIndex = -1;
-        }
-
-        /// <summary>
-        /// Применяет форматирование первой буквы при вводе названия категории
-        /// </summary>
-        private void textBox2_TextChanged(object sender, EventArgs e)
-        {
-            InputRest.FirstLetter(textBox2);
+            ClearViewSelection();
         }
 
         /// <summary>
@@ -168,59 +141,22 @@ namespace WebSiteDev.AdminForm
             InputRest.CategoryInput(e);
         }
 
-        /// <summary>
-        /// Ограничивает ввод в поле редактирования только допустимыми символами
-        /// </summary>
-        private void textBox2_KeyPress(object sender, KeyPressEventArgs e)
+        private void button1_Click(object sender, EventArgs e)
         {
-            InputRest.CategoryInput(e);
-        }
+            string categoryName = dataGridView1.Rows[selectedRowIndex].Cells["CategoryName"].Value.ToString();
 
-        private void dataGridView1_CellClick(object sender, DataGridViewCellEventArgs e)
-        {
-            if (e.RowIndex >= 0)
+            AddEditCategoryForm addEditCategoryForm = new AddEditCategoryForm(FormMode.Edit, selectedCategoryID, categoryName);
+            addEditCategoryForm.ShowDialog();
+
+            GetDate();
+
+            foreach (DataGridViewRow row in dataGridView1.Rows)
             {
-                // Сохраняем индекс выбранной строки
-                selectedRowIndex = e.RowIndex;
-                // Получаем ID категории из первого столбца
-                selectedCategoryID = Convert.ToInt32(dataGridView1.Rows[e.RowIndex].Cells["CategoryID"].Value);
-                // Выводим название категории в поле редактирования
-                textBox2.Text = dataGridView1.Rows[e.RowIndex].Cells["CategoryName"].Value.ToString();
-            }
-        }
-
-        /// <summary>
-        /// Обработчик кнопки редактирования выбранной категории
-        /// Проверяет выбор, запрашивает подтверждение и обновляет в БД
-        /// </summary>
-        private void button6_Click(object sender, EventArgs e)
-        {
-            // Проверяем что категория выбрана
-            if (selectedCategoryID == -1 || string.IsNullOrWhiteSpace(textBox2.Text))
-            {
-                MessageBox.Show("Выберите категорию!", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                return;
-            }
-
-            // Запрашиваем подтверждение
-            var result = MessageBox.Show("Вы действительно хотите изменить категорию?", "Подтверждение", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
-
-            if (result == DialogResult.No)
-            {
-                return;
-            }
-
-            // Обновляем категорию в БД
-            if (DataUpdate.UpdateCategory(selectedCategoryID, textBox2.Text.Trim()))
-            {
-                MessageBox.Show("Категория изменена!", "Успех", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                GetDate();
-
-                // Восстанавливаем выделение строки после перезагрузки
-                if (selectedRowIndex >= 0 && selectedRowIndex < dataGridView1.Rows.Count)
+                if (Convert.ToInt32(row.Cells["CategoryID"].Value) == selectedCategoryID)
                 {
-                    dataGridView1.Rows[selectedRowIndex].Selected = true;
-                    textBox2.Text = dataGridView1.Rows[selectedRowIndex].Cells["CategoryName"].Value.ToString();
+                    row.Selected = true;
+                    selectedRowIndex = row.Index;
+                    break;
                 }
             }
         }
@@ -230,41 +166,31 @@ namespace WebSiteDev.AdminForm
         /// </summary>
         private void button7_Click(object sender, EventArgs e)
         {
-            // Проверяем что категория выбрана
-            if (selectedCategoryID == -1)
-            {
-                MessageBox.Show("Выберите категорию для удаления!", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                return;
-            }
-
-            // Запрашиваем подтверждение
             var result = MessageBox.Show("Вы действительно хотите удалить категорию?", "Подтверждение", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
 
-            if (result == DialogResult.No)
+            if (result == DialogResult.Yes)
             {
-                return;
-            }
+                // Удаляем категорию из БД
+                if (DataDelete.DeleteCategory(selectedCategoryID))
+                {
+                    MessageBox.Show("Категория успешно удалена!", "Успех", MessageBoxButtons.OK, MessageBoxIcon.Information);
 
-            // Удаляем категорию из БД
-            if (DataDelete.DeleteCategory(selectedCategoryID))
-            {
-                MessageBox.Show("Категория успешно удалена!", "Успех", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                selectedCategoryID = -1;
-                selectedRowIndex = -1;
-                textBox2.Clear();
-                // Перезагружаем данные
-                GetDate();
-                dataGridView1.ClearSelection();
+                    GetDate();
+                    ClearViewSelection();
+                }
             }
         }
 
         /// <summary>
         /// Очищает поля редактирования и сбрасывает ID выбранной категории
         /// </summary>
-        private void ClearCategoryFields()
+        private void ClearViewSelection()
         {
             selectedCategoryID = -1;
-            textBox2.Clear();
+            selectedRowIndex = -1;
+            dataGridView1.ClearSelection();
+            button1.Enabled = false;
+            button7.Enabled = false;
         }
     }
 }

@@ -27,6 +27,7 @@ namespace WebSiteDev.AdminForm.AddForm
 
         private void EditStatusForm_Load(object sender, EventArgs e)
         {
+            Inactivity.OnFormLoad(this);
             LabelColor.ApplyRedStar(this);
 
             textBox1.Text = statusName;
@@ -68,6 +69,11 @@ namespace WebSiteDev.AdminForm.AddForm
         private void textBox1_KeyPress(object sender, KeyPressEventArgs e)
         {
             InputRest.OnlyRussian(e);
+        }
+
+        private void EditStatusForm_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            Inactivity.OnFormClosing(this);
         }
     }
 }

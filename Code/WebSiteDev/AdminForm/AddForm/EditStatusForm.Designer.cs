@@ -102,6 +102,7 @@
             this.Name = "EditStatusForm";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "Изменение статуса";
+            this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.EditStatusForm_FormClosing);
             this.Load += new System.EventHandler(this.EditStatusForm_Load);
             this.ResumeLayout(false);
             this.PerformLayout();
