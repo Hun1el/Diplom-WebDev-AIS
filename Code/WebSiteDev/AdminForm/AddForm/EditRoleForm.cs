@@ -7,8 +7,10 @@ using System.Windows.Forms;
 
 namespace WebSiteDev.AdminForm.AddForm
 {
-    public partial class EditRoleForm : Form
+    public partial class EditRoleForm : ScalableForm
     {
+        protected override float MaxScale => 1.6f;
+        protected override float MinScale => 0.9f;
         private int selectedRoleID;
         private string roleName;
 

@@ -34,32 +34,43 @@ namespace WebSiteDev.AdminForm
         /// </summary>
         void GetDate()
         {
-            using (MySqlConnection con = new MySqlConnection(Data.GetConnectionString()))
+            try
             {
-                con.Open();
+                using (MySqlConnection con = new MySqlConnection(Data.GetConnectionString()))
+                {
+                    string SelectCmd = @"SELECT * FROM `Role`";
+                    string CountCmd = @"SELECT COUNT(*) FROM Role";
 
-                // Получаем все роли из БД
-                MySqlCommand cmd = new MySqlCommand("SELECT * FROM `Role`", con);
-                cmd.ExecuteNonQuery();
+                    con.Open();
 
-                // Заполняем таблицу данными
-                MySqlDataAdapter da = new MySqlDataAdapter(cmd);
-                DataTable dt = new DataTable();
+                    // Получаем все роли из БД
+                    MySqlCommand cmd1 = new MySqlCommand(SelectCmd, con);
+                    cmd1.ExecuteNonQuery();
 
-                da.Fill(dt);
+                    // Заполняем таблицу данными
+                    MySqlDataAdapter da = new MySqlDataAdapter(cmd1);
+                    DataTable dt = new DataTable();
 
-                dataGridView1.DataSource = dt;
+                    da.Fill(dt);
 
-                dataGridView1.Columns["RoleID"].Visible = false;
-                dataGridView1.Columns["RoleName"].HeaderText = "Наименование роли";
-                dataGridView1.Columns["RoleName"].SortMode = DataGridViewColumnSortMode.NotSortable;
+                    dataGridView1.DataSource = dt;
 
-                dataManipulation = new DataManipulation(dt);
+                    dataGridView1.Columns["RoleID"].Visible = false;
+                    dataGridView1.Columns["RoleName"].HeaderText = "Наименование роли";
+                    dataGridView1.Columns["RoleName"].SortMode = DataGridViewColumnSortMode.NotSortable;
 
-                // Получаем количество ролей и выводим в метку
-                MySqlCommand count = new MySqlCommand("SELECT COUNT(*) FROM Role", con);
-                int resultcount = Convert.ToInt32(count.ExecuteScalar());
-                label1.Text = $"Количество записей: {resultcount}";
+                    dataManipulation = new DataManipulation(dt);
+
+                    // Получаем количество ролей и выводим в метку
+                    MySqlCommand cmd2 = new MySqlCommand(CountCmd, con);
+                    int resultcount = Convert.ToInt32(cmd2.ExecuteScalar());
+
+                    label1.Text = $"Количество записей: {resultcount}";
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Ошибка: {ex.Message}", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
@@ -76,15 +87,22 @@ namespace WebSiteDev.AdminForm
             ClearViewSelection();
         }
 
+        /// <summary>
+        /// Обработчик клика по ячейке в таблице
+        /// </summary>
+        private void dataGridView1_CellClick(object sender, DataGridViewCellEventArgs e)
+        {
+            if (e.RowIndex >= 0)
+            {
+                selectedRowIndex = e.RowIndex; // Сохраняем индекс выбранной строки
+                selectedRoleID = Convert.ToInt32(dataGridView1.Rows[e.RowIndex].Cells["RoleID"].Value); // Получаем ID роли из первого столбца
+                button1.Enabled = true;
+                button7.Enabled = true;
+            }
+        }
+
         private void button1_Click(object sender, EventArgs e)
         {
-            // Проверяем что роль выбрана
-            if (selectedRoleID == -1)
-            {
-                MessageBox.Show("Выберите роль для редактирования!", "Предупреждение", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                return;
-            }
-
             string roleName = dataGridView1.Rows[selectedRowIndex].Cells["RoleName"].Value.ToString();
 
             EditRoleForm editRoleForm = new EditRoleForm(selectedRoleID, roleName);
@@ -92,15 +110,19 @@ namespace WebSiteDev.AdminForm
             
             GetDate();
 
-            if (selectedRowIndex >= 0 && selectedRowIndex < dataGridView1.Rows.Count)
+            foreach (DataGridViewRow row in dataGridView1.Rows)
             {
-                dataGridView1.Rows[selectedRowIndex].Selected = true;
+                if (Convert.ToInt32(row.Cells["RoleID"].Value) == selectedRoleID)
+                {
+                    row.Selected = true;
+                    selectedRowIndex = row.Index;
+                    break;
+                }
             }
         }
 
         /// <summary>
         /// Обработчик кнопки сброса фильтров
-        /// Возвращает таблицу в исходное состояние
         /// </summary>
         private void button4_Click(object sender, EventArgs e)
         {
@@ -117,29 +139,10 @@ namespace WebSiteDev.AdminForm
         }
 
         /// <summary>
-        /// Обработчик клика по ячейке в таблице
-        /// </summary>
-        private void dataGridView1_CellClick(object sender, DataGridViewCellEventArgs e)
-        {
-            if (e.RowIndex >= 0)
-            {
-                selectedRowIndex = e.RowIndex; // Сохраняем индекс выбранной строки
-                selectedRoleID = Convert.ToInt32(dataGridView1.Rows[e.RowIndex].Cells["RoleID"].Value); // Получаем ID роли из первого столбца
-            }
-        }
-
-        /// <summary>
         /// Обработчик кнопки удаления выбранной роли
         /// </summary>
         private void button7_Click(object sender, EventArgs e)
         {
-            // Проверяем что роль выбрана
-            if (selectedRoleID == -1)
-            {
-                MessageBox.Show("Выберите роль для удаления!", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                return;
-            }
-
             var result = MessageBox.Show("Вы действительно хотите удалить роль?", "Подтверждение", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
 
             if (result == DialogResult.Yes)
@@ -160,6 +163,8 @@ namespace WebSiteDev.AdminForm
             selectedRoleID = -1;
             selectedRowIndex = -1;
             dataGridView1.ClearSelection();
+            button1.Enabled = false;
+            button7.Enabled = false;
         }
     }
 }
