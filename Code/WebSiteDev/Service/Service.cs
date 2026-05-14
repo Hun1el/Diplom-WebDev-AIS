@@ -1,8 +1,10 @@
 ﻿using MySql.Data.MySqlClient;
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Windows.Forms;
 
 namespace WebSiteDev.Service
 {
@@ -59,7 +61,58 @@ namespace WebSiteDev.Service
         /// </summary>
         public static void RestoreBackup(string FilePath)
         {
-            using (MySqlConnection con = new MySqlConnection(Data.GetConnectionStringNoDB()))
+            // Проверка наличия файла
+            if (!File.Exists(FilePath))
+            {
+                MessageBox.Show("Файл для восстановления не найден!", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return;
+            }
+
+            bool hasConnection = false;
+            bool hasCreateTable = false;
+
+            // Проверка подключения к БД
+            using (MySqlConnection test = new MySqlConnection(Data.GetConnectionString()))
+            {
+                try
+                {
+                    test.Open();
+                    hasConnection = true;
+                }
+                catch (MySqlException)
+                {
+
+                }
+            }
+
+            // Проверка наличия CREATE TABLE в SQL-файле
+            string fileContent = File.ReadAllText(FilePath);
+            hasCreateTable = fileContent.IndexOf("CREATE TABLE", StringComparison.OrdinalIgnoreCase) >= 0;
+
+            // Формируем предупреждения
+            var warnings = new List<string>();
+            if (!hasConnection)
+            {
+                warnings.Add("Нет подключения к базе данных - восстановление может не выполниться!");
+            }
+            if (!hasCreateTable)
+            {
+                warnings.Add("В файле не обнаружено инструкций CREATE TABLE — таблицы не будут созданы заново.");
+            }
+
+            if (warnings.Count > 0)
+            {
+                string message = string.Join("\n", warnings) + "\n\nВсё равно продолжить восстановление?";
+                var result = MessageBox.Show(message, "Предупреждение", MessageBoxButtons.YesNo, MessageBoxIcon.Warning);
+                
+                if (result != DialogResult.Yes)
+                {
+                    return;
+                }
+            }
+
+            // Восстановление
+            using (MySqlConnection con = new MySqlConnection(Data.GetConnectionString()))
             {
                 using (MySqlCommand cmd = con.CreateCommand())
                 {
