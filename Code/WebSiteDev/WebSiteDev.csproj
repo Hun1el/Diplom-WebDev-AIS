@@ -67,11 +67,11 @@
     <Compile Include="AdminForm\AddForm\AddEditCategoryForm.Designer.cs">
       <DependentUpon>AddEditCategoryForm.cs</DependentUpon>
     </Compile>
-    <Compile Include="AdminForm\AddForm\AddUsersForm.cs">
+    <Compile Include="AdminForm\AddForm\AddEditUsersForm.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="AdminForm\AddForm\AddUsersForm.Designer.cs">
-      <DependentUpon>AddUsersForm.cs</DependentUpon>
+    <Compile Include="AdminForm\AddForm\AddEditUsersForm.Designer.cs">
+      <DependentUpon>AddEditUsersForm.cs</DependentUpon>
     </Compile>
     <Compile Include="AdminForm\AddForm\EditRoleForm.cs">
       <SubType>Form</SubType>
@@ -256,8 +256,8 @@
     <EmbeddedResource Include="AdminForm\AddForm\AddEditCategoryForm.resx">
       <DependentUpon>AddEditCategoryForm.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="AdminForm\AddForm\AddUsersForm.resx">
-      <DependentUpon>AddUsersForm.cs</DependentUpon>
+    <EmbeddedResource Include="AdminForm\AddForm\AddEditUsersForm.resx">
+      <DependentUpon>AddEditUsersForm.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="AdminForm\AddForm\EditRoleForm.resx">
       <DependentUpon>EditRoleForm.cs</DependentUpon>

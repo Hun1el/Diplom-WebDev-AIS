@@ -1,6 +1,6 @@
 ﻿namespace WebSiteDev.AddForm
 {
-    partial class AddUsersForm
+    partial class AddEditUsersForm
     {
         /// <summary>
         /// Required designer variable.
@@ -28,7 +28,7 @@
         /// </summary>
         private void InitializeComponent()
         {
-            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(AddUsersForm));
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(AddEditUsersForm));
             this.maskedTextBox1 = new System.Windows.Forms.MaskedTextBox();
             this.button5 = new System.Windows.Forms.Button();
             this.label9 = new System.Windows.Forms.Label();
@@ -78,9 +78,9 @@
             this.label9.AutoSize = true;
             this.label9.Location = new System.Drawing.Point(8, 458);
             this.label9.Name = "label9";
-            this.label9.Size = new System.Drawing.Size(162, 24);
+            this.label9.Size = new System.Drawing.Size(169, 24);
             this.label9.TabIndex = 49;
-            this.label9.Text = "Номер телефона";
+            this.label9.Text = "Номер телефона*";
             // 
             // comboBox1
             // 
@@ -98,9 +98,9 @@
             this.label8.AutoSize = true;
             this.label8.Location = new System.Drawing.Point(8, 384);
             this.label8.Name = "label8";
-            this.label8.Size = new System.Drawing.Size(54, 24);
+            this.label8.Size = new System.Drawing.Size(61, 24);
             this.label8.TabIndex = 47;
-            this.label8.Text = "Роль";
+            this.label8.Text = "Роль*";
             // 
             // textBox6
             // 
@@ -126,18 +126,18 @@
             this.label7.AutoSize = true;
             this.label7.Location = new System.Drawing.Point(8, 289);
             this.label7.Name = "label7";
-            this.label7.Size = new System.Drawing.Size(76, 24);
+            this.label7.Size = new System.Drawing.Size(83, 24);
             this.label7.TabIndex = 44;
-            this.label7.Text = "Пароль";
+            this.label7.Text = "Пароль*";
             // 
             // label6
             // 
             this.label6.AutoSize = true;
             this.label6.Location = new System.Drawing.Point(8, 219);
             this.label6.Name = "label6";
-            this.label6.Size = new System.Drawing.Size(64, 24);
+            this.label6.Size = new System.Drawing.Size(71, 24);
             this.label6.TabIndex = 43;
-            this.label6.Text = "Логин";
+            this.label6.Text = "Логин*";
             // 
             // textBox4
             // 
@@ -173,18 +173,18 @@
             this.label4.AutoSize = true;
             this.label4.Location = new System.Drawing.Point(8, 79);
             this.label4.Name = "label4";
-            this.label4.Size = new System.Drawing.Size(46, 24);
+            this.label4.Size = new System.Drawing.Size(53, 24);
             this.label4.TabIndex = 39;
-            this.label4.Text = "Имя";
+            this.label4.Text = "Имя*";
             // 
             // label3
             // 
             this.label3.AutoSize = true;
             this.label3.Location = new System.Drawing.Point(8, 9);
             this.label3.Name = "label3";
-            this.label3.Size = new System.Drawing.Size(91, 24);
+            this.label3.Size = new System.Drawing.Size(98, 24);
             this.label3.TabIndex = 38;
-            this.label3.Text = "Фамилия";
+            this.label3.Text = "Фамилия*";
             // 
             // textBox2
             // 
@@ -218,7 +218,7 @@
             this.button1.Name = "button1";
             this.button1.Size = new System.Drawing.Size(355, 43);
             this.button1.TabIndex = 53;
-            this.button1.Text = "Вернуться";
+            this.button1.Text = "Назад";
             this.button1.UseVisualStyleBackColor = false;
             this.button1.Click += new System.EventHandler(this.button1_Click);
             // 
@@ -233,7 +233,7 @@
             this.pictureBox2.TabStop = false;
             this.pictureBox2.Click += new System.EventHandler(this.pictureBox2_Click);
             // 
-            // AddUsersForm
+            // AddEditUsersForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(11F, 24F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
@@ -262,7 +262,7 @@
             this.Margin = new System.Windows.Forms.Padding(6);
             this.MaximizeBox = false;
             this.MinimizeBox = false;
-            this.Name = "AddUsersForm";
+            this.Name = "AddEditUsersForm";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "Добавление пользователя";
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.AddUsersForm_FormClosing);

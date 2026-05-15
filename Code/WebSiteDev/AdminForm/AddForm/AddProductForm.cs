@@ -6,11 +6,11 @@ using System.Windows.Forms;
 
 namespace WebSiteDev.AddForm
 {
-    /// <summary>
-    /// Форма для добавления новой услуги в систему
-    /// </summary>
-    public partial class AddProductForm : Form
+    public partial class AddProductForm : ScalableForm
     {
+        protected override float MaxScale => 1.6f;
+        protected override float MinScale => 0.9f;
+
         private DataManipulation dataManipulation;
         private string SelectedFileName = null;
         public string CurrentImagePath { get; set; }
@@ -20,8 +20,13 @@ namespace WebSiteDev.AddForm
             InitializeComponent();
 
             dataManipulation = dm;
-            // Загружаем список категорий в выпадающий список
             dataManipulation.FillComboBoxWithCategories(comboBox1, "Выберите категорию");
+        }
+
+        private void AddProductForm_Load(object sender, EventArgs e)
+        {
+            LabelColor.ApplyRedStar(this);
+            Inactivity.OnFormLoad(this);
         }
 
         /// <summary>
@@ -71,7 +76,7 @@ namespace WebSiteDev.AddForm
         {
             InputRest.OnlyNumbers(e);
 
-            // Запрещаем ввести 0 в начало если поле пусто
+            // Запрещает ввести 0 в начало если поле пусто
             if ((textBox3.Text.Length == 0 || textBox3.Text == "0") && e.KeyChar == '0' && !char.IsControl(e.KeyChar))
             {
                 e.Handled = true;
@@ -84,23 +89,23 @@ namespace WebSiteDev.AddForm
         private string GetImagesFolderPath()
         {
             string appData = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
+
             return Path.Combine(appData, "WebShop", "Images");
         }
 
         /// <summary>
         /// Обработчик кнопки выбора изображения
-        /// Открывает диалог и проверяет размер файла
         /// </summary>
         private void button3_Click(object sender, EventArgs e)
         {
-            using (OpenFileDialog ofd = new OpenFileDialog())
+            using (OpenFileDialog openFileDialog = new OpenFileDialog())
             {
-                ofd.Filter = "Изображения (*.jpg; *.jpeg; *.png)|*.jpg;*.jpeg;*.png";
-                ofd.Title = "Выберите изображение товара";
+                openFileDialog.Filter = "Изображения (*.jpg; *.jpeg; *.png)|*.jpg;*.jpeg;*.png";
+                openFileDialog.Title = "Выберите изображение услуги";
 
-                if (ofd.ShowDialog() == DialogResult.OK)
+                if (openFileDialog.ShowDialog() == DialogResult.OK)
                 {
-                    string sourcePath = ofd.FileName;
+                    string sourcePath = openFileDialog.FileName;
 
                     // Получаем информацию о файле
                     FileInfo fileInfo = new FileInfo(sourcePath);
@@ -129,6 +134,7 @@ namespace WebSiteDev.AddForm
                                 {
                                     // Сравниваем содержимое побайтово
                                     bool isIdentical = true;
+
                                     for (int i = 0; i < oldImageBytes.Length; i++)
                                     {
                                         if (oldImageBytes[i] != newImageBytes[i])
@@ -138,7 +144,7 @@ namespace WebSiteDev.AddForm
                                         }
                                     }
 
-                                    // Если изображения идентичны прерываем
+                                    // Если изображения идентичны прерываем выбор
                                     if (isIdentical)
                                     {
                                         MessageBox.Show("Данное изображение уже выбрано!", "Информация", MessageBoxButtons.OK, MessageBoxIcon.Information);
@@ -180,19 +186,18 @@ namespace WebSiteDev.AddForm
 
         /// <summary>
         /// Обработчик кнопки добавления услуги
-        /// Проверяет все данные, копирует изображение и добавляет запись в БД
         /// </summary>
         private void button2_Click(object sender, EventArgs e)
         {
             // Получаем все введённые данные
             string ProductName = textBox1.Text.Trim();
             string ProductDesc = textBox2.Text.Trim();
-            string rublesText = textBox3.Text.Trim();
-            int categoryId = Convert.ToInt32(comboBox1.SelectedValue);
+            string RublesText = textBox3.Text.Trim();
+            string CategoryId = Convert.ToString(comboBox1.SelectedValue);
 
-            if (ProductName == "")
+            if (string.IsNullOrEmpty(ProductName) || string.IsNullOrEmpty(ProductDesc) || string.IsNullOrEmpty(CategoryId) || string.IsNullOrEmpty(RublesText))
             {
-                MessageBox.Show("Заполните название услуги!", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show("Необходимо заполнить поля отмеченные \"*\"", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
 
@@ -202,31 +207,13 @@ namespace WebSiteDev.AddForm
                 return;
             }
 
-            if (ProductDesc == "")
-            {
-                MessageBox.Show("Заполните описание услуги!", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                return;
-            }
-
             if (ProductDesc.Length < 10)
             {
                 MessageBox.Show("Описание должно быть минимум 10 символов!", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
 
-            if (comboBox1.SelectedIndex <= 0)
-            {
-                MessageBox.Show("Выберите категорию услуги!", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                return;
-            }
-
-            if (rublesText == "")
-            {
-                MessageBox.Show("Заполните цену!", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                return;
-            }
-
-            if (!int.TryParse(rublesText, out int rubles))
+            if (!int.TryParse(RublesText, out int rubles))
             {
                 MessageBox.Show("Рубли должны быть числом!", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return;
@@ -283,6 +270,7 @@ namespace WebSiteDev.AddForm
                         if (existingImageBytes.Length == newImageBytes.Length)
                         {
                             isIdentical = true;
+
                             for (int i = 0; i < newImageBytes.Length; i++)
                             {
                                 if (newImageBytes[i] != existingImageBytes[i])
@@ -300,8 +288,9 @@ namespace WebSiteDev.AddForm
                         }
                         else
                         {
-                            // Если разные добавляем номер к имени файла
+                            // Если разные добавляем номер к имени файла в ()
                             int n = 1;
+
                             while (File.Exists(destPath))
                             {
                                 destPath = Path.Combine(imagesFolder, fileName + " (" + n.ToString() + ")" + extension);
@@ -338,10 +327,13 @@ namespace WebSiteDev.AddForm
                     con.Open();
 
                     // Проверяем что услуга с таким названием не существует
-                    string checkQuery = "SELECT COUNT(*) FROM Product WHERE ProductName = '" + ProductName + "'";
-                    using (MySqlCommand checkCmd = new MySqlCommand(checkQuery, con))
+                    string СheckQuery = "SELECT COUNT(*) FROM Product WHERE ProductName = @ProductName";
+
+                    using (MySqlCommand cmd1 = new MySqlCommand(СheckQuery, con))
                     {
-                        int count = Convert.ToInt32(checkCmd.ExecuteScalar());
+                        cmd1.Parameters.AddWithValue("@ProductName", ProductName);
+
+                        int count = Convert.ToInt32(cmd1.ExecuteScalar());
 
                         if (count > 0)
                         {
@@ -351,11 +343,20 @@ namespace WebSiteDev.AddForm
                     }
 
                     // Добавляем новую услугу в таблицу
-                    string insertQuery = "INSERT INTO Product (ProductName, ProductDescription, ProductPhoto, CategoryID, BasePrice) " +
-                                         "VALUES ('" + ProductName + "', '" + ProductDesc + "', '" + ProductPhoto + "', '" + categoryId + "', '" + price.ToString(System.Globalization.CultureInfo.InvariantCulture) + "')";
-                    using (MySqlCommand insertCmd = new MySqlCommand(insertQuery, con))
+                    string InsertQuery = @"INSERT INTO Product (ProductName, ProductDescription, ProductPhoto, 
+                                                                CategoryID, BasePrice) 
+                                           VALUES (@ProductName, @ProductDesc, @ProductPhoto, @CategoryId, 
+                                                   @BasePrice)";
+
+                    using (MySqlCommand cmd2 = new MySqlCommand(InsertQuery, con))
                     {
-                        insertCmd.ExecuteNonQuery();
+                        cmd2.Parameters.AddWithValue("@ProductName", ProductName);
+                        cmd2.Parameters.AddWithValue("@ProductDesc", ProductDesc);
+                        cmd2.Parameters.AddWithValue("@ProductPhoto", ProductPhoto);
+                        cmd2.Parameters.AddWithValue("@CategoryId", CategoryId);
+                        cmd2.Parameters.AddWithValue("@BasePrice", price);
+
+                        cmd2.ExecuteNonQuery();
                     }
 
                     MessageBox.Show("Услуга успешно добавлена!", "Успех", MessageBoxButtons.OK, MessageBoxIcon.Information);
@@ -415,9 +416,9 @@ namespace WebSiteDev.AddForm
         /// </summary>
         private void numericUpDown1_KeyPress(object sender, KeyPressEventArgs e)
         {
-            NumericUpDown nud = sender as NumericUpDown;
-
             InputRest.OnlyNumbers(e);
+
+            NumericUpDown numericUpDown = sender as NumericUpDown;
 
             // Пропускаем служебные клавиши
             if (char.IsControl(e.KeyChar))
@@ -425,7 +426,7 @@ namespace WebSiteDev.AddForm
                 return;
             }
 
-            string currentText = nud.Text;
+            string currentText = numericUpDown.Text;
 
             // Не допускаем более 2 символов
             if (currentText.Length >= 2)
@@ -436,6 +437,7 @@ namespace WebSiteDev.AddForm
 
             // Проверяем что результат не превысит 99
             string newText = currentText.Insert(currentText.Length, e.KeyChar.ToString());
+
             if (int.TryParse(newText, out int value))
             {
                 if (value > 99)
@@ -443,11 +445,6 @@ namespace WebSiteDev.AddForm
                     e.Handled = true;
                 }
             }
-        }
-
-        private void AddProductForm_Load(object sender, EventArgs e)
-        {
-            Inactivity.OnFormLoad(this);
         }
 
         private void AddProductForm_FormClosing(object sender, FormClosingEventArgs e)
