@@ -64,6 +64,10 @@ namespace WebSiteDev
             SaveBoundsRecursive(this);
         }
 
+        private Size PreMaximizeSize;
+        private Point PreMaximizeLocation;
+        private bool IsPseudoMaximized = false;
+
         protected override void WndProc(ref Message m)
         {
             const int WM_SYSCOMMAND = 0x0112;
@@ -71,10 +75,32 @@ namespace WebSiteDev
 
             if (m.Msg == WM_SYSCOMMAND && m.WParam.ToInt32() == SC_MAXIMIZE && MaxScale < float.MaxValue)
             {
-                // Вместо Maximize просто устанавливаем размер до лимита и центрируем
-                this.WindowState = FormWindowState.Normal;
-                this.Size = this.MaximumSize;
-                this.CenterToScreen();
+                if (!IsPseudoMaximized)
+                {
+                    // Сохраняем текущий размер и позицию
+                    PreMaximizeSize = this.Size;
+                    PreMaximizeLocation = this.Location;
+
+                    // Устанавливаем размер до лимита
+                    this.Size = this.MaximumSize;
+
+                    // Центрируем на экране
+                    Rectangle screen = Screen.FromControl(this).WorkingArea;
+                    this.Location = new Point(
+                        screen.Left + (screen.Width - this.Width) / 2,
+                        screen.Top + (screen.Height - this.Height) / 2
+                    );
+
+                    IsPseudoMaximized = true;
+                }
+                else
+                {
+                    // Возвращаем сохранённый размер и позицию
+                    this.Size = PreMaximizeSize;
+                    this.Location = PreMaximizeLocation;
+
+                    IsPseudoMaximized = false;
+                }
 
                 return;
             }
