@@ -16,6 +16,8 @@ namespace WebSiteDev
         private int failedAttempts = 0;
         private Timer lockoutTimer;
         private int lockoutSeconds = 0;
+        protected override float MaxScale => 1.6f;
+        protected override float MinScale => 0.9f;
 
         public AuthForm()
         {
