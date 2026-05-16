@@ -47,11 +47,14 @@
             this.button2 = new System.Windows.Forms.Button();
             this.button1 = new System.Windows.Forms.Button();
             this.pictureBox2 = new System.Windows.Forms.PictureBox();
+            this.panel2 = new System.Windows.Forms.Panel();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox2)).BeginInit();
+            this.panel2.SuspendLayout();
             this.SuspendLayout();
             // 
             // maskedTextBox1
             // 
+            this.maskedTextBox1.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.maskedTextBox1.Location = new System.Drawing.Point(12, 324);
             this.maskedTextBox1.Mask = "+7 (999) 000-00-00";
             this.maskedTextBox1.Name = "maskedTextBox1";
@@ -89,7 +92,7 @@
             this.comboBox1.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.comboBox1.FormattingEnabled = true;
             this.comboBox1.IntegralHeight = false;
-            this.comboBox1.Location = new System.Drawing.Point(12, 253);
+            this.comboBox1.Location = new System.Drawing.Point(-1, -1);
             this.comboBox1.MaxDropDownItems = 6;
             this.comboBox1.Name = "comboBox1";
             this.comboBox1.Size = new System.Drawing.Size(310, 33);
@@ -108,6 +111,7 @@
             // 
             // textBox6
             // 
+            this.textBox6.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.textBox6.Location = new System.Drawing.Point(339, 110);
             this.textBox6.MaxLength = 20;
             this.textBox6.Name = "textBox6";
@@ -118,6 +122,7 @@
             // 
             // textBox5
             // 
+            this.textBox5.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.textBox5.Location = new System.Drawing.Point(339, 38);
             this.textBox5.MaxLength = 20;
             this.textBox5.Name = "textBox5";
@@ -149,6 +154,7 @@
             // 
             // textBox4
             // 
+            this.textBox4.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.textBox4.Location = new System.Drawing.Point(12, 183);
             this.textBox4.MaxLength = 90;
             this.textBox4.Name = "textBox4";
@@ -159,6 +165,7 @@
             // 
             // textBox3
             // 
+            this.textBox3.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.textBox3.Location = new System.Drawing.Point(12, 110);
             this.textBox3.MaxLength = 75;
             this.textBox3.Name = "textBox3";
@@ -202,6 +209,7 @@
             // 
             // textBox2
             // 
+            this.textBox2.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.textBox2.Location = new System.Drawing.Point(12, 38);
             this.textBox2.MaxLength = 90;
             this.textBox2.Name = "textBox2";
@@ -249,19 +257,28 @@
             this.pictureBox2.TabStop = false;
             this.pictureBox2.Click += new System.EventHandler(this.pictureBox2_Click);
             // 
+            // panel2
+            // 
+            this.panel2.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.panel2.Controls.Add(this.comboBox1);
+            this.panel2.Location = new System.Drawing.Point(12, 253);
+            this.panel2.Name = "panel2";
+            this.panel2.Size = new System.Drawing.Size(310, 30);
+            this.panel2.TabIndex = 66;
+            // 
             // AddEditUsersForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(11F, 25F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.White;
             this.ClientSize = new System.Drawing.Size(667, 501);
+            this.Controls.Add(this.panel2);
             this.Controls.Add(this.pictureBox2);
             this.Controls.Add(this.button1);
             this.Controls.Add(this.button2);
             this.Controls.Add(this.maskedTextBox1);
             this.Controls.Add(this.button5);
             this.Controls.Add(this.label9);
-            this.Controls.Add(this.comboBox1);
             this.Controls.Add(this.label8);
             this.Controls.Add(this.textBox6);
             this.Controls.Add(this.textBox5);
@@ -283,6 +300,7 @@
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.AddUsersForm_FormClosing);
             this.Load += new System.EventHandler(this.AddUsersForm_Load);
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox2)).EndInit();
+            this.panel2.ResumeLayout(false);
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -308,5 +326,6 @@
         private System.Windows.Forms.Button button2;
         private System.Windows.Forms.Button button1;
         private System.Windows.Forms.PictureBox pictureBox2;
+        private System.Windows.Forms.Panel panel2;
     }
 }
