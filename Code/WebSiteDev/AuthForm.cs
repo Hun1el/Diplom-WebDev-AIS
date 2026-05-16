@@ -214,11 +214,11 @@ namespace WebSiteDev
             }
             else if (role == "Менеджер")
             {
-                return new ManagerMainForm(fullName, role, userID);
+                return new ManagerMainForm(fullName, role, userID, fullNameForm);
             }
             else if (role == "Директор")
             {
-                return new DirectorMainForm(fullName, role);
+                return new DirectorMainForm(fullName, role, fullNameForm);
             }
 
             return null;

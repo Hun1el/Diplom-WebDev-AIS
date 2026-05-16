@@ -48,7 +48,11 @@ namespace WebSiteDev.AdminForm
             this.label11 = new System.Windows.Forms.Label();
             this.comboBox1 = new System.Windows.Forms.ComboBox();
             this.timer1 = new System.Windows.Forms.Timer(this.components);
+            this.panel2 = new System.Windows.Forms.Panel();
+            this.panel1 = new System.Windows.Forms.Panel();
             ((System.ComponentModel.ISupportInitialize)(this.dataGridView1)).BeginInit();
+            this.panel2.SuspendLayout();
+            this.panel1.SuspendLayout();
             this.SuspendLayout();
             // 
             // dataGridView1
@@ -221,7 +225,7 @@ namespace WebSiteDev.AdminForm
             "Сортировка не выбрана",
             "От А до Я",
             "От Я до А"});
-            this.comboBox3.Location = new System.Drawing.Point(298, 67);
+            this.comboBox3.Location = new System.Drawing.Point(-1, 0);
             this.comboBox3.Margin = new System.Windows.Forms.Padding(6);
             this.comboBox3.Name = "comboBox3";
             this.comboBox3.Size = new System.Drawing.Size(246, 33);
@@ -249,7 +253,7 @@ namespace WebSiteDev.AdminForm
             "Администратор",
             "Менеджер",
             "Директор"});
-            this.comboBox1.Location = new System.Drawing.Point(553, 68);
+            this.comboBox1.Location = new System.Drawing.Point(-1, -1);
             this.comboBox1.Name = "comboBox1";
             this.comboBox1.Size = new System.Drawing.Size(194, 33);
             this.comboBox1.TabIndex = 12;
@@ -259,21 +263,39 @@ namespace WebSiteDev.AdminForm
             // 
             this.timer1.Tick += new System.EventHandler(this.timer1_Tick);
             // 
+            // panel2
+            // 
+            this.panel2.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.panel2.Controls.Add(this.comboBox1);
+            this.panel2.Location = new System.Drawing.Point(553, 68);
+            this.panel2.Name = "panel2";
+            this.panel2.Size = new System.Drawing.Size(194, 32);
+            this.panel2.TabIndex = 66;
+            // 
+            // panel1
+            // 
+            this.panel1.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.panel1.Controls.Add(this.comboBox3);
+            this.panel1.Location = new System.Drawing.Point(298, 67);
+            this.panel1.Name = "panel1";
+            this.panel1.Size = new System.Drawing.Size(246, 33);
+            this.panel1.TabIndex = 67;
+            // 
             // UsersControl
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(11F, 25F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.White;
+            this.Controls.Add(this.panel1);
+            this.Controls.Add(this.panel2);
             this.Controls.Add(this.label12);
             this.Controls.Add(this.label11);
             this.Controls.Add(this.label10);
-            this.Controls.Add(this.comboBox3);
             this.Controls.Add(this.button7);
             this.Controls.Add(this.button6);
             this.Controls.Add(this.label2);
             this.Controls.Add(this.label1);
             this.Controls.Add(this.button4);
-            this.Controls.Add(this.comboBox1);
             this.Controls.Add(this.textBox1);
             this.Controls.Add(this.button2);
             this.Controls.Add(this.dataGridView1);
@@ -283,6 +305,8 @@ namespace WebSiteDev.AdminForm
             this.Size = new System.Drawing.Size(882, 711);
             this.Load += new System.EventHandler(this.UsersControl_Load);
             ((System.ComponentModel.ISupportInitialize)(this.dataGridView1)).EndInit();
+            this.panel2.ResumeLayout(false);
+            this.panel1.ResumeLayout(false);
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -304,5 +328,7 @@ namespace WebSiteDev.AdminForm
         private System.Windows.Forms.Label label11;
         private System.Windows.Forms.ComboBox comboBox1;
         private System.Windows.Forms.Timer timer1;
+        private Panel panel2;
+        private Panel panel1;
     }
 }
