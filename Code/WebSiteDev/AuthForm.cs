@@ -218,7 +218,7 @@ namespace WebSiteDev
             }
             else if (role == "Директор")
             {
-                return new DirectorMainForm(fullName, role);
+                return new DirectorMainForm(fullName, role, fullNameForm);
             }
 
             return null;

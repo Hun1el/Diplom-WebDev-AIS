@@ -4,26 +4,34 @@ using System.Windows.Forms;
 
 namespace WebSiteDev.ManagerForm
 {
-    public partial class DirectorMainForm : Form
+    public partial class DirectorMainForm : ScalableForm
     {
         private string fullName;
         private string roleName;
+        private string fullNameForm;
         private Button currentSelectedButton = null;
         private UserControl currentControl = null;
 
-        public DirectorMainForm(string fullName, string roleName)
+        public DirectorMainForm(string fullName, string roleName, string fullNameForm)
         {
             InitializeComponent();
             this.fullName = fullName;
             this.roleName = roleName;
+            this.fullNameForm = fullNameForm;
+            button3.TabStop = false;
+            button5.TabStop = false;
+            button6.TabStop = false;
         }
 
         private void DirectorMainForm_Load(object sender, EventArgs e)
         {
             Inactivity.OnFormLoad(this);
 
+            this.Text = $"Главное меню ({roleName}: {fullNameForm})";
             label2.Text = $"Сотрудник: {fullName}";
             label3.Text = $"Доступ: {roleName}";
+
+            this.ActiveControl = null;
         }
 
         /// <summary>
@@ -31,11 +39,11 @@ namespace WebSiteDev.ManagerForm
         /// </summary>
         private void LoadControl(UserControl control)
         {
-            // Скрываем элементы приветствия
             pictureBox2.Visible = false;
             label1.Visible = false;
             label2.Visible = false;
             label3.Visible = false;
+            label4.Visible = false;
 
             // Удаляем старый контрол если он есть
             if (currentControl != null)
@@ -53,7 +61,7 @@ namespace WebSiteDev.ManagerForm
         }
 
         /// <summary>
-        /// Кнопка "Учёт заказов" загружает контрол для просмотра и экспорта заказов
+        /// Кнопка "Учет заказов" загружает контрол для просмотра и формирования отчета по заказам
         /// </summary>
         private void button3_Click(object sender, EventArgs e)
         {
@@ -64,7 +72,7 @@ namespace WebSiteDev.ManagerForm
 
             SelectButton(button3);
             LoadControl(new DirectorOrderControl());
-            this.Text = "Учет заказов";
+            this.Text = $"Учет заказов ({roleName}: {fullNameForm})";
         }
 
         /// <summary>
@@ -74,7 +82,6 @@ namespace WebSiteDev.ManagerForm
         {
             SelectButton(button5);
 
-            // Запрашиваем подтверждение
             var result = MessageBox.Show("Вы действительно хотите сменить учетную запись?", "Подтверждение", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
 
             if (result == DialogResult.Yes)
@@ -86,14 +93,12 @@ namespace WebSiteDev.ManagerForm
                     currentControl = null;
                 }
 
-                // Закрываем форму директора
-                this.DialogResult = DialogResult.OK;
                 this.Close();
             }
             else
             {
-                // Если отказали - выбираем предыдущую кнопку
                 SelectButton(currentSelectedButton);
+                this.ActiveControl = null;
             }
         }
 
@@ -104,17 +109,16 @@ namespace WebSiteDev.ManagerForm
         {
             SelectButton(button6);
 
-            // Запрашиваем подтверждение
             var result = MessageBox.Show("Вы действительно хотите выйти из приложения?", "Подтверждение", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
 
             if (result == DialogResult.Yes)
             {
-                this.DialogResult = DialogResult.OK;
                 Application.Exit();
             }
             else
             {
                 SelectButton(currentSelectedButton);
+                this.ActiveControl = null;
             }
         }
 
@@ -130,8 +134,8 @@ namespace WebSiteDev.ManagerForm
                 if (btn == selectedButton)
                 {
                     // Окрашиваем выбранную кнопку в голубой цвет
+                    btn.Font = new Font("Segoe UI Semibold", btn.Font.Size);
                     btn.BackColor = Color.FromArgb(45, 156, 219);
-                    btn.FlatStyle = FlatStyle.Flat;
 
                     // Кнопка выхода красная
                     if (btn == button6)
@@ -148,17 +152,16 @@ namespace WebSiteDev.ManagerForm
                 else
                 {
                     // Невыбранные кнопки стандартное оформление
-                    btn.BackColor = SystemColors.Control;
-                    btn.FlatStyle = FlatStyle.Standard;
+                    btn.Font = new Font("Segoe UI", btn.Font.Size);
+                    btn.BackColor = Color.White;
 
-                    // Кнопка выхода - красный текст
+                    // Кнопка выхода красный текст
                     if (btn == button6)
                     {
                         btn.ForeColor = Color.Red;
                     }
                     else
                     {
-                        // Остальные кнопки чёрный текст
                         btn.ForeColor = Color.Black;
                     }
                 }
