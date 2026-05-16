@@ -10,7 +10,7 @@ namespace WebSiteDev.AddForm
     /// <summary>
     /// Форма для добавления / редактирования пользователя
     /// </summary>
-    public partial class AddEditUsersForm : Form
+    public partial class AddEditUsersForm : ScalableForm
     {
         public enum FormMode
         {
@@ -18,6 +18,8 @@ namespace WebSiteDev.AddForm
             Edit = 1
         }
 
+        protected override float MaxScale => 1.6f;
+        protected override float MinScale => 0.9f;
         private FormMode mode;
         private int editUserID = -1;
         private string editOldLogin = null;
