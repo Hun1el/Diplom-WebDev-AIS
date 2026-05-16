@@ -125,6 +125,7 @@
             // 
             this.button3.BackColor = System.Drawing.Color.White;
             this.button3.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.button3.Font = new System.Drawing.Font("Segoe UI", 14.25F);
             this.button3.Location = new System.Drawing.Point(14, 411);
             this.button3.Margin = new System.Windows.Forms.Padding(5, 6, 5, 6);
             this.button3.Name = "button3";
@@ -164,6 +165,7 @@
             // 
             this.button1.BackColor = System.Drawing.Color.White;
             this.button1.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.button1.Font = new System.Drawing.Font("Segoe UI", 14.25F);
             this.button1.ImageAlign = System.Drawing.ContentAlignment.MiddleLeft;
             this.button1.Location = new System.Drawing.Point(14, 297);
             this.button1.Margin = new System.Windows.Forms.Padding(5, 6, 5, 6);
@@ -255,6 +257,7 @@
             this.Font = new System.Drawing.Font("Segoe UI", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.Margin = new System.Windows.Forms.Padding(5, 6, 5, 6);
+            this.MinimumSize = new System.Drawing.Size(240, 240);
             this.Name = "ManagerMainForm";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "Главное меню";

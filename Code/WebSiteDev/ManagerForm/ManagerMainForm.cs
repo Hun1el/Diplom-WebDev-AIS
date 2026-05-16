@@ -7,10 +7,11 @@ namespace WebSiteDev.ManagerForm
     /// <summary>
     /// Главная форма менеджера
     /// </summary>
-    public partial class ManagerMainForm : Form
+    public partial class ManagerMainForm : ScalableForm
     {
         private string fullName;
         private string roleName;
+        private string fullNameForm;
         private int CurrentUserID;
         private Button currentSelectedButton = null;
         private UserControl currentControl = null;
@@ -23,11 +24,12 @@ namespace WebSiteDev.ManagerForm
             get { return button2; }
         }
 
-        public ManagerMainForm(string fullName, string roleName, int userID)
+        public ManagerMainForm(string fullName, string roleName, int userID, string fullNameForm)
         {
             InitializeComponent();
             this.fullName = fullName;
             this.roleName = roleName;
+            this.fullNameForm = fullNameForm;
             this.CurrentUserID = userID;
         }
 
@@ -35,18 +37,20 @@ namespace WebSiteDev.ManagerForm
         {
             Inactivity.OnFormLoad(this);
 
+            this.Text = $"Главное меню ({roleName}: {fullNameForm})";
             label2.Text = $"Сотрудник: {fullName}";
             label3.Text = $"Доступ: {roleName}";
+
+            this.ActiveControl = null;
         }
 
         public void LoadControl(UserControl control)
         {
-
-            // Скрываем элементы приветствия
             pictureBox2.Visible = false;
             label1.Visible = false;
             label2.Visible = false;
             label3.Visible = false;
+            label4.Visible = false;
 
             // Удаляем старый контрол если он есть
             if (currentControl != null)
@@ -64,7 +68,7 @@ namespace WebSiteDev.ManagerForm
         }
 
         /// <summary>
-        /// Публичный метод для выбора кнопки из других форм
+        /// Метод для выбора кнопки из других форм
         /// </summary>
         public void SelectButtonPublic(Button button)
         {
@@ -76,14 +80,14 @@ namespace WebSiteDev.ManagerForm
         /// </summary>
         private void button1_Click(object sender, EventArgs e)
         {
-            // Если уже открыт этот контрол - ничего не делаем
+            // Если уже открыт этот контрол ничего не делаем
             if (currentSelectedButton == button1)
             {
                 return;
             }
 
-            LoadControl(new ManagerForm.ClientsControl());
-            this.Text = "Список клиентов";
+            LoadControl(new ClientsControl());
+            this.Text = $"Список клиентов ({roleName}: {fullNameForm})";
             SelectButton(button1);
         }
 
@@ -98,8 +102,8 @@ namespace WebSiteDev.ManagerForm
                 return;
             }
 
-            LoadControl(new ManagerForm.ProductControl(roleName, CurrentUserID, fullName));
-            this.Text = "Список услуг";
+            LoadControl(new ProductControl(roleName, CurrentUserID, fullName));
+            this.Text = $"Список услуг ({roleName}: {fullNameForm})";
             SelectButton(button2);
         }
 
@@ -108,19 +112,19 @@ namespace WebSiteDev.ManagerForm
         /// </summary>
         private void button3_Click(object sender, EventArgs e)
         {
-            // Если уже открыт этот контрол - ничего не делаем
+            // Если уже открыт этот контрол ничего не делаем
             if (currentSelectedButton == button3)
             {
                 return;
             }
 
-            LoadControl(new ManagerForm.OrderControl(roleName, CurrentUserID, fullName));
-            this.Text = "Список заказов";
+            LoadControl(new OrderControl(roleName, CurrentUserID, fullName));
+            this.Text = $"Список заказов ({roleName}: {fullNameForm})";
             SelectButton(button3);
         }
 
         /// <summary>
-        /// Кнопка "Смена учётной записи" закрывает форму менеджера и возвращает на форму входа
+        /// Кнопка "Смены пользователя" закрывает форму и возвращает на форму входа
         /// </summary>
         private void button5_Click(object sender, EventArgs e)
         {
@@ -138,14 +142,13 @@ namespace WebSiteDev.ManagerForm
                     currentControl = null;
                 }
 
-                // Закрываем форму менеджера
-                this.DialogResult = DialogResult.OK;
                 this.Close();
             }
             else
             {
                 // Если отказали выбираем предыдущую кнопку
                 SelectButton(currentSelectedButton);
+                this.ActiveControl = null;
             }
         }
 
@@ -156,17 +159,16 @@ namespace WebSiteDev.ManagerForm
         {
             SelectButton(button6);
 
-            // Запрашиваем подтверждение
             var result = MessageBox.Show("Вы действительно хотите выйти из приложения?", "Подтверждение", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
 
             if (result == DialogResult.Yes)
             {
-                this.DialogResult = DialogResult.OK;
                 Application.Exit();
             }
             else
             {
                 SelectButton(currentSelectedButton);
+                this.ActiveControl = null;
             }
         }
 
@@ -182,8 +184,8 @@ namespace WebSiteDev.ManagerForm
                 if (btn == selectedButton)
                 {
                     // Окрашиваем выбранную кнопку в голубой цвет
+                    btn.Font = new Font("Segoe UI Semibold", btn.Font.Size);
                     btn.BackColor = Color.FromArgb(45, 156, 219);
-                    btn.FlatStyle = FlatStyle.Flat;
 
                     // Кнопка выхода красная
                     if (btn == button6)
@@ -200,8 +202,8 @@ namespace WebSiteDev.ManagerForm
                 else
                 {
                     // Невыбранные кнопки стандартное оформление
-                    btn.BackColor = SystemColors.Control;
-                    btn.FlatStyle = FlatStyle.Standard;
+                    btn.Font = new Font("Segoe UI", btn.Font.Size);
+                    btn.BackColor = Color.White;
 
                     // Кнопка выхода красный текст
                     if (btn == button6)
@@ -210,7 +212,6 @@ namespace WebSiteDev.ManagerForm
                     }
                     else
                     {
-                        // Остальные кнопки чёрный текст
                         btn.ForeColor = Color.Black;
                     }
                 }

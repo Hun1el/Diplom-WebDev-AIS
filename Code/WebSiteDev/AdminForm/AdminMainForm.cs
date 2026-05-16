@@ -75,7 +75,7 @@ namespace WebSiteDev
             }
 
             LoadControl(new AdminForm.UsersControl(userID));
-            this.Text = "Пользователи";
+            this.Text = $"Пользователи ({roleName}: {fullNameForm})";
             SelectButton(button1);
         }
 
@@ -90,7 +90,7 @@ namespace WebSiteDev
             }
 
             LoadControl(new AdminForm.CategoryControl());
-            this.Text = "Список категорий";
+            this.Text = $"Список категорий ({roleName}: {fullNameForm})";
             SelectButton(button2);
         }
 
@@ -105,7 +105,7 @@ namespace WebSiteDev
             }
 
             LoadControl(new AdminForm.RoleControl());
-            this.Text = "Список ролей";
+            this.Text = $"Список ролей ({roleName}: {fullNameForm})";
             SelectButton(button3);
         }
 
@@ -120,7 +120,7 @@ namespace WebSiteDev
             }
 
             LoadControl(new AdminForm.StatusControl());
-            this.Text = "Список статусов";
+            this.Text = $"Список статусов ({roleName}: {fullNameForm})";
             SelectButton(button4);
         }
 
@@ -179,7 +179,7 @@ namespace WebSiteDev
             }
 
             LoadControl(new ProductControl(roleName));
-            this.Text = "Список услуг";
+            this.Text = $"Список услуг ({roleName}: {fullNameForm})";
             SelectButton(button7);
         }
 
@@ -196,6 +196,7 @@ namespace WebSiteDev
                 if (btn == selectedButton)
                 {
                     // Выделяем нажатую кнопку
+                    btn.Font = new Font("Segoe UI Semibold", btn.Font.Size);
                     btn.BackColor = Color.FromArgb(45, 156, 219);
 
                     // Кнопка выхода всегда красная
@@ -212,6 +213,7 @@ namespace WebSiteDev
                 else
                 {
                     // Убираем выделение с остальных кнопок
+                    btn.Font = new Font("Segoe UI", btn.Font.Size);
                     btn.BackColor = Color.White;
 
                     // Кнопка выхода красного цвета даже без выделения

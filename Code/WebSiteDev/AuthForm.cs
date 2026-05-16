@@ -214,7 +214,7 @@ namespace WebSiteDev
             }
             else if (role == "Менеджер")
             {
-                return new ManagerMainForm(fullName, role, userID);
+                return new ManagerMainForm(fullName, role, userID, fullNameForm);
             }
             else if (role == "Директор")
             {
