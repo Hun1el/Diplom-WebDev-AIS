@@ -130,9 +130,9 @@ namespace WebSiteDev.AdminForm
             this.label2.Location = new System.Drawing.Point(309, 0);
             this.label2.Margin = new System.Windows.Forms.Padding(6, 0, 6, 0);
             this.label2.Name = "label2";
-            this.label2.Size = new System.Drawing.Size(332, 45);
+            this.label2.Size = new System.Drawing.Size(319, 45);
             this.label2.TabIndex = 18;
-            this.label2.Text = "Справочник статусов";
+            this.label2.Text = "Справочник статусы";
             this.label2.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             // 
             // button7

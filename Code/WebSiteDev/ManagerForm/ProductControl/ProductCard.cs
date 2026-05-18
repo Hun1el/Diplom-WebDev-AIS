@@ -7,7 +7,7 @@ namespace WebSiteDev
     /// <summary>
     /// Контрол-карточка товара с отображением информации и возможностью редактирования
     /// </summary>
-    public partial class ProductCard : UserControl
+    public partial class ProductCard : ScalableUserControl
     {
         // События для взаимодействия с родительским контролом
         public event EventHandler EditButtonClicked;

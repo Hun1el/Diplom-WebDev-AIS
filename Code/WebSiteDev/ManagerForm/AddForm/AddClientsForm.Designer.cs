@@ -146,7 +146,7 @@
             this.button2.Name = "button2";
             this.button2.Size = new System.Drawing.Size(335, 43);
             this.button2.TabIndex = 52;
-            this.button2.Text = "Добавить";
+            this.button2.Text = "Изменить клиента";
             this.button2.UseVisualStyleBackColor = false;
             this.button2.Click += new System.EventHandler(this.button2_Click);
             // 
@@ -159,7 +159,7 @@
             this.button1.Name = "button1";
             this.button1.Size = new System.Drawing.Size(335, 43);
             this.button1.TabIndex = 53;
-            this.button1.Text = "Вернуться";
+            this.button1.Text = "Назад";
             this.button1.UseVisualStyleBackColor = false;
             this.button1.Click += new System.EventHandler(this.button1_Click);
             // 
@@ -246,7 +246,7 @@
             this.MinimizeBox = false;
             this.Name = "AddClientsForm";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
-            this.Text = "Добавление клиента";
+            this.Text = "Изменение клиента";
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.AddClientsForm_FormClosing);
             this.Load += new System.EventHandler(this.AddClientsForm_Load);
             this.ResumeLayout(false);
