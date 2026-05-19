@@ -279,6 +279,7 @@
             this.flowPanel.Size = new System.Drawing.Size(876, 513);
             this.flowPanel.TabIndex = 48;
             this.flowPanel.WrapContents = false;
+            this.flowPanel.Resize += new System.EventHandler(this.flowPanel_Resize);
             // 
             // contextMenuStrip1
             // 

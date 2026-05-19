@@ -73,6 +73,12 @@ namespace WebSiteDev
             }
 
             button5.ContextMenuStrip = null;
+            LabelColor.ApplyRedStar(this);
+            label8.Visible = false;
+            label9.Visible = false;
+            label10.Visible = false;
+            label11.Visible = false;
+            label12.Visible = false;
         }
 
         /// <summary>
@@ -233,6 +239,11 @@ namespace WebSiteDev
             label6.Visible = true;
             button3.Visible = true;
             button4.Visible = true;
+            label8.Visible = true;
+            label9.Visible = true;
+            label10.Visible = true;
+            label11.Visible = true;
+            label12.Visible = true;
         }
 
         public void HideEditMode()
@@ -247,6 +258,11 @@ namespace WebSiteDev
             label6.Visible = false;
             button3.Visible = false;
             button4.Visible = false;
+            label8.Visible = false;
+            label9.Visible = false;
+            label10.Visible = false;
+            label11.Visible = false;
+            label12.Visible = false;
 
             // Показываем элементы режима просмотра
             label1.Visible = true;
@@ -375,6 +391,11 @@ namespace WebSiteDev
             {
                 ContextMenuStrip = null;
             }
+        }
+
+        private void label9_Click(object sender, EventArgs e)
+        {
+
         }
     }
 }
