@@ -253,7 +253,7 @@ namespace WebSiteDev.AdminForm
             "Администратор",
             "Менеджер",
             "Директор"});
-            this.comboBox1.Location = new System.Drawing.Point(-1, -1);
+            this.comboBox1.Location = new System.Drawing.Point(-1, 0);
             this.comboBox1.Name = "comboBox1";
             this.comboBox1.Size = new System.Drawing.Size(194, 33);
             this.comboBox1.TabIndex = 12;

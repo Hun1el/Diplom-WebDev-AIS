@@ -10,7 +10,7 @@ namespace WebSiteDev
     /// <summary>
     /// Контрол для управления изображениями товара
     /// </summary>
-    public partial class ImageControl : UserControl
+    public partial class ImageControl : ScalableUserControl
     {
         private string selectedImagePath;
         private Image originalImage;

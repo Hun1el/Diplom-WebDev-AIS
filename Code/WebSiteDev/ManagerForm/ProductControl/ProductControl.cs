@@ -11,7 +11,7 @@ namespace WebSiteDev.ManagerForm
     /// <summary>
     /// Контрол для просмотра и управления товарами/услугами с поддержкой корзины заказов
     /// </summary>
-    public partial class ProductControl : UserControl
+    public partial class ProductControl : ScalableUserControl
     {
         private DataManipulation dataManipulation;
         private string userRole;
