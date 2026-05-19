@@ -240,6 +240,7 @@
             this.button1.TabIndex = 4;
             this.button1.Text = "Корзина\r\n";
             this.button1.UseVisualStyleBackColor = false;
+            this.button1.Click += new System.EventHandler(this.button1_Click);
             // 
             // button2
             // 
@@ -287,6 +288,7 @@
             this.toolStripMenuItem2});
             this.contextMenuStrip1.Name = "contextMenuStrip1";
             this.contextMenuStrip1.Size = new System.Drawing.Size(184, 26);
+            this.contextMenuStrip1.Click += new System.EventHandler(this.contextMenuStrip1_Click);
             // 
             // toolStripMenuItem2
             // 
