@@ -6,8 +6,11 @@ namespace WebSiteDev
     /// <summary>
     /// Форма для просмотра полного описания товара в отдельном окне
     /// </summary>
-    public partial class DescriptionProduct : Form
+    public partial class DescriptionProduct : ScalableForm
     {
+        protected override float MaxScale => 1.6f;
+        protected override float MinScale => 0.9f;
+
         public DescriptionProduct()
         {
             InitializeComponent();

@@ -10,7 +10,7 @@ namespace WebSiteDev
     /// <summary>
     /// Контрол для управления изображениями товара
     /// </summary>
-    public partial class ImageControl : UserControl
+    public partial class ImageControl : ScalableUserControl
     {
         private string selectedImagePath;
         private Image originalImage;
@@ -60,14 +60,14 @@ namespace WebSiteDev
         /// </summary>
         private void button1_Click(object sender, EventArgs e)
         {
-            using (OpenFileDialog ofd = new OpenFileDialog())
+            using (OpenFileDialog openFileDialog = new OpenFileDialog())
             {
-                ofd.Filter = "Image Files|*.jpg;*.jpeg;*.png;*.bmp|All Files|*.*";
-                ofd.Title = "Выберите изображение";
+                openFileDialog.Filter = "Image Files|*.jpg;*.jpeg;*.png;*.bmp|All Files|*.*";
+                openFileDialog.Title = "Выберите изображение";
 
-                if (ofd.ShowDialog() == DialogResult.OK)
+                if (openFileDialog.ShowDialog() == DialogResult.OK)
                 {
-                    string sourcePath = ofd.FileName;
+                    string sourcePath = openFileDialog.FileName;
 
                     try
                     {

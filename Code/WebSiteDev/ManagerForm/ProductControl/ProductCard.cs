@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Data;
+using System.Drawing;
 using System.Windows.Forms;
 
 namespace WebSiteDev
@@ -7,7 +8,7 @@ namespace WebSiteDev
     /// <summary>
     /// Контрол-карточка товара с отображением информации и возможностью редактирования
     /// </summary>
-    public partial class ProductCard : UserControl
+    public partial class ProductCard : ScalableUserControl
     {
         // События для взаимодействия с родительским контролом
         public event EventHandler EditButtonClicked;
@@ -62,17 +63,62 @@ namespace WebSiteDev
                 button6.Visible = false;
             }
 
-            // Если описание длинное показываем кнопку "Полное описание"
-            if (productDesc.Length > 285)
+            // Влезает ли описание в label2
+            UpdateExpandButtonVisibility();
+
+            button5.ContextMenuStrip = null;
+            LabelColor.ApplyRedStar(this);
+            label8.Visible = false;
+            label9.Visible = false;
+            label10.Visible = false;
+            label12.Visible = false;
+            panel1.Visible = false;
+        }
+
+        /// <summary>
+        /// Проверяет помещается ли текст с учётом текущего масштаба и размера
+        /// </summary>
+        private bool IsTextFitting()
+        {
+            if (string.IsNullOrEmpty(label2.Text))
             {
-                button5.Visible = true;
+                return true;
             }
-            else
+
+            Size textSize = TextRenderer.MeasureText(
+                label2.Text,
+                label2.Font,
+                new Size(label2.Width, int.MaxValue),
+                TextFormatFlags.WordBreak | TextFormatFlags.TextBoxControl
+            );
+
+            if (textSize.Height <= label2.Height)
+            {
+                return true;
+            }
+
+            return false;
+        }
+
+        /// <summary>
+        /// Обновляет видимость кнопки "Полное описание"
+        /// </summary>
+        private void UpdateExpandButtonVisibility()
+        {
+            if (!label2.Visible)
+            {
+                button5.Visible = false;
+                return;
+            }
+
+            if (IsTextFitting())
             {
                 button5.Visible = false;
             }
-
-            button5.ContextMenuStrip = null;
+            else
+            {
+                button5.Visible = true;
+            }
         }
 
         /// <summary>
@@ -82,12 +128,9 @@ namespace WebSiteDev
         {
             string productDesc = RowData["ProductDescription"].ToString();
 
-            if (productDesc.Length > 285)
-            {
-                DescriptionProduct descForm = new DescriptionProduct();
-                descForm.SetDescription(RowData["ProductName"].ToString(), productDesc);
-                descForm.ShowDialog();
-            }
+            DescriptionProduct descriptionProduct = new DescriptionProduct();
+            descriptionProduct.SetDescription(RowData["ProductName"].ToString(), productDesc);
+            descriptionProduct.ShowDialog();
         }
 
         /// <summary>
@@ -233,6 +276,11 @@ namespace WebSiteDev
             label6.Visible = true;
             button3.Visible = true;
             button4.Visible = true;
+            label8.Visible = true;
+            label9.Visible = true;
+            label10.Visible = true;
+            label12.Visible = true;
+            panel1.Visible = true;
         }
 
         public void HideEditMode()
@@ -247,6 +295,11 @@ namespace WebSiteDev
             label6.Visible = false;
             button3.Visible = false;
             button4.Visible = false;
+            label8.Visible = false;
+            label9.Visible = false;
+            label10.Visible = false;
+            label12.Visible = false;
+            panel1.Visible = false;
 
             // Показываем элементы режима просмотра
             label1.Visible = true;
@@ -256,12 +309,8 @@ namespace WebSiteDev
             button1.Visible = true;
             button2.Visible = true;
 
-            // Показываем кнопку полного описания если описание длинное
-            string productDesc = RowData["ProductDescription"].ToString();
-            if (productDesc.Length > 150)
-            {
-                button5.Visible = true;
-            }
+            // Влезает ли описание после выхода из редактирования
+            UpdateExpandButtonVisibility();
         }
 
         /// <summary>
@@ -375,6 +424,24 @@ namespace WebSiteDev
             {
                 ContextMenuStrip = null;
             }
+        }
+
+        /// <summary>
+        /// При изменении размера контрола перепроверяем видимость кнопки
+        /// </summary>
+        protected override void OnResize(EventArgs e)
+        {
+            base.OnResize(e);
+            UpdateExpandButtonVisibility();
+        }
+
+        /// <summary>
+        /// При масштабировании контрола перепроверяем видимость кнопки
+        /// </summary>
+        protected override void ScaleControl(SizeF factor, BoundsSpecified specified)
+        {
+            base.ScaleControl(factor, specified);
+            UpdateExpandButtonVisibility();
         }
     }
 }
