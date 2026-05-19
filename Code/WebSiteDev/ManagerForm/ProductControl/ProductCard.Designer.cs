@@ -36,7 +36,6 @@
             this.label8 = new System.Windows.Forms.Label();
             this.label9 = new System.Windows.Forms.Label();
             this.label10 = new System.Windows.Forms.Label();
-            this.label11 = new System.Windows.Forms.Label();
             this.label7 = new System.Windows.Forms.Label();
             this.label12 = new System.Windows.Forms.Label();
             ((System.ComponentModel.ISupportInitialize)(this.numericUpDown1)).BeginInit();
@@ -49,7 +48,7 @@
             this.label1.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(51)))), ((int)(((byte)(65)))), ((int)(((byte)(85)))));
             this.label1.Location = new System.Drawing.Point(9, 3);
             this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(785, 43);
+            this.label1.Size = new System.Drawing.Size(861, 43);
             this.label1.TabIndex = 1;
             this.label1.Text = "Название";
             this.label1.MouseDown += new System.Windows.Forms.MouseEventHandler(this.ProductCard_MouseDown);
@@ -57,7 +56,7 @@
             // label2
             // 
             this.label2.AutoEllipsis = true;
-            this.label2.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F);
+            this.label2.Font = new System.Drawing.Font("Segoe UI", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
             this.label2.Location = new System.Drawing.Point(285, 116);
             this.label2.Name = "label2";
             this.label2.Size = new System.Drawing.Size(516, 122);
@@ -67,11 +66,11 @@
             // 
             // label3
             // 
-            this.label3.Font = new System.Drawing.Font("Segoe UI", 21.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            this.label3.Font = new System.Drawing.Font("Segoe UI", 18F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
             this.label3.ForeColor = System.Drawing.SystemColors.ControlText;
-            this.label3.Location = new System.Drawing.Point(280, 52);
+            this.label3.Location = new System.Drawing.Point(281, 52);
             this.label3.Name = "label3";
-            this.label3.Size = new System.Drawing.Size(515, 38);
+            this.label3.Size = new System.Drawing.Size(589, 38);
             this.label3.TabIndex = 3;
             this.label3.Text = "Категория: ";
             this.label3.MouseDown += new System.Windows.Forms.MouseEventHandler(this.ProductCard_MouseDown);
@@ -201,7 +200,7 @@
             this.button5.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.button5.Font = new System.Drawing.Font("Segoe UI Semibold", 14.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
             this.button5.ForeColor = System.Drawing.Color.White;
-            this.button5.Location = new System.Drawing.Point(288, 244);
+            this.button5.Location = new System.Drawing.Point(288, 230);
             this.button5.Name = "button5";
             this.button5.Size = new System.Drawing.Size(215, 35);
             this.button5.TabIndex = 18;
@@ -293,7 +292,6 @@
             this.label9.Size = new System.Drawing.Size(29, 40);
             this.label9.TabIndex = 21;
             this.label9.Text = "*";
-            this.label9.Click += new System.EventHandler(this.label9_Click);
             // 
             // label10
             // 
@@ -304,16 +302,6 @@
             this.label10.Size = new System.Drawing.Size(29, 40);
             this.label10.TabIndex = 22;
             this.label10.Text = "*";
-            // 
-            // label11
-            // 
-            this.label11.AutoSize = true;
-            this.label11.Font = new System.Drawing.Font("Segoe UI", 21.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.label11.Location = new System.Drawing.Point(342, 253);
-            this.label11.Name = "label11";
-            this.label11.Size = new System.Drawing.Size(29, 40);
-            this.label11.TabIndex = 23;
-            this.label11.Text = "*";
             // 
             // label7
             // 
@@ -330,11 +318,11 @@
             // 
             this.label12.Font = new System.Drawing.Font("Segoe UI Semibold", 14.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
             this.label12.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(51)))), ((int)(((byte)(65)))), ((int)(((byte)(85)))));
-            this.label12.Location = new System.Drawing.Point(280, 260);
+            this.label12.Location = new System.Drawing.Point(284, 257);
             this.label12.Name = "label12";
             this.label12.Size = new System.Drawing.Size(64, 27);
             this.label12.TabIndex = 26;
-            this.label12.Text = "Цена: ";
+            this.label12.Text = "Цена:*";
             // 
             // ProductCard
             // 
@@ -364,7 +352,6 @@
             this.Controls.Add(this.label4);
             this.Controls.Add(this.button1);
             this.Controls.Add(this.button2);
-            this.Controls.Add(this.label11);
             this.Font = new System.Drawing.Font("Segoe UI", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
             this.Name = "ProductCard";
             this.Size = new System.Drawing.Size(873, 345);
@@ -396,7 +383,6 @@
         private System.Windows.Forms.Label label8;
         private System.Windows.Forms.Label label9;
         private System.Windows.Forms.Label label10;
-        private System.Windows.Forms.Label label11;
         private System.Windows.Forms.Label label7;
         public System.Windows.Forms.Label label12;
     }
