@@ -226,7 +226,7 @@
             this.bottomPanel.Location = new System.Drawing.Point(0, 623);
             this.bottomPanel.Margin = new System.Windows.Forms.Padding(6);
             this.bottomPanel.Name = "bottomPanel";
-            this.bottomPanel.Size = new System.Drawing.Size(882, 88);
+            this.bottomPanel.Size = new System.Drawing.Size(877, 88);
             this.bottomPanel.TabIndex = 47;
             // 
             // button1
@@ -276,7 +276,7 @@
             this.flowPanel.Location = new System.Drawing.Point(0, 108);
             this.flowPanel.Margin = new System.Windows.Forms.Padding(6);
             this.flowPanel.Name = "flowPanel";
-            this.flowPanel.Size = new System.Drawing.Size(876, 513);
+            this.flowPanel.Size = new System.Drawing.Size(871, 513);
             this.flowPanel.TabIndex = 48;
             this.flowPanel.WrapContents = false;
             this.flowPanel.Resize += new System.EventHandler(this.flowPanel_Resize);

@@ -72,6 +72,7 @@ namespace WebSiteDev
             label9.Visible = false;
             label10.Visible = false;
             label12.Visible = false;
+            panel1.Visible = false;
         }
 
         /// <summary>
@@ -279,6 +280,7 @@ namespace WebSiteDev
             label9.Visible = true;
             label10.Visible = true;
             label12.Visible = true;
+            panel1.Visible = true;
         }
 
         public void HideEditMode()
@@ -297,6 +299,7 @@ namespace WebSiteDev
             label9.Visible = false;
             label10.Visible = false;
             label12.Visible = false;
+            panel1.Visible = false;
 
             // Показываем элементы режима просмотра
             label1.Visible = true;

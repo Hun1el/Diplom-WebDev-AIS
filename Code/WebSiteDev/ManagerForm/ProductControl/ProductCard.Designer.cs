@@ -38,7 +38,9 @@
             this.label10 = new System.Windows.Forms.Label();
             this.label7 = new System.Windows.Forms.Label();
             this.label12 = new System.Windows.Forms.Label();
+            this.panel1 = new System.Windows.Forms.Panel();
             ((System.ComponentModel.ISupportInitialize)(this.numericUpDown1)).BeginInit();
+            this.panel1.SuspendLayout();
             this.SuspendLayout();
             // 
             // label1
@@ -92,9 +94,9 @@
             this.button1.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.button1.Font = new System.Drawing.Font("Segoe UI Semibold", 14.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
             this.button1.ForeColor = System.Drawing.Color.White;
-            this.button1.Location = new System.Drawing.Point(650, 247);
+            this.button1.Location = new System.Drawing.Point(654, 248);
             this.button1.Name = "button1";
-            this.button1.Size = new System.Drawing.Size(200, 42);
+            this.button1.Size = new System.Drawing.Size(175, 42);
             this.button1.TabIndex = 5;
             this.button1.Text = "Редактировать";
             this.button1.UseVisualStyleBackColor = false;
@@ -106,9 +108,9 @@
             this.button2.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.button2.Font = new System.Drawing.Font("Segoe UI Semibold", 14.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
             this.button2.ForeColor = System.Drawing.Color.White;
-            this.button2.Location = new System.Drawing.Point(650, 295);
+            this.button2.Location = new System.Drawing.Point(654, 296);
             this.button2.Name = "button2";
-            this.button2.Size = new System.Drawing.Size(200, 42);
+            this.button2.Size = new System.Drawing.Size(175, 42);
             this.button2.TabIndex = 6;
             this.button2.Text = "Удалить";
             this.button2.UseVisualStyleBackColor = false;
@@ -144,7 +146,7 @@
             // 
             this.comboBox1.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.comboBox1.Font = new System.Drawing.Font("Segoe UI", 15.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.comboBox1.Location = new System.Drawing.Point(285, 52);
+            this.comboBox1.Location = new System.Drawing.Point(-1, -1);
             this.comboBox1.MaxDropDownItems = 6;
             this.comboBox1.Name = "comboBox1";
             this.comboBox1.Size = new System.Drawing.Size(509, 38);
@@ -169,7 +171,7 @@
             this.button3.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.button3.Font = new System.Drawing.Font("Segoe UI Semibold", 14.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
             this.button3.ForeColor = System.Drawing.Color.White;
-            this.button3.Location = new System.Drawing.Point(689, 295);
+            this.button3.Location = new System.Drawing.Point(668, 296);
             this.button3.Name = "button3";
             this.button3.Size = new System.Drawing.Size(161, 42);
             this.button3.TabIndex = 11;
@@ -184,7 +186,7 @@
             this.button4.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.button4.Font = new System.Drawing.Font("Segoe UI Semibold", 14.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
             this.button4.ForeColor = System.Drawing.Color.White;
-            this.button4.Location = new System.Drawing.Point(689, 247);
+            this.button4.Location = new System.Drawing.Point(668, 248);
             this.button4.Name = "button4";
             this.button4.Size = new System.Drawing.Size(161, 42);
             this.button4.TabIndex = 12;
@@ -265,7 +267,7 @@
             this.button6.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.button6.Font = new System.Drawing.Font("Segoe UI Semibold", 14.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
             this.button6.ForeColor = System.Drawing.Color.White;
-            this.button6.Location = new System.Drawing.Point(639, 295);
+            this.button6.Location = new System.Drawing.Point(618, 296);
             this.button6.Name = "button6";
             this.button6.Size = new System.Drawing.Size(211, 42);
             this.button6.TabIndex = 19;
@@ -324,11 +326,21 @@
             this.label12.TabIndex = 26;
             this.label12.Text = "Цена:*";
             // 
+            // panel1
+            // 
+            this.panel1.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.panel1.Controls.Add(this.comboBox1);
+            this.panel1.Location = new System.Drawing.Point(285, 52);
+            this.panel1.Name = "panel1";
+            this.panel1.Size = new System.Drawing.Size(509, 37);
+            this.panel1.TabIndex = 68;
+            // 
             // ProductCard
             // 
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.None;
             this.BackColor = System.Drawing.Color.WhiteSmoke;
             this.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.Controls.Add(this.panel1);
             this.Controls.Add(this.label12);
             this.Controls.Add(this.label7);
             this.Controls.Add(this.label10);
@@ -342,7 +354,6 @@
             this.Controls.Add(this.button4);
             this.Controls.Add(this.button3);
             this.Controls.Add(this.textBox3);
-            this.Controls.Add(this.comboBox1);
             this.Controls.Add(this.textBox2);
             this.Controls.Add(this.textBox1);
             this.Controls.Add(this.imageControl1);
@@ -354,9 +365,10 @@
             this.Controls.Add(this.button2);
             this.Font = new System.Drawing.Font("Segoe UI", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
             this.Name = "ProductCard";
-            this.Size = new System.Drawing.Size(873, 345);
+            this.Size = new System.Drawing.Size(838, 345);
             this.MouseDown += new System.Windows.Forms.MouseEventHandler(this.ProductCard_MouseDown);
             ((System.ComponentModel.ISupportInitialize)(this.numericUpDown1)).EndInit();
+            this.panel1.ResumeLayout(false);
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -385,5 +397,6 @@
         private System.Windows.Forms.Label label10;
         private System.Windows.Forms.Label label7;
         public System.Windows.Forms.Label label12;
+        private System.Windows.Forms.Panel panel1;
     }
 }

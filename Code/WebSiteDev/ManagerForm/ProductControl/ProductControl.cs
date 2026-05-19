@@ -117,10 +117,13 @@ namespace WebSiteDev.ManagerForm
 
             foreach (DataRowView row in dataManipulation.view)
             {
-                flowPanel.Controls.Add(CreateProductCard(row));
+                ProductCard card = CreateProductCard(row);
+                flowPanel.Controls.Add(card);
             }
 
             flowPanel.ResumeLayout();
+
+            UpdateAllCardWidths();
         }
 
         /// <summary>
@@ -164,8 +167,6 @@ namespace WebSiteDev.ManagerForm
             ProductCard card = new ProductCard();
             card.RowData = row;
             card.Margin = new Padding(10);
-
-            card.Width = flowPanel.ClientSize.Width - SystemInformation.VerticalScrollBarWidth;
 
             if (userRole == "Менеджер")
             {
@@ -764,13 +765,7 @@ namespace WebSiteDev.ManagerForm
 
         private void flowPanel_Resize(object sender, EventArgs e)
         {
-            foreach (Control control in flowPanel.Controls)
-            {
-                if (control is ProductCard)
-                {
-                    control.Width = flowPanel.ClientSize.Width - SystemInformation.VerticalScrollBarWidth;
-                }
-            }
+            UpdateAllCardWidths();
         }
 
         /// <summary>
@@ -799,6 +794,22 @@ namespace WebSiteDev.ManagerForm
             }
 
             base.Dispose(disposing);
+        }
+
+        /// <summary>
+        /// Обновляет ширину всех карточек под текущую ширину flowPanel
+        /// </summary>
+        private void UpdateAllCardWidths()
+        {
+            int cardWidth = flowPanel.ClientSize.Width - SystemInformation.VerticalScrollBarWidth;
+
+            foreach (Control control in flowPanel.Controls)
+            {
+                if (control is ProductCard)
+                {
+                    control.Width = cardWidth;
+                }
+            }
         }
     }
 }
