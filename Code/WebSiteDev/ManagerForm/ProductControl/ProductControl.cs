@@ -121,9 +121,14 @@ namespace WebSiteDev.ManagerForm
                 flowPanel.Controls.Add(card);
             }
 
-            flowPanel.ResumeLayout();
-
+            // Установка правильной ширины а уже после идёт пересчёт layout
             UpdateAllCardWidths();
+
+            flowPanel.ResumeLayout(true);
+            flowPanel.PerformLayout();
+
+            // Удалени скролла по горизонтали если появится (вроде)
+            PreventHorizontalScroll();
         }
 
         /// <summary>
@@ -766,6 +771,7 @@ namespace WebSiteDev.ManagerForm
         private void flowPanel_Resize(object sender, EventArgs e)
         {
             UpdateAllCardWidths();
+            PreventHorizontalScroll();
         }
 
         /// <summary>
@@ -801,15 +807,40 @@ namespace WebSiteDev.ManagerForm
         /// </summary>
         private void UpdateAllCardWidths()
         {
-            int cardWidth = flowPanel.ClientSize.Width - SystemInformation.VerticalScrollBarWidth;
+            // Доступная ширина
+            int AvailableWidth = flowPanel.ClientSize.Width;
+
+            // Если скролл ещё не виден готовим место под него
+            if (!flowPanel.VerticalScroll.Visible)
+            {
+                AvailableWidth -= SystemInformation.VerticalScrollBarWidth;
+            }
 
             foreach (Control control in flowPanel.Controls)
             {
                 if (control is ProductCard)
                 {
-                    control.Width = cardWidth;
+                    // - Margin.Left + Margin.Right 10 + 10 20
+                    // и если так FlowLayoutPanel считает что карточка не влезает
+                    int NewWidth = AvailableWidth - control.Margin.Horizontal - 1; // -1 для запаса
+
+                    if (NewWidth > 0)
+                    {
+                        control.Width = NewWidth;
+                    }
                 }
             }
+        }
+
+        /// <summary>
+        /// Принудительно отключает горизонтальную прокрутку во FlowPanel
+        /// </summary>
+        private void PreventHorizontalScroll()
+        {
+            flowPanel.HorizontalScroll.Maximum = 0;
+            flowPanel.HorizontalScroll.Visible = false;
+            flowPanel.AutoScroll = false;
+            flowPanel.AutoScroll = true;
         }
     }
 }

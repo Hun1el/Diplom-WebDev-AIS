@@ -16,7 +16,8 @@ namespace WebSiteDev
             return $"host={Properties.Settings.Default.DbHost};" +
                    $"uid={Properties.Settings.Default.DbUser};" +
                    $"pwd={Properties.Settings.Default.DbPassword};" +
-                   $"database={Properties.Settings.Default.DbName};";
+                   $"database={Properties.Settings.Default.DbName};" +
+                   $"AllowLoadLocalInfile=true;";
         }
 
         /// <summary>
@@ -26,7 +27,8 @@ namespace WebSiteDev
         {
             return $"host={Properties.Settings.Default.DbHost};" +
                    $"uid={Properties.Settings.Default.DbUser};" +
-                   $"pwd={Properties.Settings.Default.DbPassword};";
+                   $"pwd={Properties.Settings.Default.DbPassword};" +
+                   $"AllowLoadLocalInfile=true;";
         }
 
         /// <summary>
