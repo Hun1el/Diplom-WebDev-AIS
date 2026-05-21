@@ -2,13 +2,20 @@
 {
     partial class ProductCard
     {
-        private System.ComponentModel.IContainer components = null;
-
         protected override void Dispose(bool disposing)
         {
-            if (disposing && (components != null))
+            if (disposing)
             {
-                components.Dispose();
+                EditButtonClicked = null;
+                DeleteButtonClicked = null;
+                AddToCartClicked = null;
+                CancelEditClicked = null;
+                SaveButtonClicked = null;
+
+                if (imageControl1 != null)
+                {
+                    imageControl1.Dispose();
+                }
             }
             base.Dispose(disposing);
         }
@@ -83,7 +90,7 @@
             this.label4.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(51)))), ((int)(((byte)(65)))), ((int)(((byte)(85)))));
             this.label4.Location = new System.Drawing.Point(284, 292);
             this.label4.Name = "label4";
-            this.label4.Size = new System.Drawing.Size(360, 36);
+            this.label4.Size = new System.Drawing.Size(339, 36);
             this.label4.TabIndex = 4;
             this.label4.Text = "Цена: ";
             this.label4.MouseDown += new System.Windows.Forms.MouseEventHandler(this.ProductCard_MouseDown);
@@ -94,11 +101,11 @@
             this.button1.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.button1.Font = new System.Drawing.Font("Segoe UI Semibold", 14.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
             this.button1.ForeColor = System.Drawing.Color.White;
-            this.button1.Location = new System.Drawing.Point(654, 248);
+            this.button1.Location = new System.Drawing.Point(629, 248);
             this.button1.Name = "button1";
-            this.button1.Size = new System.Drawing.Size(175, 42);
+            this.button1.Size = new System.Drawing.Size(200, 42);
             this.button1.TabIndex = 5;
-            this.button1.Text = "Редактировать";
+            this.button1.Text = "✎ Редактировать";
             this.button1.UseVisualStyleBackColor = false;
             this.button1.Click += new System.EventHandler(this.button1_Click);
             // 
@@ -108,11 +115,11 @@
             this.button2.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.button2.Font = new System.Drawing.Font("Segoe UI Semibold", 14.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
             this.button2.ForeColor = System.Drawing.Color.White;
-            this.button2.Location = new System.Drawing.Point(654, 296);
+            this.button2.Location = new System.Drawing.Point(629, 296);
             this.button2.Name = "button2";
-            this.button2.Size = new System.Drawing.Size(175, 42);
+            this.button2.Size = new System.Drawing.Size(200, 42);
             this.button2.TabIndex = 6;
-            this.button2.Text = "Удалить";
+            this.button2.Text = "✕ Удалить";
             this.button2.UseVisualStyleBackColor = false;
             this.button2.Click += new System.EventHandler(this.button2_Click);
             // 
@@ -200,7 +207,7 @@
             this.button5.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(45)))), ((int)(((byte)(156)))), ((int)(((byte)(219)))));
             this.button5.Cursor = System.Windows.Forms.Cursors.Hand;
             this.button5.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.button5.Font = new System.Drawing.Font("Segoe UI Semibold", 14.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            this.button5.Font = new System.Drawing.Font("Segoe UI Semibold", 11.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
             this.button5.ForeColor = System.Drawing.Color.White;
             this.button5.Location = new System.Drawing.Point(288, 230);
             this.button5.Name = "button5";

@@ -1,8 +1,10 @@
 ﻿using MySql.Data.MySqlClient;
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
 using System.Drawing;
+using System.Reflection;
 using System.Windows.Forms;
 using WebSiteDev.AddForm;
 
@@ -17,6 +19,11 @@ namespace WebSiteDev.ManagerForm
         private string userRole;
         private ProductCard selectedCard;
         private int editingProductID = -1;
+
+        // Пул для хранилищя уже созданных карточек
+        // Создание карточки один раз и потом достаем её из словаря
+        // Это посит быстродействие
+        private Dictionary<int, ProductCard> CardPool = new Dictionary<int, ProductCard>();
 
         public static int CurrentUserID { get; set; } = 0;
         public static string CurrentUserName { get; set; } = "";
@@ -47,12 +54,24 @@ namespace WebSiteDev.ManagerForm
         {
             InitializeComponent();
 
+            // Двойная буферизация
+            // При двойной буферизации отрисовка происходит сначала в буфере
+            // а уже из буфера на экран и это прям сильно повышает производительность системы без лишних мерцаний при какждом разе отрисовки
+            PropertyInfo doubleBufferProperty = typeof(Control).GetProperty(
+                "DoubleBuffered",
+                BindingFlags.NonPublic | BindingFlags.Instance);
+
+            if (doubleBufferProperty != null)
+            {
+                doubleBufferProperty.SetValue(flowPanel, true, null);
+            }
+
             userRole = role;
             CurrentUserID = userID;
             CurrentUserName = userName;
 
             GetData();
-            LoadAllCards();
+            LoadAllCards(false);
         }
 
         private void ProductControl_Load(object sender, EventArgs e)
@@ -109,36 +128,72 @@ namespace WebSiteDev.ManagerForm
 
         /// <summary>
         /// Загружает все карточки товаров сразу
+        /// Если ForceRecreate равен true то старый пул карточек полностью удаляется и создается заново
+        /// Это нужно только когда данные реально изменились в базе
         /// </summary>
-        private void LoadAllCards()
+        private void LoadAllCards(bool ForceRecreate)
         {
+            if (ForceRecreate)
+            {
+                // Удаляем старые карточки из памяти
+                foreach (var kvp in CardPool)
+                {
+                    if (kvp.Value != null)
+                    {
+                        kvp.Value.Dispose();
+                    }
+                }
+                CardPool.Clear();
+            }
+
+            // SuspendLayout говорит панели не перерисовывайся пока я добавляю контролы
             flowPanel.SuspendLayout();
             flowPanel.Controls.Clear();
 
+            // Проходим по всем строкам из таблицы данных
             foreach (DataRowView row in dataManipulation.view)
             {
-                ProductCard card = CreateProductCard(row);
+                // Берем ID товара из текущей строки
+                int id = Convert.ToInt32(row["ProductID"]);
+
+                // Пытаемся найти карточку в пуле по этому ID
+                if (!CardPool.TryGetValue(id, out ProductCard card))
+                {
+                    // Если карточки нет в пуле создаем новую
+                    card = CreateProductCard(row);
+                    // И добавляем в пул чтобы в следующий раз не создавать заново
+                    CardPool[id] = card;
+                }
+
+                // Добавляем карточку на панель для отображения
                 flowPanel.Controls.Add(card);
             }
 
-            flowPanel.ResumeLayout();
-
             UpdateAllCardWidths();
+
+            flowPanel.ResumeLayout(true);
+            flowPanel.PerformLayout();
+
+            PreventHorizontalScroll();
+            RefreshProductCardStates();
         }
 
         /// <summary>
-        /// Перезагружает данные товаров и применяет фильтры
+        /// Перезагружает данные товаров из БД и пересоздаёт пул карточек
+        /// Вызывать после сохранения удаления или добавления товара
         /// </summary>
         private void RefreshData()
         {
-            foreach (Control control in flowPanel.Controls)
+            // Чистим старый пул
+            foreach (var kvp in CardPool)
             {
-                if (control is ProductCard card)
+                if (kvp.Value != null)
                 {
-                    card.Dispose();
+                    kvp.Value.Dispose();
                 }
             }
 
+            CardPool.Clear();
             flowPanel.Controls.Clear();
 
             using (MySqlConnection con = new MySqlConnection(Data.GetConnectionString()))
@@ -146,7 +201,6 @@ namespace WebSiteDev.ManagerForm
                 con.Open();
 
                 MySqlDataAdapter da = new MySqlDataAdapter(ProductCmd, con);
-
                 DataTable dt = new DataTable();
                 da.Fill(dt);
 
@@ -156,7 +210,8 @@ namespace WebSiteDev.ManagerForm
                 label1.Text = "Количество записей: " + count.ExecuteScalar();
             }
 
-            LoadAllCards();
+            // true  пересоздать пул заново потому что данные могли измениться
+            LoadAllCards(true);
         }
 
         /// <summary>
@@ -165,6 +220,7 @@ namespace WebSiteDev.ManagerForm
         private ProductCard CreateProductCard(DataRowView row)
         {
             ProductCard card = new ProductCard();
+            card.ProductID = Convert.ToInt32(row["ProductID"]);
             card.RowData = row;
             card.Margin = new Padding(10);
 
@@ -179,7 +235,7 @@ namespace WebSiteDev.ManagerForm
             bool isInCart = IsProductInCart(productID);
             card.UpdateAddToCartButtonState(isInCart, userRole);
 
-            // Подписка на необходимые события
+            // Подписка на события карточки
             card.EditButtonClicked += Card_EditButtonClicked;
             card.DeleteButtonClicked += Card_DeleteButtonClicked;
             card.AddToCartClicked += Card_AddToCartClicked;
@@ -238,7 +294,6 @@ namespace WebSiteDev.ManagerForm
             if (me != null && me.Button == MouseButtons.Left)
             {
                 AddToCartDirect(card);
-
                 return;
             }
 
@@ -334,7 +389,6 @@ namespace WebSiteDev.ManagerForm
         /// <summary>
         /// Метод для перехода в режим редактирования
         /// </summary>
-        /// <param name="card"></param>
         private void StartEdit(ProductCard card)
         {
             if (card == null)
@@ -394,7 +448,7 @@ namespace WebSiteDev.ManagerForm
 
             var result = MessageBox.Show("Вы действительно хотите изменить услугу?", "Подтверждение", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
 
-            // Если выбрали нет при сохранении
+            // Если выбрали Нет при сохранении
             if (result != DialogResult.Yes)
             {
                 ImageControl imgCancel = card.GetImageControl();
@@ -476,7 +530,7 @@ namespace WebSiteDev.ManagerForm
                 return;
             }
 
-            var result = MessageBox.Show("Вы действительно хотите удалить услугу?", "Подтверждение", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
+            DialogResult result = MessageBox.Show("Вы действительно хотите удалить услугу?", "Подтверждение", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
 
             if (result == DialogResult.Yes)
             {
@@ -623,7 +677,7 @@ namespace WebSiteDev.ManagerForm
         }
 
         /// <summary>
-        /// Метод для получения оконкачания кнопки корзины
+        /// Метод для получения окончания кнопки корзины
         /// </summary>
         private string GetWordEnding(int count)
         {
@@ -683,18 +737,56 @@ namespace WebSiteDev.ManagerForm
             }
         }
 
+        /// <summary>
+        /// Метод для вызова фильтрации
+        /// </summary>
         private void ApplyFilters()
         {
+            ApplyFiltersInternal();
+        }
+
+        /// <summary>
+        /// Берет уже созданные карточки из пула и показывает только те что подходят под фильтр
+        /// Новые карточки НЕ создаются
+        /// </summary>
+        private void ApplyFiltersInternal()
+        {
+            flowPanel.SuspendLayout();
+
+            // Применяем фильтры к DataView (сортировка, категория, поисковый текст)
             dataManipulation.ApplyAllProduct(comboBox3, comboBox1, textBox1);
-            flowPanel.Controls.Clear();
             dataManipulation.UpdateRecordCountLabel(label1);
-            LoadAllCards();
+
+            // Убираем все карточки с панели без удаления из памяти
+            flowPanel.Controls.Clear();
+
+            // Проходим по отфильтрованным данным
+            foreach (DataRowView row in dataManipulation.view)
+            {
+                int id = Convert.ToInt32(row["ProductID"]);
+
+                // Ищем карточку в пуле
+                if (!CardPool.TryGetValue(id, out ProductCard card))
+                {
+                    card = CreateProductCard(row);
+                    CardPool[id] = card;
+                }
+
+                // Показываем карточку на панели
+                flowPanel.Controls.Add(card);
+            }
+
+            UpdateAllCardWidths();
+
+            flowPanel.ResumeLayout(true);
+            PreventHorizontalScroll();
+
+            RefreshProductCardStates();
         }
 
         private void textBox1_TextChanged(object sender, EventArgs e)
         {
             InputRest.FirstLetter(textBox1);
-            ApplyFilters();
         }
 
         private void textBox1_KeyPress(object sender, KeyPressEventArgs e)
@@ -725,8 +817,7 @@ namespace WebSiteDev.ManagerForm
         {
             AddProductForm addProductForm = new AddProductForm(dataManipulation);
             addProductForm.ShowDialog();
-            GetData();
-            LoadAllCards();
+            RefreshData();
         }
 
         private void button4_Click(object sender, EventArgs e)
@@ -766,34 +857,7 @@ namespace WebSiteDev.ManagerForm
         private void flowPanel_Resize(object sender, EventArgs e)
         {
             UpdateAllCardWidths();
-        }
-
-        /// <summary>
-        /// Очистка мусора и защита от утечки ОЗУ
-        /// </summary>
-        protected override void Dispose(bool disposing)
-        {
-            if (disposing)
-            {
-                foreach (Control control in flowPanel.Controls)
-                {
-                    if (control is ProductCard card)
-                    {
-                        card.Dispose();
-                    }
-                }
-                flowPanel.Controls.Clear();
-
-                if (dataManipulation != null)
-                {
-                    dataManipulation = null;
-                }
-
-                GC.Collect();
-                GC.WaitForPendingFinalizers();
-            }
-
-            base.Dispose(disposing);
+            PreventHorizontalScroll();
         }
 
         /// <summary>
@@ -801,15 +865,39 @@ namespace WebSiteDev.ManagerForm
         /// </summary>
         private void UpdateAllCardWidths()
         {
-            int cardWidth = flowPanel.ClientSize.Width - SystemInformation.VerticalScrollBarWidth;
+            int AvailableWidth = flowPanel.ClientSize.Width;
+
+            if (!flowPanel.VerticalScroll.Visible)
+            {
+                AvailableWidth = AvailableWidth - SystemInformation.VerticalScrollBarWidth;
+            }
 
             foreach (Control control in flowPanel.Controls)
             {
                 if (control is ProductCard)
                 {
-                    control.Width = cardWidth;
+                    // Margin.Horizontal = Margin.Left + Margin.Right 10 + 10 = 20
+                    int NewWidth = AvailableWidth - control.Margin.Horizontal - 1;
+
+                    if (NewWidth > 0)
+                    {
+                        control.Width = NewWidth;
+                    }
                 }
             }
+        }
+
+        /// <summary>
+        /// Принудительно отключает горизонтальную прокрутку во FlowPanel.
+        /// Иногда Windows Forms сам включает скролл из-за округления размеров.
+        /// Этот метод его гарантированно убирает.
+        /// </summary>
+        private void PreventHorizontalScroll()
+        {
+            flowPanel.HorizontalScroll.Maximum = 0;
+            flowPanel.HorizontalScroll.Visible = false;
+            flowPanel.AutoScroll = false;
+            flowPanel.AutoScroll = true;
         }
     }
 }
