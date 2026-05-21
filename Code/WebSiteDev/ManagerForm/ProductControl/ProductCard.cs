@@ -10,7 +10,6 @@ namespace WebSiteDev
     /// </summary>
     public partial class ProductCard : ScalableUserControl
     {
-        // События для взаимодействия с родительским контролом
         public event EventHandler EditButtonClicked;
         public event EventHandler DeleteButtonClicked;
         public event EventHandler AddToCartClicked;
@@ -18,6 +17,11 @@ namespace WebSiteDev
         public event EventHandler SaveButtonClicked;
 
         private string originalImagePath;
+
+        /// <summary>
+        /// Идентификатор товара
+        /// </summary>
+        public int ProductID { get; set; }
 
         /// <summary>
         /// Данные товара из таблицы БД
@@ -63,7 +67,7 @@ namespace WebSiteDev
                 button6.Visible = false;
             }
 
-            // Влезает ли описание в label2
+            // Проверяем влезает ли описание в label
             UpdateExpandButtonVisibility();
 
             button5.ContextMenuStrip = null;
@@ -309,7 +313,7 @@ namespace WebSiteDev
             button1.Visible = true;
             button2.Visible = true;
 
-            // Влезает ли описание после выхода из редактирования
+            // Проверяем влезает ли описание после выхода из редактирования
             UpdateExpandButtonVisibility();
         }
 

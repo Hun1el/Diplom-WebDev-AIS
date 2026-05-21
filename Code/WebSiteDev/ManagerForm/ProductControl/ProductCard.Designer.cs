@@ -2,13 +2,20 @@
 {
     partial class ProductCard
     {
-        private System.ComponentModel.IContainer components = null;
-
         protected override void Dispose(bool disposing)
         {
-            if (disposing && (components != null))
+            if (disposing)
             {
-                components.Dispose();
+                EditButtonClicked = null;
+                DeleteButtonClicked = null;
+                AddToCartClicked = null;
+                CancelEditClicked = null;
+                SaveButtonClicked = null;
+
+                if (imageControl1 != null)
+                {
+                    imageControl1.Dispose();
+                }
             }
             base.Dispose(disposing);
         }

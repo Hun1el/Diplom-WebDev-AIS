@@ -4,6 +4,25 @@
     {
         private System.ComponentModel.IContainer components = null;
 
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                foreach (var kvp in CardPool)
+                {
+                    if (kvp.Value != null)
+                    {
+                        kvp.Value.Dispose();
+                    }
+                }
+                CardPool.Clear();
+                flowPanel.Controls.Clear();
+
+                dataManipulation = null;
+            }
+
+            base.Dispose(disposing);
+        }
 
         #region Component Designer generated code
 
