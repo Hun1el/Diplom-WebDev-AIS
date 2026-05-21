@@ -60,8 +60,8 @@ namespace WebSiteDev
             }
             else
             {
-                button1.Text = "Редактировать";
-                button2.Text = "Удалить";
+                button1.Text = "✎ Редактировать";
+                button2.Text = "✕ Удалить";
                 button1.Visible = true;
                 button2.Visible = true;
                 button6.Visible = false;
