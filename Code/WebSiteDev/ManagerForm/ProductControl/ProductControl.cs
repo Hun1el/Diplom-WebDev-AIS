@@ -134,58 +134,6 @@ namespace WebSiteDev.ManagerForm
         }
 
         /// <summary>
-        /// Загружает все карточки товаров сразу
-        /// Если ForceRecreate равен true то старый пул карточек полностью удаляется и создается заново
-        /// Это нужно только когда данные реально изменились в базе
-        /// </summary>
-        private void LoadAllCards(bool ForceRecreate)
-        {
-            if (ForceRecreate)
-            {
-                // Удаляем старые карточки из памяти
-                foreach (var kvp in CardPool)
-                {
-                    if (kvp.Value != null)
-                    {
-                        kvp.Value.Dispose();
-                    }
-                }
-                CardPool.Clear();
-            }
-
-            // SuspendLayout говорит панели не перерисовывайся пока я добавляю контролы
-            flowPanel.SuspendLayout();
-            flowPanel.Controls.Clear();
-
-            // Проходим по всем строкам из таблицы данных
-            foreach (DataRowView row in dataManipulation.view)
-            {
-                // Берем ID товара из текущей строки
-                int id = Convert.ToInt32(row["ProductID"]);
-
-                // Пытаемся найти карточку в пуле по этому ID
-                if (!CardPool.TryGetValue(id, out ProductCard card))
-                {
-                    // Если карточки нет в пуле создаем новую
-                    card = CreateProductCard(row);
-                    // И добавляем в пул чтобы в следующий раз не создавать заново
-                    CardPool[id] = card;
-                }
-
-                // Добавляем карточку на панель для отображения
-                flowPanel.Controls.Add(card);
-            }
-
-            UpdateAllCardWidths();
-
-            flowPanel.ResumeLayout(true);
-            flowPanel.PerformLayout();
-
-            PreventHorizontalScroll();
-            RefreshProductCardStates();
-        }
-
-        /// <summary>
         /// Перезагружает данные товаров из БД и пересоздаёт пул карточек
         /// Вызывать после сохранения удаления или добавления товара
         /// </summary>
@@ -861,6 +809,14 @@ namespace WebSiteDev.ManagerForm
         {
             UpdateAllCardWidths();
             PreventHorizontalScroll();
+
+            // Определение положения при соблюдении условия
+            if (label5 != null && label5.Visible)
+            {
+                label5.Location = new Point(
+                    flowPanel.Left + (flowPanel.Width - label5.Width) / 2,
+                    flowPanel.Top + (flowPanel.Height - label5.Height) / 2);
+            }
         }
 
         /// <summary>
@@ -932,9 +888,20 @@ namespace WebSiteDev.ManagerForm
             // Если после фильтрации ничего не нашлось выходим
             if (dataManipulation.view.Count == 0)
             {
+                // Определение положения текста если услуг не найдено
+                label5.Location = new Point(
+                    flowPanel.Left + (flowPanel.Width - label5.Width) / 2,
+                    flowPanel.Top + (flowPanel.Height - label5.Height) / 2);
+                label5.Visible = true; // Показываем
+                label5.BringToFront();
+
                 flowPanel.ResumeLayout(true);
+                PreventHorizontalScroll();
+                RefreshProductCardStates();
                 return;
             }
+
+            label5.Visible = false;
 
             int start = pagination.GetStartIndex();
             int count = pagination.GetTakeCount();

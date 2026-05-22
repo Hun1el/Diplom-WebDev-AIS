@@ -1,4 +1,6 @@
-﻿namespace WebSiteDev.ManagerForm
+﻿using System.Drawing;
+
+namespace WebSiteDev.ManagerForm
 {
     partial class ProductControl
     {
@@ -48,6 +50,7 @@
             this.button2 = new System.Windows.Forms.Button();
             this.label1 = new System.Windows.Forms.Label();
             this.flowPanel = new System.Windows.Forms.FlowLayoutPanel();
+            this.label5 = new System.Windows.Forms.Label();
             this.contextMenuStrip1 = new System.Windows.Forms.ContextMenuStrip(this.components);
             this.toolStripMenuItem2 = new System.Windows.Forms.ToolStripMenuItem();
             this.panel3 = new System.Windows.Forms.Panel();
@@ -297,6 +300,21 @@
             this.flowPanel.WrapContents = false;
             this.flowPanel.Resize += new System.EventHandler(this.flowPanel_Resize);
             // 
+            // label5
+            // 
+            this.label5.Anchor = System.Windows.Forms.AnchorStyles.None;
+            this.label5.AutoSize = true;
+            this.label5.BackColor = System.Drawing.Color.White;
+            this.label5.Font = new System.Drawing.Font("Segoe UI Semibold", 21.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            this.label5.ForeColor = System.Drawing.Color.Gray;
+            this.label5.Location = new System.Drawing.Point(352, 305);
+            this.label5.Name = "label5";
+            this.label5.Size = new System.Drawing.Size(180, 25);
+            this.label5.TabIndex = 53;
+            this.label5.Text = "Услуги не найдены";
+            this.label5.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            this.label5.Visible = false;
+            // 
             // contextMenuStrip1
             // 
             this.contextMenuStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
@@ -414,6 +432,7 @@
             this.AutoScaleDimensions = new System.Drawing.SizeF(11F, 25F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.White;
+            this.Controls.Add(this.label5);
             this.Controls.Add(this.panel3);
             this.Controls.Add(this.flowPanel);
             this.Controls.Add(this.bottomPanel);
@@ -468,5 +487,6 @@
         private System.Windows.Forms.TextBox textBox5;
         private System.Windows.Forms.Label label3;
         private System.Windows.Forms.Label label4;
+        private System.Windows.Forms.Label label5;
     }
 }
