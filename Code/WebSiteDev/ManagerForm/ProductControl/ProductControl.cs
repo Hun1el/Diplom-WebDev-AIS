@@ -139,15 +139,6 @@ namespace WebSiteDev.ManagerForm
         /// </summary>
         private void RefreshData()
         {
-            foreach (var kvp in CardPool)
-            {
-                if (kvp.Value != null)
-                {
-                    kvp.Value.Dispose();
-                }
-            }
-
-            CardPool.Clear();
             flowPanel.Controls.Clear();
 
             using (MySqlConnection con = new MySqlConnection(Data.GetConnectionString()))
@@ -185,6 +176,9 @@ namespace WebSiteDev.ManagerForm
             card.RowData = row;
             card.Margin = new Padding(10);
 
+            // Фиксируем дизайнерский размер и положение элементов пока карточка ещё не растянута
+            card.CaptureOriginalBounds();
+
             if (userRole == "Менеджер")
             {
                 card.ContextMenuStrip = contextMenuStrip1;
@@ -196,7 +190,6 @@ namespace WebSiteDev.ManagerForm
             bool isInCart = IsProductInCart(productID);
             card.UpdateAddToCartButtonState(isInCart, userRole);
 
-            // Подписка на события карточки
             card.EditButtonClicked += Card_EditButtonClicked;
             card.DeleteButtonClicked += Card_DeleteButtonClicked;
             card.AddToCartClicked += Card_AddToCartClicked;
@@ -808,9 +801,33 @@ namespace WebSiteDev.ManagerForm
         private void flowPanel_Resize(object sender, EventArgs e)
         {
             UpdateAllCardWidths();
+
+            // Обновляем ширину карточек в пуле чтобы они тоже подхватывали ресайз
+            if (CardPool != null && CardPool.Count > 0)
+            {
+                int AvailableWidth = flowPanel.ClientSize.Width;
+                if (flowPanel.VerticalScroll.Visible)
+                {
+                    AvailableWidth -= SystemInformation.VerticalScrollBarWidth;
+                }
+
+                foreach (var kvp in CardPool)
+                {
+                    ProductCard card = kvp.Value;
+                    if (card != null && !card.IsDisposed && card.Parent == null)
+                    {
+                        int NewWidth = AvailableWidth - card.Margin.Horizontal - 1;
+
+                        if (NewWidth > 0 && card.Width != NewWidth)
+                        {
+                            card.Width = NewWidth;
+                        }
+                    }
+                }
+            }
+
             PreventHorizontalScroll();
 
-            // Определение положения при соблюдении условия
             if (label5 != null && label5.Visible)
             {
                 label5.Location = new Point(
@@ -885,14 +902,12 @@ namespace WebSiteDev.ManagerForm
             flowPanel.SuspendLayout();
             flowPanel.Controls.Clear();
 
-            // Если после фильтрации ничего не нашлось выходим
             if (dataManipulation.view.Count == 0)
             {
-                // Определение положения текста если услуг не найдено
                 label5.Location = new Point(
                     flowPanel.Left + (flowPanel.Width - label5.Width) / 2,
                     flowPanel.Top + (flowPanel.Height - label5.Height) / 2);
-                label5.Visible = true; // Показываем
+                label5.Visible = true;
                 label5.BringToFront();
 
                 flowPanel.ResumeLayout(true);
@@ -905,12 +920,7 @@ namespace WebSiteDev.ManagerForm
 
             int start = pagination.GetStartIndex();
             int count = pagination.GetTakeCount();
-
-            // Защита от отрицательного старта
-            if (start < 0)
-            {
-                start = 0;
-            }
+            if (start < 0) start = 0;
 
             for (int i = 0; i < count; i++)
             {
@@ -921,14 +931,9 @@ namespace WebSiteDev.ManagerForm
                 }
 
                 DataRowView row = dataManipulation.view[viewIndex];
-                int id = Convert.ToInt32(row["ProductID"]);
 
-                if (!CardPool.TryGetValue(id, out ProductCard card))
-                {
-                    card = CreateProductCard(row);
-                    CardPool[id] = card;
-                }
-
+                // Создаём карточку заново каждый раз
+                ProductCard card = CreateProductCard(row);
                 flowPanel.Controls.Add(card);
             }
 

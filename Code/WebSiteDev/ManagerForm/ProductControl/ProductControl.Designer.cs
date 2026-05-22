@@ -309,7 +309,7 @@ namespace WebSiteDev.ManagerForm
             this.label5.ForeColor = System.Drawing.Color.Gray;
             this.label5.Location = new System.Drawing.Point(352, 305);
             this.label5.Name = "label5";
-            this.label5.Size = new System.Drawing.Size(180, 25);
+            this.label5.Size = new System.Drawing.Size(274, 40);
             this.label5.TabIndex = 53;
             this.label5.Text = "Услуги не найдены";
             this.label5.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
@@ -352,7 +352,7 @@ namespace WebSiteDev.ManagerForm
             this.label4.AutoSize = true;
             this.label4.Font = new System.Drawing.Font("Segoe UI Semibold", 14.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
             this.label4.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(51)))), ((int)(((byte)(65)))), ((int)(((byte)(85)))));
-            this.label4.Location = new System.Drawing.Point(520, 19);
+            this.label4.Location = new System.Drawing.Point(523, 15);
             this.label4.Margin = new System.Windows.Forms.Padding(6, 0, 6, 0);
             this.label4.Name = "label4";
             this.label4.Size = new System.Drawing.Size(23, 25);
@@ -364,7 +364,7 @@ namespace WebSiteDev.ManagerForm
             this.label3.AutoSize = true;
             this.label3.Font = new System.Drawing.Font("Segoe UI", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
             this.label3.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(51)))), ((int)(((byte)(65)))), ((int)(((byte)(85)))));
-            this.label3.Location = new System.Drawing.Point(495, 19);
+            this.label3.Location = new System.Drawing.Point(497, 15);
             this.label3.Margin = new System.Windows.Forms.Padding(6, 0, 6, 0);
             this.label3.Name = "label3";
             this.label3.Size = new System.Drawing.Size(31, 25);
@@ -375,7 +375,7 @@ namespace WebSiteDev.ManagerForm
             // 
             this.textBox5.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.textBox5.Font = new System.Drawing.Font("Segoe UI Semibold", 14.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.textBox5.Location = new System.Drawing.Point(440, 16);
+            this.textBox5.Location = new System.Drawing.Point(440, 12);
             this.textBox5.Margin = new System.Windows.Forms.Padding(6);
             this.textBox5.Name = "textBox5";
             this.textBox5.Size = new System.Drawing.Size(55, 33);
@@ -388,7 +388,7 @@ namespace WebSiteDev.ManagerForm
             this.label2.AutoSize = true;
             this.label2.Font = new System.Drawing.Font("Segoe UI Semibold", 14.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
             this.label2.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(51)))), ((int)(((byte)(65)))), ((int)(((byte)(85)))));
-            this.label2.Location = new System.Drawing.Point(340, 19);
+            this.label2.Location = new System.Drawing.Point(340, 15);
             this.label2.Margin = new System.Windows.Forms.Padding(6, 0, 6, 0);
             this.label2.Name = "label2";
             this.label2.Size = new System.Drawing.Size(97, 25);
@@ -402,7 +402,7 @@ namespace WebSiteDev.ManagerForm
             this.button5.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.button5.Font = new System.Drawing.Font("Segoe UI Semibold", 14.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
             this.button5.ForeColor = System.Drawing.Color.White;
-            this.button5.Location = new System.Drawing.Point(555, 16);
+            this.button5.Location = new System.Drawing.Point(558, 12);
             this.button5.Margin = new System.Windows.Forms.Padding(6);
             this.button5.Name = "button5";
             this.button5.Size = new System.Drawing.Size(55, 30);
@@ -418,7 +418,7 @@ namespace WebSiteDev.ManagerForm
             this.button3.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.button3.Font = new System.Drawing.Font("Segoe UI Semibold", 14.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
             this.button3.ForeColor = System.Drawing.Color.White;
-            this.button3.Location = new System.Drawing.Point(285, 16);
+            this.button3.Location = new System.Drawing.Point(285, 12);
             this.button3.Margin = new System.Windows.Forms.Padding(6);
             this.button3.Name = "button3";
             this.button3.Size = new System.Drawing.Size(55, 30);
