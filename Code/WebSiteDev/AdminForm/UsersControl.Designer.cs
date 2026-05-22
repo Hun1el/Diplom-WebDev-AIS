@@ -116,7 +116,7 @@ namespace WebSiteDev.AdminForm
             this.textBox1.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.textBox1.Location = new System.Drawing.Point(6, 68);
             this.textBox1.Margin = new System.Windows.Forms.Padding(6);
-            this.textBox1.MaxLength = 30;
+            this.textBox1.MaxLength = 90;
             this.textBox1.Name = "textBox1";
             this.textBox1.Size = new System.Drawing.Size(280, 33);
             this.textBox1.TabIndex = 11;
