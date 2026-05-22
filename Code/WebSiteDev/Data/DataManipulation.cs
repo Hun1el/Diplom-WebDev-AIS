@@ -79,6 +79,39 @@ public class DataManipulation
         ApplySortDirector(comboSort);
     }
 
+    /// <summary>
+    /// Экранирует одиночные кавычки и спецсимволы LIKE для DataView.RowFilter
+    /// </summary>
+    private string EscapeLike(string input)
+    {
+        if (string.IsNullOrEmpty(input))
+        {
+            return input;
+        }
+
+        System.Text.StringBuilder sb = new System.Text.StringBuilder(input.Length * 2);
+
+        foreach (char c in input)
+        {
+            if (c == '\'')
+            {
+                sb.Append("''");
+            }
+            else if (c == '[' || c == ']' || c == '%' || c == '*' || c == '_' || c == '?')
+            {
+                sb.Append('[');
+                sb.Append(c);
+                sb.Append(']');
+            }
+            else
+            {
+                sb.Append(c);
+            }
+        }
+
+        return sb.ToString();
+    }
+
     // ===== МЕТОДЫ ДЛЯ ЗАПОЛНЕНИЯ COMBOBOX =====
 
     /// <summary>
@@ -238,7 +271,7 @@ public class DataManipulation
     /// </summary>
     public void ApplySearchUser(TextBox textSearch)
     {
-        string searchText = textSearch.Text.Trim().Replace("'", "''");
+        string searchText = EscapeLike(textSearch.Text.Trim());
 
         if (!string.IsNullOrEmpty(searchText))
         {
@@ -255,7 +288,7 @@ public class DataManipulation
     /// </summary>
     public void ApplySearchCategory(TextBox textSearch)
     {
-        string searchText = textSearch.Text.Trim().Replace("'", "''");
+        string searchText = EscapeLike(textSearch.Text.Trim());
 
         if (!string.IsNullOrEmpty(searchText))
         {
@@ -272,7 +305,7 @@ public class DataManipulation
     /// </summary>
     public void ApplySearchRole(TextBox textSearch)
     {
-        string searchText = textSearch.Text.Trim().Replace("'", "''");
+        string searchText = EscapeLike(textSearch.Text.Trim());
 
         if (!string.IsNullOrEmpty(searchText))
         {
@@ -289,7 +322,7 @@ public class DataManipulation
     /// </summary>
     public void ApplySearchStatus(TextBox textSearch)
     {
-        string searchText = textSearch.Text.Trim().Replace("'", "''");
+        string searchText = EscapeLike(textSearch.Text.Trim());
 
         if (!string.IsNullOrEmpty(searchText))
         {
@@ -306,7 +339,7 @@ public class DataManipulation
     /// </summary>
     public void ApplySearchProduct(TextBox textSearch)
     {
-        string searchText = textSearch.Text.Trim().Replace("'", "''");
+        string searchText = EscapeLike(textSearch.Text.Trim());
 
         if (!string.IsNullOrEmpty(searchText))
         {
@@ -323,7 +356,7 @@ public class DataManipulation
     /// </summary>
     public void ApplySearchOrder(TextBox textSearch)
     {
-        string searchText = textSearch.Text.Trim().Replace("'", "''");
+        string searchText = EscapeLike(textSearch.Text.Trim());
 
         if (!string.IsNullOrEmpty(searchText))
         {
@@ -340,7 +373,7 @@ public class DataManipulation
     /// </summary>
     public void ApplySearchClient(TextBox textSearch)
     {
-        string searchText = textSearch.Text.Trim().Replace("'", "''");
+        string searchText = EscapeLike(textSearch.Text.Trim());
 
         if (!string.IsNullOrEmpty(searchText))
         {
@@ -357,7 +390,7 @@ public class DataManipulation
     /// </summary>
     public void ApplySearchDirector(TextBox textSearch)
     {
-        string searchText = textSearch.Text.Trim().Replace("'", "''");
+        string searchText = EscapeLike(textSearch.Text.Trim());
 
         if (!string.IsNullOrEmpty(searchText))
         {

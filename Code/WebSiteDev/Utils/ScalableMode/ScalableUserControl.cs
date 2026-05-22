@@ -21,16 +21,12 @@ namespace WebSiteDev
 
         private readonly List<RelativeControlRule> RelativeRules = new List<RelativeControlRule>();
 
-        // Масштабирование только один раз через 16 мс после последнего события
+        // Таймер
         private Timer ResizeDebounceTimer;
 
-        // Кэш последних примененных масштабов
-        // Если размеры окна изменились менее чем на 0.5% пересчета не будет
         private float LastScaleX = 0f;
         private float LastScaleY = 0f;
 
-        // WinAPI отключение перерисовки на время масштабирования
-        // Это убирает мерцание
         private const int WM_SETREDRAW = 11;
 
         [DllImport("user32.dll")]
@@ -43,13 +39,20 @@ namespace WebSiteDev
             this.Resize += ScalableUserControl_Resize;
 
             ResizeDebounceTimer = new Timer();
-            ResizeDebounceTimer.Interval = 4; // ~60 FPS
+            ResizeDebounceTimer.Interval = 4;
             ResizeDebounceTimer.Tick += ResizeDebounceTimer_Tick;
         }
+
+        
 
         private void ScalableUserControl_Load(object sender, EventArgs e)
         {
             if (Initialized)
+            {
+                return;
+            }
+
+            if (this.IsDisposed || this.Disposing)
             {
                 return;
             }
@@ -60,9 +63,6 @@ namespace WebSiteDev
             SaveBoundsRecursive(this);
         }
 
-        /// <summary>
-        /// Если контрол сам является UserControl сохраняем только границы без внутренностей
-        /// </summary>
         private void SaveBoundsRecursive(Control parent)
         {
             foreach (Control control in parent.Controls)
@@ -205,11 +205,16 @@ namespace WebSiteDev
         }
 
         /// <summary>
-        /// При изменении размера не масштабируем сразу только перезапускаем таймер
+        /// При изменении размера не масштабируем сразу перезапуск таймера
         /// </summary>
         private void ScalableUserControl_Resize(object sender, EventArgs e)
         {
             if (!Initialized || IsScaling)
+            {
+                return;
+            }
+
+            if (this.IsDisposed || this.Disposing)
             {
                 return;
             }
@@ -219,25 +224,45 @@ namespace WebSiteDev
                 return;
             }
 
+            if (ResizeDebounceTimer == null)
+            {
+                return;
+            }
+
             ResizeDebounceTimer.Stop();
             ResizeDebounceTimer.Start();
         }
 
         /// <summary>
-        /// Таймер дотикал и масштабирование больше не откладывается
+        /// Таймер дотикал масштабирование больше не будет откладываться и изменится масштаб
         /// </summary>
         private void ResizeDebounceTimer_Tick(object sender, EventArgs e)
         {
-            ResizeDebounceTimer.Stop();
+            if (ResizeDebounceTimer != null)
+            {
+                ResizeDebounceTimer.Stop();
+            }
+
+            if (this.IsDisposed || this.Disposing || !this.IsHandleCreated)
+            {
+                return;
+            }
+
             PerformScale();
         }
 
         /// <summary>
-        /// Основной метод масштабирования один раз на кадр
+        /// Основной метод масштабирования
+        /// Защищён от вызова на уничтоженном контроле и от повторного входа
         /// </summary>
         private void PerformScale()
         {
             if (IsScaling || OriginalBounds.Count == 0)
+            {
+                return;
+            }
+
+            if (this.IsDisposed || this.Disposing || !this.IsHandleCreated)
             {
                 return;
             }
@@ -254,7 +279,6 @@ namespace WebSiteDev
                 ScaleY = MinScale;
             }
 
-            // Если масштаб изменился не сильно не пересчитываем
             const float ScaleDelta = 0.005f;
             if (Math.Abs(ScaleX - LastScaleX) < ScaleDelta && Math.Abs(ScaleY - LastScaleY) < ScaleDelta)
             {
@@ -265,15 +289,18 @@ namespace WebSiteDev
             LastScaleY = ScaleY;
 
             IsScaling = true;
-
-            // Замораживаем перерисовку этого контрола и всех дочерних
-            // Windows перестает тратить время на промежуточную отрисовку
-            SendMessage(this.Handle, WM_SETREDRAW, false, 0);
-            this.SuspendLayout();
+            bool redrawFrozen = false;
 
             try
             {
-                // Шрифт масштабируем по меньшей стороне чтобы текст не вылезал за границы
+                if (this.IsHandleCreated && !this.IsDisposed)
+                {
+                    SendMessage(this.Handle, WM_SETREDRAW, false, 0);
+                    redrawFrozen = true;
+                }
+
+                this.SuspendLayout();
+
                 float FontScale = ScaleX;
                 if (ScaleY < FontScale)
                 {
@@ -285,6 +312,7 @@ namespace WebSiteDev
                     Control control = kvp.Key;
                     Rectangle orig = kvp.Value;
 
+                    // Если контрол был уничтожен пропускаем
                     if (control == null || control.IsDisposed)
                     {
                         continue;
@@ -306,7 +334,6 @@ namespace WebSiteDev
                         {
                             bool needUpdate = true;
 
-                            // Не совпадает ли новый размер с уже примененным
                             if (AppliedFontSizes.ContainsKey(control))
                             {
                                 if (Math.Abs(AppliedFontSizes[control] - newSize) < 0.5f)
@@ -337,10 +364,14 @@ namespace WebSiteDev
             }
             finally // Выполняется в любом случае
             {
-                // Размораживаем отрисовку и просим Windows перерисовать всё за раз
                 this.ResumeLayout(false);
-                SendMessage(this.Handle, WM_SETREDRAW, true, 0);
-                this.Invalidate(true);
+
+                if (redrawFrozen && this.IsHandleCreated && !this.IsDisposed)
+                {
+                    SendMessage(this.Handle, WM_SETREDRAW, true, 0);
+                    this.Invalidate(true);
+                }
+
                 IsScaling = false;
             }
 

@@ -19,6 +19,8 @@ namespace WebSiteDev.ManagerForm
         private string userRole;
         private ProductCard selectedCard;
         private int editingProductID = -1;
+        private Pagination pagination;
+        private const int ItemsPerPage = 5; // Сколько показывать на одной странице
 
         // Пул для хранилищя уже созданных карточек
         // Создание карточки один раз и потом достаем её из словаря
@@ -71,7 +73,12 @@ namespace WebSiteDev.ManagerForm
             CurrentUserName = userName;
 
             GetData();
-            LoadAllCards(false);
+
+            pagination = new Pagination(dataManipulation.view.Count, ItemsPerPage);
+            pagination.PageChanged += Pagination_PageChanged; // Подписка на событие
+
+            LoadCurrentPage(); // Загрузка текущей страницы
+            UpdatePaginationUI(); // Обновление пагинации при различных условиях
         }
 
         private void ProductControl_Load(object sender, EventArgs e)
@@ -184,7 +191,6 @@ namespace WebSiteDev.ManagerForm
         /// </summary>
         private void RefreshData()
         {
-            // Чистим старый пул
             foreach (var kvp in CardPool)
             {
                 if (kvp.Value != null)
@@ -210,8 +216,15 @@ namespace WebSiteDev.ManagerForm
                 label1.Text = "Количество записей: " + count.ExecuteScalar();
             }
 
-            // true  пересоздать пул заново потому что данные могли измениться
-            LoadAllCards(true);
+            // Если пагинация не равно 0 или ничему
+            if (pagination != null)
+            {
+                pagination.TotalItems = dataManipulation.view.Count;
+                pagination.GoToPage(1);
+            }
+
+            LoadCurrentPage();
+            UpdatePaginationUI();
         }
 
         /// <summary>
@@ -746,47 +759,36 @@ namespace WebSiteDev.ManagerForm
         }
 
         /// <summary>
-        /// Берет уже созданные карточки из пула и показывает только те что подходят под фильтр
-        /// Новые карточки НЕ создаются
+        /// Берёт уже созданные карточки из пула и показывает только те что подходят под фильтр (пагинация, поиск и остальное)
         /// </summary>
         private void ApplyFiltersInternal()
         {
             flowPanel.SuspendLayout();
 
-            // Применяем фильтры к DataView (сортировка, категория, поисковый текст)
             dataManipulation.ApplyAllProduct(comboBox3, comboBox1, textBox1);
             dataManipulation.UpdateRecordCountLabel(label1);
 
-            // Убираем все карточки с панели без удаления из памяти
-            flowPanel.Controls.Clear();
-
-            // Проходим по отфильтрованным данным
-            foreach (DataRowView row in dataManipulation.view)
+            // При смене фильтров сброс на первую страницу
+            if (pagination != null)
             {
-                int id = Convert.ToInt32(row["ProductID"]);
-
-                // Ищем карточку в пуле
-                if (!CardPool.TryGetValue(id, out ProductCard card))
-                {
-                    card = CreateProductCard(row);
-                    CardPool[id] = card;
-                }
-
-                // Показываем карточку на панели
-                flowPanel.Controls.Add(card);
+                pagination.TotalItems = dataManipulation.view.Count;
+                pagination.GoToPage(1);
             }
 
-            UpdateAllCardWidths();
+            flowPanel.Controls.Clear();
+
+            LoadCurrentPage();
+            UpdatePaginationUI();
 
             flowPanel.ResumeLayout(true);
             PreventHorizontalScroll();
-
             RefreshProductCardStates();
         }
 
         private void textBox1_TextChanged(object sender, EventArgs e)
         {
             InputRest.FirstLetter(textBox1);
+            ApplyFilters();
         }
 
         private void textBox1_KeyPress(object sender, KeyPressEventArgs e)
@@ -818,6 +820,7 @@ namespace WebSiteDev.ManagerForm
             AddProductForm addProductForm = new AddProductForm(dataManipulation);
             addProductForm.ShowDialog();
             RefreshData();
+            dataManipulation.ResetFilters(comboSort: comboBox3, comboFilter: comboBox1, textSearch: textBox1);
         }
 
         private void button4_Click(object sender, EventArgs e)
@@ -865,6 +868,11 @@ namespace WebSiteDev.ManagerForm
         /// </summary>
         private void UpdateAllCardWidths()
         {
+            if (flowPanel.IsDisposed || !flowPanel.IsHandleCreated)
+            {
+                return;
+            }
+
             int AvailableWidth = flowPanel.ClientSize.Width;
 
             if (!flowPanel.VerticalScroll.Visible)
@@ -874,9 +882,13 @@ namespace WebSiteDev.ManagerForm
 
             foreach (Control control in flowPanel.Controls)
             {
+                if (control.IsDisposed)
+                {
+                    continue;
+                }
+
                 if (control is ProductCard)
                 {
-                    // Margin.Horizontal = Margin.Left + Margin.Right 10 + 10 = 20
                     int NewWidth = AvailableWidth - control.Margin.Horizontal - 1;
 
                     if (NewWidth > 0)
@@ -888,16 +900,143 @@ namespace WebSiteDev.ManagerForm
         }
 
         /// <summary>
-        /// Принудительно отключает горизонтальную прокрутку во FlowPanel.
-        /// Иногда Windows Forms сам включает скролл из-за округления размеров.
-        /// Этот метод его гарантированно убирает.
+        /// Принудительно отключает горизонтальную прокрутку во FlowPanel
+        /// Этот метод его гарантированно убирает
         /// </summary>
         private void PreventHorizontalScroll()
         {
+            if (flowPanel.IsDisposed || !flowPanel.IsHandleCreated)
+            {
+                return;
+            }
+
             flowPanel.HorizontalScroll.Maximum = 0;
             flowPanel.HorizontalScroll.Visible = false;
             flowPanel.AutoScroll = false;
             flowPanel.AutoScroll = true;
+        }
+
+        /// <summary>
+        /// Загружает только карточки текущей страницы
+        /// </summary>
+        private void LoadCurrentPage()
+        {
+            if (pagination == null || dataManipulation == null)
+            {
+                return;
+            }
+
+            flowPanel.SuspendLayout();
+            flowPanel.Controls.Clear();
+
+            // Если после фильтрации ничего не нашлось выходим
+            if (dataManipulation.view.Count == 0)
+            {
+                flowPanel.ResumeLayout(true);
+                return;
+            }
+
+            int start = pagination.GetStartIndex();
+            int count = pagination.GetTakeCount();
+
+            // Защита от отрицательного старта
+            if (start < 0)
+            {
+                start = 0;
+            }
+
+            for (int i = 0; i < count; i++)
+            {
+                int viewIndex = start + i;
+                if (viewIndex >= dataManipulation.view.Count)
+                {
+                    break;
+                }
+
+                DataRowView row = dataManipulation.view[viewIndex];
+                int id = Convert.ToInt32(row["ProductID"]);
+
+                if (!CardPool.TryGetValue(id, out ProductCard card))
+                {
+                    card = CreateProductCard(row);
+                    CardPool[id] = card;
+                }
+
+                flowPanel.Controls.Add(card);
+            }
+
+            UpdateAllCardWidths();
+
+            flowPanel.ResumeLayout(true);
+            flowPanel.PerformLayout();
+
+            PreventHorizontalScroll();
+            RefreshProductCardStates();
+        }
+
+        /// <summary>
+        /// Событие срабатывает при смене страницы в пагинации
+        /// Перезагружает только карточки текущей страницы
+        /// </summary>
+        private void Pagination_PageChanged(object sender, EventArgs e)
+        {
+            LoadCurrentPage();
+            UpdatePaginationUI();
+        }
+
+        /// <summary>
+        /// Обновляет текст и доступность кнопок пагинации (enable)
+        /// </summary>
+        private void UpdatePaginationUI()
+        {
+            if (pagination == null)
+            {
+                return;
+            }
+
+            textBox5.Text = pagination.CurrentPage.ToString();
+            label4.Text = pagination.TotalPages.ToString();
+
+            button3.Enabled = pagination.HasPrevious;
+            button5.Enabled = pagination.HasNext;
+        }
+
+        /// <summary>
+        /// Кнопка для перехода на прошлую страницу
+        /// </summary>
+        private void button3_Click(object sender, EventArgs e)
+        {
+            pagination.PreviousPage();
+        }
+
+        /// <summary>
+        /// Кнопка для перехода на следующую страницу
+        /// </summary>
+        private void button5_Click(object sender, EventArgs e)
+        {
+            pagination.NextPage();
+        }
+
+        /// <summary>
+        /// Метод события обработки нажатия Enter для перехода на конкретную страницу
+        /// </summary>
+        private void textBox5_KeyDown(object sender, KeyEventArgs e)
+        {
+            // Срабатывает только если это Enter
+            if (e.KeyCode == Keys.Enter)
+            {
+                if (int.TryParse(textBox5.Text, out int page))
+                {
+                    pagination.GoToPage(page);
+                }
+                else
+                {
+                    textBox5.Text = pagination.CurrentPage.ToString();
+                }
+
+                e.Handled = true;
+                e.SuppressKeyPress = true;
+            }
         }
     }
 }
