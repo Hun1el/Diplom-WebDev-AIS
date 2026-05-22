@@ -134,63 +134,20 @@ namespace WebSiteDev.ManagerForm
         }
 
         /// <summary>
-        /// Загружает все карточки товаров сразу
-        /// Если ForceRecreate равен true то старый пул карточек полностью удаляется и создается заново
-        /// Это нужно только когда данные реально изменились в базе
-        /// </summary>
-        private void LoadAllCards(bool ForceRecreate)
-        {
-            if (ForceRecreate)
-            {
-                // Удаляем старые карточки из памяти
-                foreach (var kvp in CardPool)
-                {
-                    if (kvp.Value != null)
-                    {
-                        kvp.Value.Dispose();
-                    }
-                }
-                CardPool.Clear();
-            }
-
-            // SuspendLayout говорит панели не перерисовывайся пока я добавляю контролы
-            flowPanel.SuspendLayout();
-            flowPanel.Controls.Clear();
-
-            // Проходим по всем строкам из таблицы данных
-            foreach (DataRowView row in dataManipulation.view)
-            {
-                // Берем ID товара из текущей строки
-                int id = Convert.ToInt32(row["ProductID"]);
-
-                // Пытаемся найти карточку в пуле по этому ID
-                if (!CardPool.TryGetValue(id, out ProductCard card))
-                {
-                    // Если карточки нет в пуле создаем новую
-                    card = CreateProductCard(row);
-                    // И добавляем в пул чтобы в следующий раз не создавать заново
-                    CardPool[id] = card;
-                }
-
-                // Добавляем карточку на панель для отображения
-                flowPanel.Controls.Add(card);
-            }
-
-            UpdateAllCardWidths();
-
-            flowPanel.ResumeLayout(true);
-            flowPanel.PerformLayout();
-
-            PreventHorizontalScroll();
-            RefreshProductCardStates();
-        }
-
-        /// <summary>
         /// Перезагружает данные товаров из БД и пересоздаёт пул карточек
         /// Вызывать после сохранения удаления или добавления товара
         /// </summary>
-        private void RefreshData()
+        private void RefreshData(bool goToFirstPage = false)
         {
+            int SavedPage = 1;
+            if (pagination != null && !goToFirstPage)
+            {
+                SavedPage = pagination.CurrentPage;
+            }
+
+            flowPanel.Controls.Clear();
+
+            // Очистка пула карточек
             foreach (var kvp in CardPool)
             {
                 if (kvp.Value != null)
@@ -200,7 +157,6 @@ namespace WebSiteDev.ManagerForm
             }
 
             CardPool.Clear();
-            flowPanel.Controls.Clear();
 
             using (MySqlConnection con = new MySqlConnection(Data.GetConnectionString()))
             {
@@ -216,11 +172,17 @@ namespace WebSiteDev.ManagerForm
                 label1.Text = "Количество записей: " + count.ExecuteScalar();
             }
 
-            // Если пагинация не равно 0 или ничему
             if (pagination != null)
             {
                 pagination.TotalItems = dataManipulation.view.Count;
-                pagination.GoToPage(1);
+
+                // Если страница стала больше максимальной  переходим на последнюю для защиты на всякий
+                if (SavedPage > pagination.TotalPages)
+                {
+                    SavedPage = Math.Max(1, pagination.TotalPages);
+                }
+
+                pagination.GoToPage(SavedPage);
             }
 
             LoadCurrentPage();
@@ -237,6 +199,9 @@ namespace WebSiteDev.ManagerForm
             card.RowData = row;
             card.Margin = new Padding(10);
 
+            // Фиксируем дизайнерский размер и положение элементов пока карточка ещё не растянута
+            card.CaptureOriginalBounds();
+
             if (userRole == "Менеджер")
             {
                 card.ContextMenuStrip = contextMenuStrip1;
@@ -248,7 +213,6 @@ namespace WebSiteDev.ManagerForm
             bool isInCart = IsProductInCart(productID);
             card.UpdateAddToCartButtonState(isInCart, userRole);
 
-            // Подписка на события карточки
             card.EditButtonClicked += Card_EditButtonClicked;
             card.DeleteButtonClicked += Card_DeleteButtonClicked;
             card.AddToCartClicked += Card_AddToCartClicked;
@@ -529,7 +493,7 @@ namespace WebSiteDev.ManagerForm
                 textBox1.Text = savedSearchText;
                 comboBox3.SelectedIndex = savedSortIndex;
 
-                ApplyFilters();
+                ApplyFiltersInternal(resetToFirstPage: false); // применяем фильтры не сбрасывая страницу
             }
         }
 
@@ -543,7 +507,7 @@ namespace WebSiteDev.ManagerForm
                 return;
             }
 
-            DialogResult result = MessageBox.Show("Вы действительно хотите удалить услугу?", "Подтверждение", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
+            var result = MessageBox.Show("Вы действительно хотите удалить услугу?", "Подтверждение", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
 
             if (result == DialogResult.Yes)
             {
@@ -563,7 +527,7 @@ namespace WebSiteDev.ManagerForm
                     textBox1.Text = savedSearchText;
                     comboBox3.SelectedIndex = savedSortIndex;
 
-                    ApplyFilters();
+                    ApplyFiltersInternal(resetToFirstPage: false); // применяем фильтры не сбрасывая страницу
                 }
             }
         }
@@ -755,28 +719,34 @@ namespace WebSiteDev.ManagerForm
         /// </summary>
         private void ApplyFilters()
         {
-            ApplyFiltersInternal();
+            ApplyFiltersInternal(resetToFirstPage: true); // применяем фильтры сбрасывая страницу
         }
 
         /// <summary>
         /// Берёт уже созданные карточки из пула и показывает только те что подходят под фильтр (пагинация, поиск и остальное)
         /// </summary>
-        private void ApplyFiltersInternal()
+        private void ApplyFiltersInternal(bool resetToFirstPage = true)
         {
             flowPanel.SuspendLayout();
 
             dataManipulation.ApplyAllProduct(comboBox3, comboBox1, textBox1);
             dataManipulation.UpdateRecordCountLabel(label1);
 
-            // При смене фильтров сброс на первую страницу
             if (pagination != null)
             {
                 pagination.TotalItems = dataManipulation.view.Count;
-                pagination.GoToPage(1);
+
+                if (resetToFirstPage)
+                {
+                    pagination.GoToPage(1);
+                }
+                else if (pagination.CurrentPage > pagination.TotalPages)
+                {
+                    pagination.GoToPage(Math.Max(1, pagination.TotalPages));
+                }
             }
 
             flowPanel.Controls.Clear();
-
             LoadCurrentPage();
             UpdatePaginationUI();
 
@@ -819,7 +789,7 @@ namespace WebSiteDev.ManagerForm
         {
             AddProductForm addProductForm = new AddProductForm(dataManipulation);
             addProductForm.ShowDialog();
-            RefreshData();
+            RefreshData(goToFirstPage: true);
             dataManipulation.ResetFilters(comboSort: comboBox3, comboFilter: comboBox1, textSearch: textBox1);
         }
 
@@ -860,7 +830,39 @@ namespace WebSiteDev.ManagerForm
         private void flowPanel_Resize(object sender, EventArgs e)
         {
             UpdateAllCardWidths();
+
+            // Обновляем ширину карточек в пуле чтобы они тоже подхватывали ресайз
+            if (CardPool != null && CardPool.Count > 0)
+            {
+                int AvailableWidth = flowPanel.ClientSize.Width;
+                if (flowPanel.VerticalScroll.Visible)
+                {
+                    AvailableWidth -= SystemInformation.VerticalScrollBarWidth;
+                }
+
+                foreach (var kvp in CardPool)
+                {
+                    ProductCard card = kvp.Value;
+                    if (card != null && !card.IsDisposed && card.Parent == null)
+                    {
+                        int NewWidth = AvailableWidth - card.Margin.Horizontal - 1;
+
+                        if (NewWidth > 0 && card.Width != NewWidth)
+                        {
+                            card.Width = NewWidth;
+                        }
+                    }
+                }
+            }
+
             PreventHorizontalScroll();
+
+            if (label5 != null && label5.Visible)
+            {
+                label5.Location = new Point(
+                    flowPanel.Left + (flowPanel.Width - label5.Width) / 2,
+                    flowPanel.Top + (flowPanel.Height - label5.Height) / 2);
+            }
         }
 
         /// <summary>
@@ -929,21 +931,25 @@ namespace WebSiteDev.ManagerForm
             flowPanel.SuspendLayout();
             flowPanel.Controls.Clear();
 
-            // Если после фильтрации ничего не нашлось выходим
             if (dataManipulation.view.Count == 0)
             {
+                label5.Location = new Point(
+                    flowPanel.Left + (flowPanel.Width - label5.Width) / 2,
+                    flowPanel.Top + (flowPanel.Height - label5.Height) / 2);
+                label5.Visible = true;
+                label5.BringToFront();
+
                 flowPanel.ResumeLayout(true);
+                PreventHorizontalScroll();
+                RefreshProductCardStates();
                 return;
             }
 
+            label5.Visible = false;
+
             int start = pagination.GetStartIndex();
             int count = pagination.GetTakeCount();
-
-            // Защита от отрицательного старта
-            if (start < 0)
-            {
-                start = 0;
-            }
+            if (start < 0) start = 0;
 
             for (int i = 0; i < count; i++)
             {
@@ -960,6 +966,10 @@ namespace WebSiteDev.ManagerForm
                 {
                     card = CreateProductCard(row);
                     CardPool[id] = card;
+                }
+                else
+                {
+                    card.RowData = row;
                 }
 
                 flowPanel.Controls.Add(card);
@@ -995,7 +1005,19 @@ namespace WebSiteDev.ManagerForm
             }
 
             textBox5.Text = pagination.CurrentPage.ToString();
+            textBox5.SelectionStart = textBox5.Text.Length;
+            textBox5.SelectionLength = 0;
+
             label4.Text = pagination.TotalPages.ToString();
+
+            if (!pagination.HasPrevious && button3.Focused)
+            {
+                flowPanel.Focus();
+            }
+            else if (!pagination.HasNext && button5.Focused)
+            {
+                flowPanel.Focus();
+            }
 
             button3.Enabled = pagination.HasPrevious;
             button5.Enabled = pagination.HasNext;
@@ -1037,6 +1059,11 @@ namespace WebSiteDev.ManagerForm
                 e.Handled = true;
                 e.SuppressKeyPress = true;
             }
+        }
+
+        private void textBox5_KeyPress(object sender, KeyPressEventArgs e)
+        {
+            InputRest.OnlyNumbers(e);
         }
     }
 }

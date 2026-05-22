@@ -43,8 +43,6 @@ namespace WebSiteDev
             ResizeDebounceTimer.Tick += ResizeDebounceTimer_Tick;
         }
 
-        
-
         private void ScalableUserControl_Load(object sender, EventArgs e)
         {
             if (Initialized)
@@ -60,6 +58,7 @@ namespace WebSiteDev
             Initialized = true;
             OriginalSize = this.ClientSize;
 
+            CaptureOriginalBounds();
             SaveBoundsRecursive(this);
         }
 
@@ -398,6 +397,17 @@ namespace WebSiteDev
             public int Spacing;
             public int RightPadding;
             public int TopPadding;
+        }
+
+        public void CaptureOriginalBounds()
+        {
+            if (Initialized || this.IsDisposed || this.Disposing)
+                return;
+
+            Initialized = true;
+            OriginalSize = this.ClientSize;
+
+            SaveBoundsRecursive(this);
         }
     }
 }
