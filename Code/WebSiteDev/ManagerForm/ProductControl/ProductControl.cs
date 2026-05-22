@@ -1010,5 +1010,10 @@ namespace WebSiteDev.ManagerForm
                 e.SuppressKeyPress = true;
             }
         }
+
+        private void textBox5_KeyPress(object sender, KeyPressEventArgs e)
+        {
+            InputRest.OnlyNumbers(e);
+        }
     }
 }
