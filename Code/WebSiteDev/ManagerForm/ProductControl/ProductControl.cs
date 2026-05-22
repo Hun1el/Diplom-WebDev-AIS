@@ -865,6 +865,9 @@ namespace WebSiteDev.ManagerForm
         /// </summary>
         private void UpdateAllCardWidths()
         {
+            if (flowPanel.IsDisposed || !flowPanel.IsHandleCreated)
+                return;
+
             int AvailableWidth = flowPanel.ClientSize.Width;
 
             if (!flowPanel.VerticalScroll.Visible)
@@ -874,9 +877,13 @@ namespace WebSiteDev.ManagerForm
 
             foreach (Control control in flowPanel.Controls)
             {
+                if (control.IsDisposed)
+                {
+                    continue;
+                }
+
                 if (control is ProductCard)
                 {
-                    // Margin.Horizontal = Margin.Left + Margin.Right 10 + 10 = 20
                     int NewWidth = AvailableWidth - control.Margin.Horizontal - 1;
 
                     if (NewWidth > 0)
@@ -888,12 +895,16 @@ namespace WebSiteDev.ManagerForm
         }
 
         /// <summary>
-        /// Принудительно отключает горизонтальную прокрутку во FlowPanel.
-        /// Иногда Windows Forms сам включает скролл из-за округления размеров.
-        /// Этот метод его гарантированно убирает.
+        /// Принудительно отключает горизонтальную прокрутку во FlowPanel
+        /// Этот метод его гарантированно убирает
         /// </summary>
         private void PreventHorizontalScroll()
         {
+            if (flowPanel.IsDisposed || !flowPanel.IsHandleCreated)
+            {
+                return;
+            }
+
             flowPanel.HorizontalScroll.Maximum = 0;
             flowPanel.HorizontalScroll.Visible = false;
             flowPanel.AutoScroll = false;
