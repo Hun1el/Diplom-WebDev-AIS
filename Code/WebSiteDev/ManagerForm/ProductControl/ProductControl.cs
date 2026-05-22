@@ -139,7 +139,17 @@ namespace WebSiteDev.ManagerForm
         /// </summary>
         private void RefreshData()
         {
+            int SavedPage = pagination?.CurrentPage ?? 1;
+
             flowPanel.Controls.Clear();
+
+            // Очистка пула карточек
+            foreach (var kvp in CardPool)
+            {
+                kvp.Value?.Dispose();
+            }
+
+            CardPool.Clear();
 
             using (MySqlConnection con = new MySqlConnection(Data.GetConnectionString()))
             {
@@ -155,11 +165,17 @@ namespace WebSiteDev.ManagerForm
                 label1.Text = "Количество записей: " + count.ExecuteScalar();
             }
 
-            // Если пагинация не равно 0 или ничему
             if (pagination != null)
             {
                 pagination.TotalItems = dataManipulation.view.Count;
-                pagination.GoToPage(1);
+
+                // Если страница стала больше максимальной  переходим на последнюю для защиты на всякий
+                if (SavedPage > pagination.TotalPages)
+                {
+                    SavedPage = Math.Max(1, pagination.TotalPages);
+                }
+
+                pagination.GoToPage(SavedPage);
             }
 
             LoadCurrentPage();
@@ -470,7 +486,7 @@ namespace WebSiteDev.ManagerForm
                 textBox1.Text = savedSearchText;
                 comboBox3.SelectedIndex = savedSortIndex;
 
-                ApplyFilters();
+                ApplyFiltersInternal(resetToFirstPage: false); // применяем фильтры не сбрасывая страницу
             }
         }
 
@@ -484,7 +500,7 @@ namespace WebSiteDev.ManagerForm
                 return;
             }
 
-            DialogResult result = MessageBox.Show("Вы действительно хотите удалить услугу?", "Подтверждение", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
+            var result = MessageBox.Show("Вы действительно хотите удалить услугу?", "Подтверждение", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
 
             if (result == DialogResult.Yes)
             {
@@ -504,7 +520,7 @@ namespace WebSiteDev.ManagerForm
                     textBox1.Text = savedSearchText;
                     comboBox3.SelectedIndex = savedSortIndex;
 
-                    ApplyFilters();
+                    ApplyFiltersInternal(resetToFirstPage: false); // применяем фильтры не сбрасывая страницу
                 }
             }
         }
@@ -696,28 +712,34 @@ namespace WebSiteDev.ManagerForm
         /// </summary>
         private void ApplyFilters()
         {
-            ApplyFiltersInternal();
+            ApplyFiltersInternal(resetToFirstPage: true); // применяем фильтры сбрасывая страницу
         }
 
         /// <summary>
         /// Берёт уже созданные карточки из пула и показывает только те что подходят под фильтр (пагинация, поиск и остальное)
         /// </summary>
-        private void ApplyFiltersInternal()
+        private void ApplyFiltersInternal(bool resetToFirstPage = true)
         {
             flowPanel.SuspendLayout();
 
             dataManipulation.ApplyAllProduct(comboBox3, comboBox1, textBox1);
             dataManipulation.UpdateRecordCountLabel(label1);
 
-            // При смене фильтров сброс на первую страницу
             if (pagination != null)
             {
                 pagination.TotalItems = dataManipulation.view.Count;
-                pagination.GoToPage(1);
+
+                if (resetToFirstPage)
+                {
+                    pagination.GoToPage(1);
+                }
+                else if (pagination.CurrentPage > pagination.TotalPages)
+                {
+                    pagination.GoToPage(Math.Max(1, pagination.TotalPages));
+                }
             }
 
             flowPanel.Controls.Clear();
-
             LoadCurrentPage();
             UpdatePaginationUI();
 
@@ -931,9 +953,18 @@ namespace WebSiteDev.ManagerForm
                 }
 
                 DataRowView row = dataManipulation.view[viewIndex];
+                int id = Convert.ToInt32(row["ProductID"]);
 
-                // Создаём карточку заново каждый раз
-                ProductCard card = CreateProductCard(row);
+                if (!CardPool.TryGetValue(id, out ProductCard card))
+                {
+                    card = CreateProductCard(row);
+                    CardPool[id] = card;
+                }
+                else
+                {
+                    card.RowData = row;
+                }
+
                 flowPanel.Controls.Add(card);
             }
 
@@ -967,7 +998,19 @@ namespace WebSiteDev.ManagerForm
             }
 
             textBox5.Text = pagination.CurrentPage.ToString();
+            textBox5.SelectionStart = textBox5.Text.Length;
+            textBox5.SelectionLength = 0;
+
             label4.Text = pagination.TotalPages.ToString();
+
+            if (!pagination.HasPrevious && button3.Focused)
+            {
+                flowPanel.Focus();
+            }
+            else if (!pagination.HasNext && button5.Focused)
+            {
+                flowPanel.Focus();
+            }
 
             button3.Enabled = pagination.HasPrevious;
             button5.Enabled = pagination.HasNext;
