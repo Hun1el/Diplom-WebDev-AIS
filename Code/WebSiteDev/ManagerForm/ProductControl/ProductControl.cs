@@ -137,16 +137,23 @@ namespace WebSiteDev.ManagerForm
         /// Перезагружает данные товаров из БД и пересоздаёт пул карточек
         /// Вызывать после сохранения удаления или добавления товара
         /// </summary>
-        private void RefreshData()
+        private void RefreshData(bool goToFirstPage = false)
         {
-            int SavedPage = pagination?.CurrentPage ?? 1;
+            int SavedPage = 1;
+            if (pagination != null && !goToFirstPage)
+            {
+                SavedPage = pagination.CurrentPage;
+            }
 
             flowPanel.Controls.Clear();
 
             // Очистка пула карточек
             foreach (var kvp in CardPool)
             {
-                kvp.Value?.Dispose();
+                if (kvp.Value != null)
+                {
+                    kvp.Value.Dispose();
+                }
             }
 
             CardPool.Clear();
@@ -782,7 +789,7 @@ namespace WebSiteDev.ManagerForm
         {
             AddProductForm addProductForm = new AddProductForm(dataManipulation);
             addProductForm.ShowDialog();
-            RefreshData();
+            RefreshData(goToFirstPage: true);
             dataManipulation.ResetFilters(comboSort: comboBox3, comboFilter: comboBox1, textSearch: textBox1);
         }
 
