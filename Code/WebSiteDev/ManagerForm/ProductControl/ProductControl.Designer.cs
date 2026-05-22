@@ -221,7 +221,7 @@
             // 
             // label6
             // 
-            this.label6.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            this.label6.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
             | System.Windows.Forms.AnchorStyles.Right)));
             this.label6.AutoSize = true;
             this.label6.Font = new System.Drawing.Font("Microsoft Sans Serif", 24F);
@@ -234,7 +234,7 @@
             // 
             // bottomPanel
             // 
-            this.bottomPanel.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
+            this.bottomPanel.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)
             | System.Windows.Forms.AnchorStyles.Right)));
             this.bottomPanel.Controls.Add(this.button1);
             this.bottomPanel.Controls.Add(this.button2);
@@ -284,15 +284,15 @@
             // 
             // flowPanel
             // 
-            this.flowPanel.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
+            this.flowPanel.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
+            | System.Windows.Forms.AnchorStyles.Left)
             | System.Windows.Forms.AnchorStyles.Right)));
             this.flowPanel.AutoScroll = true;
             this.flowPanel.FlowDirection = System.Windows.Forms.FlowDirection.TopDown;
             this.flowPanel.Location = new System.Drawing.Point(0, 108);
             this.flowPanel.Margin = new System.Windows.Forms.Padding(6);
             this.flowPanel.Name = "flowPanel";
-            this.flowPanel.Size = new System.Drawing.Size(871, 513);
+            this.flowPanel.Size = new System.Drawing.Size(871, 453);
             this.flowPanel.TabIndex = 48;
             this.flowPanel.WrapContents = false;
             this.flowPanel.Resize += new System.EventHandler(this.flowPanel_Resize);
@@ -313,7 +313,7 @@
             // 
             // panel3
             // 
-            this.panel3.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
+            this.panel3.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)
             | System.Windows.Forms.AnchorStyles.Right)));
             this.panel3.BackColor = System.Drawing.Color.White;
             this.panel3.Controls.Add(this.label4);
@@ -323,7 +323,7 @@
             this.panel3.Controls.Add(this.button5);
             this.panel3.Controls.Add(this.button3);
             this.panel3.Controls.Add(this.label1);
-            this.panel3.Location = new System.Drawing.Point(0, 569);
+            this.panel3.Location = new System.Drawing.Point(0, 561);
             this.panel3.Margin = new System.Windows.Forms.Padding(6);
             this.panel3.Name = "panel3";
             this.panel3.Size = new System.Drawing.Size(882, 62);

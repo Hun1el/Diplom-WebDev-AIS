@@ -788,6 +788,7 @@ namespace WebSiteDev.ManagerForm
         private void textBox1_TextChanged(object sender, EventArgs e)
         {
             InputRest.FirstLetter(textBox1);
+            ApplyFilters();
         }
 
         private void textBox1_KeyPress(object sender, KeyPressEventArgs e)
