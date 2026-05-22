@@ -819,6 +819,7 @@ namespace WebSiteDev.ManagerForm
             AddProductForm addProductForm = new AddProductForm(dataManipulation);
             addProductForm.ShowDialog();
             RefreshData();
+            dataManipulation.ResetFilters(comboSort: comboBox3, comboFilter: comboBox1, textSearch: textBox1);
         }
 
         private void button4_Click(object sender, EventArgs e)
@@ -867,7 +868,9 @@ namespace WebSiteDev.ManagerForm
         private void UpdateAllCardWidths()
         {
             if (flowPanel.IsDisposed || !flowPanel.IsHandleCreated)
+            {
                 return;
+            }
 
             int AvailableWidth = flowPanel.ClientSize.Width;
 

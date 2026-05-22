@@ -193,9 +193,18 @@ namespace WebSiteDev.AddForm
             string ProductName = textBox1.Text.Trim();
             string ProductDesc = textBox2.Text.Trim();
             string RublesText = textBox3.Text.Trim();
-            string CategoryId = Convert.ToString(comboBox1.SelectedValue);
 
-            if (string.IsNullOrEmpty(ProductName) || string.IsNullOrEmpty(ProductDesc) || string.IsNullOrEmpty(CategoryId) || string.IsNullOrEmpty(RublesText))
+            // Получаем ID категории из SelectedValue
+            // Если категория не выбрана останется 0
+            int CategoryId = 0;
+
+            if (comboBox1.SelectedValue != null && comboBox1.SelectedValue != DBNull.Value)
+            {
+                int.TryParse(comboBox1.SelectedValue.ToString(), out CategoryId);
+            }
+
+            // Проверка обязательных полей
+            if (string.IsNullOrEmpty(ProductName) || string.IsNullOrEmpty(ProductDesc) || CategoryId <= 0 || string.IsNullOrEmpty(RublesText))
             {
                 MessageBox.Show("Необходимо заполнить поля отмеченные \"*\"", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
