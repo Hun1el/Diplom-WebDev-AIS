@@ -79,7 +79,6 @@ namespace WebSiteDev.ManagerForm
 
             LoadCurrentPage(); // Загрузка текущей страницы
             UpdatePaginationUI(); // Обновление пагинации при различных условиях
-            LoadAllCards(false);
         }
 
         private void ProductControl_Load(object sender, EventArgs e)
@@ -779,6 +778,7 @@ namespace WebSiteDev.ManagerForm
             flowPanel.Controls.Clear();
 
             LoadCurrentPage();
+            UpdatePaginationUI();
 
             flowPanel.ResumeLayout(true);
             PreventHorizontalScroll();
@@ -925,8 +925,21 @@ namespace WebSiteDev.ManagerForm
             flowPanel.SuspendLayout();
             flowPanel.Controls.Clear();
 
+            // Если после фильтрации ничего не нашлось выходим
+            if (dataManipulation.view.Count == 0)
+            {
+                flowPanel.ResumeLayout(true);
+                return;
+            }
+
             int start = pagination.GetStartIndex();
             int count = pagination.GetTakeCount();
+
+            // Защита от отрицательного старта
+            if (start < 0)
+            {
+                start = 0;
+            }
 
             for (int i = 0; i < count; i++)
             {
