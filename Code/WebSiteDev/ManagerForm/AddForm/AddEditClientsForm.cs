@@ -129,27 +129,15 @@ namespace WebSiteDev.AddForm
             string emailName = textBox5.Text.Trim();
             string phoneNumber = maskedTextBox1.Text.Trim();
 
-            if (string.IsNullOrEmpty(surName) || string.IsNullOrEmpty(firstName) || string.IsNullOrEmpty(phoneNumber))
+            if (string.IsNullOrEmpty(surName) || string.IsNullOrEmpty(firstName) || string.IsNullOrEmpty(phoneNumber) || string.IsNullOrEmpty(emailName) || comboBox1.SelectedIndex <= 0)
             {
                 MessageBox.Show("Необходимо заполнить поля отмеченные \"*\"", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                return;
-            }
-
-            if (comboBox1.SelectedIndex <= 0)
-            {
-                MessageBox.Show("Выберите домен электронной почты!", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
 
             if (!maskedTextBox1.MaskFull)
             {
                 MessageBox.Show("Введите корректный номер телефона!", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                return;
-            }
-
-            if (string.IsNullOrEmpty(emailName))
-            {
-                MessageBox.Show("Заполните электронную почту!", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
 
