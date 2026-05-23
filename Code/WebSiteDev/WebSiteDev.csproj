@@ -415,6 +415,7 @@
     <Content Include="AppIcon.ico" />
     <None Include="Resources\ServiceIcon.png" />
     <None Include="Resources\MainLogo1.png" />
+    <None Include="Resources\cart.png" />
     <Content Include="Resources\reload.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
