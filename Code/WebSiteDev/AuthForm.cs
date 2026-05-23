@@ -175,9 +175,24 @@ namespace WebSiteDev
                             if (reader.Read())
                             {
                                 int userID = Convert.ToInt32(reader["UserID"]);
-                                string fullName = reader["Surname"].ToString() + " " + reader["FirstName"].ToString() + " " + reader["MiddleName"].ToString();
+                                string surname = reader["Surname"].ToString();
+                                string firstName = reader["FirstName"].ToString();
+                                string middleName = reader["MiddleName"].ToString();
+
+                                string fullName = surname + " " + firstName + " " + middleName;
                                 string role = reader["RoleName"].ToString();
-                                string fullNameForm = reader["Surname"].ToString() + " " + reader["FirstName"].ToString()[0] + "." + reader["MiddleName"].ToString()[0] + ".";
+
+                                string fullNameForm = surname;
+
+                                if (firstName.Length > 0)
+                                {
+                                    fullNameForm = fullNameForm + " " + firstName[0] + ".";
+                                }
+
+                                if (middleName.Length > 0)
+                                {
+                                    fullNameForm = fullNameForm + middleName[0] + ".";
+                                }
 
                                 Form userForm = GetFormByRole(role, fullName, userID, fullNameForm);
 
