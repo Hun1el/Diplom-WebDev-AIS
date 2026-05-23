@@ -7,8 +7,11 @@ namespace WebSiteDev.AddForm
     /// <summary>
     /// Форма для добавления нового клиента в систему
     /// </summary>
-    public partial class AddClientsForm : Form
+    public partial class AddClientsForm : ScalableForm
     {
+        protected override float MaxScale => 1.6f;
+        protected override float MinScale => 0.9f;
+
         public AddClientsForm()
         {
             InitializeComponent();

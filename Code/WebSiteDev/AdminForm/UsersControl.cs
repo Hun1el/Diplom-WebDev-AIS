@@ -37,6 +37,12 @@ namespace WebSiteDev.AdminForm
             // Таймер для скрытия данных через 20 секунд
             timer1.Interval = 20000;
             timer1.Stop();
+
+            dataGridView1.Columns["FirstName"].AutoSizeMode = DataGridViewAutoSizeColumnMode.AllCells;
+            dataGridView1.Columns["MiddleName"].AutoSizeMode = DataGridViewAutoSizeColumnMode.AllCells;
+            dataGridView1.Columns["UserLogin"].AutoSizeMode = DataGridViewAutoSizeColumnMode.AllCells;
+            dataGridView1.Columns["RoleName"].AutoSizeMode = DataGridViewAutoSizeColumnMode.AllCells;
+            dataGridView1.Columns["PhoneNumber"].AutoSizeMode = DataGridViewAutoSizeColumnMode.AllCells;
         }
 
         /// <summary>
