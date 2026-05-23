@@ -102,6 +102,8 @@ namespace WebSiteDev.ManagerForm
             comboBox3.SelectedIndex = 0;
             comboBox1.SelectedIndex = 0;
 
+            ApplyDynamicLayout();
+
             CurrentOrder.Clear();
             RefreshProductCardStates();
             UpdateOrderButtonVisibility();
@@ -1064,6 +1066,59 @@ namespace WebSiteDev.ManagerForm
         private void textBox5_KeyPress(object sender, KeyPressEventArgs e)
         {
             InputRest.OnlyNumbers(e);
+        }
+
+        private void ApplyDynamicLayout()
+        {
+            if (topPanel == null || flowPanel == null || panel3 == null || bottomPanel == null)
+            {
+                return;
+            }
+
+            float ScaleY;
+            if (CurrentScaleY > 0.01f)
+            {
+                ScaleY = CurrentScaleY;
+            }
+            else
+            {
+                ScaleY = 1f;
+            }
+
+            int Gap = (int)Math.Round(8f * ScaleY); // динамический зазор между
+            int MinGap = 6; // минимум в пикселях
+
+            if (Gap < MinGap)
+            {
+                Gap = MinGap;
+            }
+
+            int y = topPanel.Bottom + Gap;
+
+            // flowPanel заполняет всё пространство между панелями
+            flowPanel.Location = new Point(flowPanel.Left, y);
+            int FlowHeight = panel3.Top - y - Gap;
+
+            if (FlowHeight < 50)
+            {
+                FlowHeight = 50;
+            }
+
+            flowPanel.Height = FlowHeight;
+
+            // panel3 прижимается к bottomPanel
+            y = flowPanel.Bottom + Gap;
+            panel3.Location = new Point(panel3.Left, y);
+
+            // bottomPanel прижимается к низу формы
+            y = panel3.Bottom + Gap;
+            bottomPanel.Location = new Point(bottomPanel.Left, y);
+        }
+
+        protected override void OnScaledResize()
+        {
+            base.OnScaledResize();
+            ApplyDynamicLayout();
         }
     }
 }

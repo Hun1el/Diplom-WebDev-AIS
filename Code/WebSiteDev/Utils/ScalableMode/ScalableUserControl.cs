@@ -14,6 +14,9 @@ namespace WebSiteDev
         private bool Initialized = false;
         private bool IsScaling = false;
 
+        // Включает/отключает масштабирование для контрола
+        public bool EnableScaling { get; set; } = true;
+
         private readonly Dictionary<Control, Rectangle> OriginalBounds = new Dictionary<Control, Rectangle>();
         private readonly Dictionary<Control, float> OriginalFontSizes = new Dictionary<Control, float>();
         private readonly Dictionary<Control, float> AppliedFontSizes = new Dictionary<Control, float>();
@@ -21,11 +24,13 @@ namespace WebSiteDev
 
         private readonly List<RelativeControlRule> RelativeRules = new List<RelativeControlRule>();
 
-        // Таймер
         private Timer ResizeDebounceTimer;
 
         private float LastScaleX = 0f;
         private float LastScaleY = 0f;
+
+        protected float CurrentScaleX => LastScaleX;
+        protected float CurrentScaleY => LastScaleY;
 
         private const int WM_SETREDRAW = 11;
 
@@ -45,7 +50,7 @@ namespace WebSiteDev
 
         private void ScalableUserControl_Load(object sender, EventArgs e)
         {
-            if (Initialized)
+            if (!EnableScaling || Initialized)
             {
                 return;
             }
@@ -66,6 +71,12 @@ namespace WebSiteDev
         {
             foreach (Control control in parent.Controls)
             {
+                // пропускаем FlowLayoutPanel и все содержимое
+                if (control is FlowLayoutPanel)
+                {
+                    continue;
+                }
+
                 bool isUserControl = control is UserControl;
 
                 control.Anchor = AnchorStyles.Top | AnchorStyles.Left;
@@ -87,6 +98,12 @@ namespace WebSiteDev
 
         protected void ChangeControlOriginalLocation(Control control, Point NewOriginalLocation)
         {
+            if (!EnableScaling)
+            {
+                control.Location = NewOriginalLocation;
+                return;
+            }
+
             if (OriginalBounds.ContainsKey(control))
             {
                 Rectangle orig = OriginalBounds[control];
@@ -203,12 +220,9 @@ namespace WebSiteDev
             }
         }
 
-        /// <summary>
-        /// При изменении размера не масштабируем сразу перезапуск таймера
-        /// </summary>
         private void ScalableUserControl_Resize(object sender, EventArgs e)
         {
-            if (!Initialized || IsScaling)
+            if (!EnableScaling || !Initialized || IsScaling)
             {
                 return;
             }
@@ -232,9 +246,6 @@ namespace WebSiteDev
             ResizeDebounceTimer.Start();
         }
 
-        /// <summary>
-        /// Таймер дотикал масштабирование больше не будет откладываться и изменится масштаб
-        /// </summary>
         private void ResizeDebounceTimer_Tick(object sender, EventArgs e)
         {
             if (ResizeDebounceTimer != null)
@@ -250,13 +261,9 @@ namespace WebSiteDev
             PerformScale();
         }
 
-        /// <summary>
-        /// Основной метод масштабирования
-        /// Защищён от вызова на уничтоженном контроле и от повторного входа
-        /// </summary>
         private void PerformScale()
         {
-            if (IsScaling || OriginalBounds.Count == 0)
+            if (!EnableScaling || IsScaling || OriginalBounds.Count == 0)
             {
                 return;
             }
@@ -311,7 +318,6 @@ namespace WebSiteDev
                     Control control = kvp.Key;
                     Rectangle orig = kvp.Value;
 
-                    // Если контрол был уничтожен пропускаем
                     if (control == null || control.IsDisposed)
                     {
                         continue;
@@ -361,7 +367,7 @@ namespace WebSiteDev
 
                 ApplyRelativeRules();
             }
-            finally // Выполняется в любом случае
+            finally
             {
                 this.ResumeLayout(false);
 
@@ -401,8 +407,10 @@ namespace WebSiteDev
 
         public void CaptureOriginalBounds()
         {
-            if (Initialized || this.IsDisposed || this.Disposing)
+            if (!EnableScaling || Initialized || this.IsDisposed || this.Disposing)
+            {
                 return;
+            }
 
             Initialized = true;
             OriginalSize = this.ClientSize;
