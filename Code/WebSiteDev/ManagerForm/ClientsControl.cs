@@ -26,6 +26,11 @@ namespace WebSiteDev.ManagerForm
 
             timer1.Interval = 20000;
             timer1.Stop();
+
+            dataGridView1.Columns["FirstName"].AutoSizeMode = DataGridViewAutoSizeColumnMode.AllCells;
+            dataGridView1.Columns["MiddleName"].AutoSizeMode = DataGridViewAutoSizeColumnMode.AllCells;
+            dataGridView1.Columns["Email"].AutoSizeMode = DataGridViewAutoSizeColumnMode.AllCells;
+            dataGridView1.Columns["PhoneNumber"].AutoSizeMode = DataGridViewAutoSizeColumnMode.AllCells;
         }
 
         void GetDate()
