@@ -212,6 +212,13 @@ namespace WebSiteDev.AddForm
                         }
 
                         MessageBox.Show("Клиент успешно добавлен!", "Успех", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                        textBox2.Clear();
+                        textBox3.Clear();
+                        textBox4.Clear();
+                        textBox5.Clear();
+                        maskedTextBox1.Clear();
+                        comboBox1.SelectedIndex = 0;
+                        textBox2.Focus();
                     }
                     else
                     {
