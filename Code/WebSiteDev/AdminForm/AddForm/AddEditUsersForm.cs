@@ -192,10 +192,13 @@ namespace WebSiteDev.AddForm
                 return;
             }
 
-            if (UserPassword.Length < 6)
+            if (mode == FormMode.Add || !string.IsNullOrEmpty(UserPassword))
             {
-                MessageBox.Show("Пароль должен содержать не менее 6 символов.", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                return;
+                if (UserPassword.Length < 6)
+                {
+                    MessageBox.Show("Пароль должен содержать не менее 6 символов.", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    return;
+                }
             }
 
             if (!maskedTextBox1.MaskFull)
