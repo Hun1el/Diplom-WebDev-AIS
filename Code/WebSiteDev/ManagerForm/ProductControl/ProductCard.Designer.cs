@@ -174,13 +174,13 @@
             // 
             // button3
             // 
-            this.button3.BackColor = System.Drawing.Color.Green;
+            this.button3.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(45)))), ((int)(((byte)(156)))), ((int)(((byte)(219)))));
             this.button3.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.button3.Font = new System.Drawing.Font("Segoe UI Semibold", 14.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
             this.button3.ForeColor = System.Drawing.Color.White;
-            this.button3.Location = new System.Drawing.Point(668, 296);
+            this.button3.Location = new System.Drawing.Point(648, 296);
             this.button3.Name = "button3";
-            this.button3.Size = new System.Drawing.Size(161, 42);
+            this.button3.Size = new System.Drawing.Size(181, 42);
             this.button3.TabIndex = 11;
             this.button3.Text = "Сохранить";
             this.button3.UseVisualStyleBackColor = false;
@@ -189,13 +189,13 @@
             // 
             // button4
             // 
-            this.button4.BackColor = System.Drawing.Color.Gray;
+            this.button4.BackColor = System.Drawing.Color.Crimson;
             this.button4.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.button4.Font = new System.Drawing.Font("Segoe UI Semibold", 14.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
             this.button4.ForeColor = System.Drawing.Color.White;
-            this.button4.Location = new System.Drawing.Point(668, 248);
+            this.button4.Location = new System.Drawing.Point(648, 248);
             this.button4.Name = "button4";
-            this.button4.Size = new System.Drawing.Size(161, 42);
+            this.button4.Size = new System.Drawing.Size(181, 42);
             this.button4.TabIndex = 12;
             this.button4.Text = "Отмена";
             this.button4.UseVisualStyleBackColor = false;
@@ -262,6 +262,7 @@
             // imageControl1
             // 
             this.imageControl1.CurrentImagePath = null;
+            this.imageControl1.EnableScaling = true;
             this.imageControl1.Location = new System.Drawing.Point(9, 64);
             this.imageControl1.Name = "imageControl1";
             this.imageControl1.Size = new System.Drawing.Size(270, 256);

@@ -192,10 +192,13 @@ namespace WebSiteDev.AddForm
                 return;
             }
 
-            if (UserPassword.Length < 6)
+            if (mode == FormMode.Add || !string.IsNullOrEmpty(UserPassword))
             {
-                MessageBox.Show("Пароль должен содержать не менее 6 символов.", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                return;
+                if (UserPassword.Length < 6)
+                {
+                    MessageBox.Show("Пароль должен содержать не менее 6 символов.", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    return;
+                }
             }
 
             if (!maskedTextBox1.MaskFull)
@@ -271,6 +274,14 @@ namespace WebSiteDev.AddForm
                         }
 
                         MessageBox.Show("Пользователь успешно добавлен!", "Успех", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                        textBox2.Clear();
+                        textBox3.Clear();
+                        textBox4.Clear();
+                        textBox5.Clear();
+                        textBox6.Clear();
+                        maskedTextBox1.Clear();
+                        comboBox1.SelectedIndex = 0;
+                        textBox2.Focus();
                     }
                     else
                     {
@@ -355,9 +366,8 @@ namespace WebSiteDev.AddForm
                         }
 
                         MessageBox.Show("Пользователь успешно изменён!", "Успех", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                        this.Close();
                     }
-
-                    this.Close();
                 }
             }
             catch (Exception ex)

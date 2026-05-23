@@ -206,11 +206,11 @@
     <Compile Include="AdminForm\AddForm\AddProductForm.Designer.cs">
       <DependentUpon>AddProductForm.cs</DependentUpon>
     </Compile>
-    <Compile Include="ManagerForm\AddForm\AddClientsForm.cs">
+    <Compile Include="ManagerForm\AddForm\AddEditClientsForm.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="ManagerForm\AddForm\AddClientsForm.Designer.cs">
-      <DependentUpon>AddClientsForm.cs</DependentUpon>
+    <Compile Include="ManagerForm\AddForm\AddEditClientsForm.Designer.cs">
+      <DependentUpon>AddEditClientsForm.cs</DependentUpon>
     </Compile>
     <Compile Include="ManagerForm\OrderControl.cs">
       <SubType>UserControl</SubType>
@@ -304,8 +304,8 @@
     <EmbeddedResource Include="AdminForm\AddForm\AddProductForm.resx">
       <DependentUpon>AddProductForm.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="ManagerForm\AddForm\AddClientsForm.resx">
-      <DependentUpon>AddClientsForm.cs</DependentUpon>
+    <EmbeddedResource Include="ManagerForm\AddForm\AddEditClientsForm.resx">
+      <DependentUpon>AddEditClientsForm.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="ManagerForm\OrderControl.resx">
       <DependentUpon>OrderControl.cs</DependentUpon>

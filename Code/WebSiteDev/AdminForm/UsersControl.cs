@@ -37,6 +37,12 @@ namespace WebSiteDev.AdminForm
             // Таймер для скрытия данных через 20 секунд
             timer1.Interval = 20000;
             timer1.Stop();
+
+            dataGridView1.Columns["FirstName"].AutoSizeMode = DataGridViewAutoSizeColumnMode.AllCells;
+            dataGridView1.Columns["MiddleName"].AutoSizeMode = DataGridViewAutoSizeColumnMode.AllCells;
+            dataGridView1.Columns["UserLogin"].AutoSizeMode = DataGridViewAutoSizeColumnMode.AllCells;
+            dataGridView1.Columns["RoleName"].AutoSizeMode = DataGridViewAutoSizeColumnMode.AllCells;
+            dataGridView1.Columns["PhoneNumber"].AutoSizeMode = DataGridViewAutoSizeColumnMode.AllCells;
         }
 
         /// <summary>
@@ -100,7 +106,7 @@ namespace WebSiteDev.AdminForm
         /// <summary>
         /// Форматирует отображение ячеек показывает оригинальные данные для открытой строки или маскирует
         /// </summary>
-        private void DataGridView1_CellFormatting(object sender, DataGridViewCellFormattingEventArgs e)
+        private void dataGridView1_CellFormatting(object sender, DataGridViewCellFormattingEventArgs e)
         {
             if (e.RowIndex < 0)
             {
@@ -201,7 +207,7 @@ namespace WebSiteDev.AdminForm
         /// <summary>
         /// Двойной клик на ячейку показывает/скрывает данные на 20 секунд
         /// </summary>
-        private void DataGridView1_CellDoubleClick(object sender, DataGridViewCellEventArgs e)
+        private void dataGridView1_CellDoubleClick(object sender, DataGridViewCellEventArgs e)
         {
             if (e.RowIndex < 0)
             {
@@ -298,15 +304,26 @@ namespace WebSiteDev.AdminForm
 
         private void dataGridView1_CellClick(object sender, DataGridViewCellEventArgs e)
         {
-            if (e.RowIndex >= 0)
+            if (e.RowIndex < 0)
             {
-                selectedUserID = Convert.ToInt32(dataGridView1.Rows[e.RowIndex].Cells["UserID"].Value);
-
-                button6.Enabled = true;
-                button7.Enabled = true;
+                return;
             }
+
+            selectedUserID = Convert.ToInt32(dataGridView1.Rows[e.RowIndex].Cells["UserID"].Value);
+
+            if (e.RowIndex == lastRevealedRowIndex)
+            {
+                timer1.Stop();
+                timer1.Start();
+            }
+
+            button6.Enabled = true;
+            button7.Enabled = true;
         }
 
+        /// <summary>
+        /// Кнопка редактировать пользователя
+        /// </summary>
         private void button6_Click(object sender, EventArgs e)
         {
             if (selectedUserID == -1)
@@ -315,7 +332,6 @@ namespace WebSiteDev.AdminForm
                 return;
             }
 
-            // Фамилия не маскируется — берём напрямую из таблицы
             string surname = dataGridView1.SelectedRows[0].Cells["Surname"].Value.ToString();
 
             string firstName = dataSecurity.GetOriginalFirstName(selectedUserID);
@@ -348,13 +364,25 @@ namespace WebSiteDev.AdminForm
 
             int roleID = Convert.ToInt32(dataGridView1.SelectedRows[0].Cells["RoleID"].Value);
 
-            // Открываем форму редактирования
             AddEditUsersForm form = new AddEditUsersForm(dataManipulation, selectedUserID, surname, firstName, middleName, login, phone, roleID);
+            form.ShowDialog();
 
-            if (form.ShowDialog() == DialogResult.OK)
+            // Запоминаем ID выделенной записи
+            int idToSelect = selectedUserID;
+            GetDate();
+
+            // Восстанавливаем выделение
+            foreach (DataGridViewRow row in dataGridView1.Rows)
             {
-                GetDate();
-                ClearViewSelection();
+                if (Convert.ToInt32(row.Cells["UserID"].Value) == idToSelect)
+                {
+                    dataGridView1.CurrentCell = row.Cells["Surname"];
+                    row.Selected = true;
+                    selectedUserID = idToSelect;
+                    button6.Enabled = true;
+                    button7.Enabled = true;
+                    break;
+                }
             }
         }
 
