@@ -355,9 +355,8 @@ namespace WebSiteDev.AddForm
                         }
 
                         MessageBox.Show("Пользователь успешно изменён!", "Успех", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                        this.Close();
                     }
-
-                    this.Close();
                 }
             }
             catch (Exception ex)
