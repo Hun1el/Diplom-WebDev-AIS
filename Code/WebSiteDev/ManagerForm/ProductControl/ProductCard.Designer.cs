@@ -275,9 +275,9 @@
             this.button6.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.button6.Font = new System.Drawing.Font("Segoe UI Semibold", 14.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
             this.button6.ForeColor = System.Drawing.Color.White;
-            this.button6.Location = new System.Drawing.Point(618, 296);
+            this.button6.Location = new System.Drawing.Point(606, 296);
             this.button6.Name = "button6";
-            this.button6.Size = new System.Drawing.Size(211, 42);
+            this.button6.Size = new System.Drawing.Size(223, 42);
             this.button6.TabIndex = 19;
             this.button6.Text = "Добавить в корзину";
             this.button6.UseVisualStyleBackColor = false;

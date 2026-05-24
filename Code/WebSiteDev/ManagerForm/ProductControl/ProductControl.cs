@@ -99,6 +99,7 @@ namespace WebSiteDev.ManagerForm
                 }
             }
 
+            button1.TextImageRelation = TextImageRelation.ImageBeforeText;
             comboBox3.SelectedIndex = 0;
             comboBox1.SelectedIndex = 0;
 

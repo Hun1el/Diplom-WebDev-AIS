@@ -117,6 +117,7 @@
     <Compile Include="AdminForm\UsersControl.Designer.cs">
       <DependentUpon>UsersControl.cs</DependentUpon>
     </Compile>
+    <Compile Include="Data\ImageSelect.cs" />
     <Compile Include="Data\Pagination.cs" />
     <Compile Include="Utils\ScalableMode\ScalableForm.cs">
       <SubType>Form</SubType>
@@ -415,6 +416,7 @@
     <Content Include="AppIcon.ico" />
     <None Include="Resources\ServiceIcon.png" />
     <None Include="Resources\MainLogo1.png" />
+    <None Include="Resources\cart.png" />
     <Content Include="Resources\reload.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

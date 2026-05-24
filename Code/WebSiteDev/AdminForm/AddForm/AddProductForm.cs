@@ -13,6 +13,7 @@ namespace WebSiteDev.AddForm
 
         private DataManipulation dataManipulation;
         private string SelectedFileName = null;
+        private string selectedImageExtension; // Расширение выбранного файла определяется автоматически по наличию альфа-канала
         public string CurrentImagePath { get; set; }
 
         public AddProductForm(DataManipulation dm)
@@ -107,78 +108,53 @@ namespace WebSiteDev.AddForm
                 {
                     string sourcePath = openFileDialog.FileName;
 
-                    // Получаем информацию о файле
-                    FileInfo fileInfo = new FileInfo(sourcePath);
-
-                    // Проверяем что размер не больше 2 МБ
-                    if (fileInfo.Length > 2 * 1024 * 1024)
-                    {
-                        MessageBox.Show("Изображение не должно превышать 2 МБ!", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                        return;
-                    }
-
-                    // Читаем новое изображение в память
-                    byte[] newImageBytes = File.ReadAllBytes(sourcePath);
-
-                    // Если уже выбрано изображение проверяем что это не одно и то же
-                    if (!string.IsNullOrEmpty(SelectedFileName))
-                    {
-                        if (File.Exists(SelectedFileName))
-                        {
-                            try
-                            {
-                                byte[] oldImageBytes = File.ReadAllBytes(SelectedFileName);
-
-                                // Сравниваем размеры файлов
-                                if (oldImageBytes.Length == newImageBytes.Length)
-                                {
-                                    // Сравниваем содержимое побайтово
-                                    bool isIdentical = true;
-
-                                    for (int i = 0; i < oldImageBytes.Length; i++)
-                                    {
-                                        if (oldImageBytes[i] != newImageBytes[i])
-                                        {
-                                            isIdentical = false;
-                                            break;
-                                        }
-                                    }
-
-                                    // Если изображения идентичны прерываем выбор
-                                    if (isIdentical)
-                                    {
-                                        MessageBox.Show("Данное изображение уже выбрано!", "Информация", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                                        return;
-                                    }
-                                }
-                            }
-                            catch (Exception ex)
-                            {
-                                MessageBox.Show("Ошибка при чтении старого изображения:\n" + ex.Message, "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                                return;
-                            }
-                        }
-                    }
-
-                    // Сохраняем путь к файлу
-                    SelectedFileName = sourcePath;
-
                     try
                     {
+                        // Формируем путь к старому файлу для проверки на дубль
+                        string oldFullPath = null;
+
+                        if (!string.IsNullOrEmpty(SelectedFileName))
+                        {
+                            oldFullPath = SelectedFileName;
+                        }
+
+                        // Обрабатываем выбранный файл через отдельный класс
+                        ImageSelect selector = new ImageSelect();
+                        bool processed = selector.Process(sourcePath, 2L * 1024 * 1024, oldFullPath);
+
+                        // Если дубль показываем сообщение и выходим
+                        if (!processed)
+                        {
+                            if (selector.IsDuplicate)
+                            {
+                                MessageBox.Show("Данное изображение уже выбрано!", "Информация", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                            }
+                            return;
+                        }
+
+                        // Сохраняем путь к временному сжатому файлу и расширение
+                        SelectedFileName = selector.TempFilePath;
+                        selectedImageExtension = selector.FileExtension;
+
                         // Освобождаем старое изображение если оно есть
                         if (pictureBox1.Image != null)
                         {
                             pictureBox1.Image.Dispose();
                         }
 
-                        // Отображаем новое изображение в превью
+                        // Отображаем новое изображение в превью через MemoryStream чтобы не блокировать файл
                         pictureBox1.BackgroundImage = null;
-                        pictureBox1.Image = Image.FromFile(sourcePath);
+
+                        using (MemoryStream memoryStream = new MemoryStream(selector.ImageBytes))
+                        {
+                            pictureBox1.Image = Image.FromStream(memoryStream, true);
+                        }
                     }
                     catch (Exception ex)
                     {
-                        MessageBox.Show("Ошибка при загрузке изображения:\n" + ex.Message, "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        MessageBox.Show("Ошибка при обработке изображения:\n" + ex.Message, "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
                         SelectedFileName = null;
+                        selectedImageExtension = null;
                     }
                 }
             }
@@ -186,6 +162,7 @@ namespace WebSiteDev.AddForm
 
         /// <summary>
         /// Обработчик кнопки добавления услуги
+        /// Сначала добавляет запись затем копирует сжатое изображение
         /// </summary>
         private void button2_Click(object sender, EventArgs e)
         {
@@ -247,98 +224,16 @@ namespace WebSiteDev.AddForm
             // Формируем полную цену
             decimal price = rubles + (kopecks / 100.0m);
 
-            string ProductPhoto = "";
-
-            // Если изображение выбрано копируем его в папку AppData
-            if (!string.IsNullOrEmpty(SelectedFileName))
-            {
-                string fileName = Path.GetFileNameWithoutExtension(SelectedFileName);
-                string extension = Path.GetExtension(SelectedFileName);
-
-                // Получаем путь к папке для сохранения изображений
-                string imagesFolder = GetImagesFolderPath();
-
-                // Создаём папку если её нет
-                if (!FolderPermissions.CreateFolderWithFullAccess(imagesFolder))
-                {
-                    return;
-                }
-
-                try
-                {
-                    byte[] newImageBytes = File.ReadAllBytes(SelectedFileName);
-                    string destPath = Path.Combine(imagesFolder, fileName + extension);
-
-                    // Если файл с таким именем уже существует
-                    if (File.Exists(destPath))
-                    {
-                        byte[] existingImageBytes = File.ReadAllBytes(destPath);
-                        bool isIdentical = false;
-
-                        // Сравниваем с существующим файлом
-                        if (existingImageBytes.Length == newImageBytes.Length)
-                        {
-                            isIdentical = true;
-
-                            for (int i = 0; i < newImageBytes.Length; i++)
-                            {
-                                if (newImageBytes[i] != existingImageBytes[i])
-                                {
-                                    isIdentical = false;
-                                    break;
-                                }
-                            }
-                        }
-
-                        // Если файлы идентичны используем существующий
-                        if (isIdentical)
-                        {
-                            ProductPhoto = Path.GetFileName(destPath);
-                        }
-                        else
-                        {
-                            // Если разные добавляем номер к имени файла в ()
-                            int n = 1;
-
-                            while (File.Exists(destPath))
-                            {
-                                destPath = Path.Combine(imagesFolder, fileName + " (" + n.ToString() + ")" + extension);
-                                n++;
-                            }
-                            File.Copy(SelectedFileName, destPath, false);
-                            ProductPhoto = Path.GetFileName(destPath);
-                        }
-                    }
-                    else
-                    {
-                        // Копируем новый файл
-                        File.Copy(SelectedFileName, destPath, false);
-                        ProductPhoto = Path.GetFileName(destPath);
-                    }
-                }
-                catch (UnauthorizedAccessException)
-                {
-                    MessageBox.Show("Нет прав доступа к папке изображений!\n\nЗапустите программу от имени администратора.", "Ошибка доступа", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                    return;
-                }
-                catch (Exception ex)
-                {
-                    MessageBox.Show("Ошибка при копировании изображения:\n" + ex.Message, "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                    return;
-                }
-            }
-
             // Добавляем услугу в БД
             try
             {
                 using (MySqlConnection con = new MySqlConnection(Data.GetConnectionString()))
                 {
+                    string CheckQuery = "SELECT COUNT(*) FROM Product WHERE ProductName = @ProductName";
+
                     con.Open();
 
-                    // Проверяем что услуга с таким названием не существует
-                    string СheckQuery = "SELECT COUNT(*) FROM Product WHERE ProductName = @ProductName";
-
-                    using (MySqlCommand cmd1 = new MySqlCommand(СheckQuery, con))
+                    using (MySqlCommand cmd1 = new MySqlCommand(CheckQuery, con))
                     {
                         cmd1.Parameters.AddWithValue("@ProductName", ProductName);
 
@@ -351,21 +246,94 @@ namespace WebSiteDev.AddForm
                         }
                     }
 
-                    // Добавляем новую услугу в таблицу
+                    // Добавляем новую услугу в таблицу без фото
                     string InsertQuery = @"INSERT INTO Product (ProductName, ProductDescription, ProductPhoto, 
                                                                 CategoryID, BasePrice) 
                                            VALUES (@ProductName, @ProductDesc, @ProductPhoto, @CategoryId, 
                                                    @BasePrice)";
 
+                    long newProductId = 0;
+
                     using (MySqlCommand cmd2 = new MySqlCommand(InsertQuery, con))
                     {
                         cmd2.Parameters.AddWithValue("@ProductName", ProductName);
                         cmd2.Parameters.AddWithValue("@ProductDesc", ProductDesc);
-                        cmd2.Parameters.AddWithValue("@ProductPhoto", ProductPhoto);
+                        cmd2.Parameters.AddWithValue("@ProductPhoto", "");
                         cmd2.Parameters.AddWithValue("@CategoryId", CategoryId);
                         cmd2.Parameters.AddWithValue("@BasePrice", price);
 
                         cmd2.ExecuteNonQuery();
+                        newProductId = cmd2.LastInsertedId;
+                    }
+
+                    // Если изображение выбрано копируем его в папку и обновляем путь в БД
+                    if (!string.IsNullOrEmpty(SelectedFileName) && newProductId > 0)
+                    {
+                        string imagesFolder = GetImagesFolderPath();
+
+                        // Создаём папку для изображений если её нет
+                        if (!FolderPermissions.CreateFolderWithFullAccess(imagesFolder))
+                        {
+                            MessageBox.Show("Ошибка: не удалось создать папку для изображений!", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                            return;
+                        }
+
+                        try
+                        {
+                            // Формируем имя файла
+                            // GUID гарантирует уникальность
+                            string guidString = Guid.NewGuid().ToString("N");
+                            string baseName = "product_" + newProductId.ToString() + "_" + guidString;
+
+                            string ext;
+
+                            if (selectedImageExtension == null)
+                            {
+                                ext = ".jpg";
+                            }
+                            else
+                            {
+                                ext = selectedImageExtension;
+                            }
+
+                            string destPath = Path.Combine(imagesFolder, baseName + ext);
+                            string finalFileName = baseName + ext;
+
+                            // На случай совпадения GUID
+                            int n = 1;
+
+                            while (File.Exists(destPath))
+                            {
+                                string suffix = "_" + n.ToString();
+                                destPath = Path.Combine(imagesFolder, baseName + suffix + ext);
+                                n++;
+                            }
+
+                            finalFileName = Path.GetFileName(destPath);
+
+                            // Копируем сжатый временный файл в папку изображений
+                            File.Copy(SelectedFileName, destPath, false);
+
+                            // Обновляем путь к фото в базе
+                            string UpdateQuery = "UPDATE Product SET ProductPhoto = @photo WHERE ProductID = @id";
+
+                            using (MySqlCommand cmd3 = new MySqlCommand(UpdateQuery, con))
+                            {
+                                cmd3.Parameters.AddWithValue("@photo", finalFileName);
+                                cmd3.Parameters.AddWithValue("@id", newProductId);
+                                cmd3.ExecuteNonQuery();
+                            }
+                        }
+                        catch (UnauthorizedAccessException)
+                        {
+                            MessageBox.Show("Нет прав доступа к папке изображений!\n\nЗапустите программу от имени администратора.", "Ошибка доступа", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                            return;
+                        }
+                        catch (Exception ex)
+                        {
+                            MessageBox.Show("Ошибка при копировании изображения:\n" + ex.Message, "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                            return;
+                        }
                     }
 
                     MessageBox.Show("Услуга успешно добавлена!", "Успех", MessageBoxButtons.OK, MessageBoxIcon.Information);
@@ -387,6 +355,7 @@ namespace WebSiteDev.AddForm
                     pictureBox1.Image = null;
 
                     SelectedFileName = null;
+                    selectedImageExtension = null;
                     CurrentImagePath = null;
                 }
             }
@@ -417,6 +386,7 @@ namespace WebSiteDev.AddForm
                 pictureBox1.Image = null;
 
                 SelectedFileName = null;
+                selectedImageExtension = null;
             }
         }
 

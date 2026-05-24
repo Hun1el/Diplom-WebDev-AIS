@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Drawing;
+using System.Drawing.Imaging;
 using System.IO;
 using System.Windows.Forms;
 using MySql.Data.MySqlClient;
-using WebSiteDev;
 
 namespace WebSiteDev
 {
@@ -14,6 +14,8 @@ namespace WebSiteDev
     {
         private string selectedImagePath;
         private Image originalImage;
+        // Расширение выбранного файла определяется автоматически по наличию альфа-канала
+        private string selectedImageExtension;
 
         public string CurrentImagePath { get; set; }
 
@@ -71,53 +73,39 @@ namespace WebSiteDev
 
                     try
                     {
-                        // Проверяем размер файла не более 2 МБ
-                        FileInfo fileInfo = new FileInfo(sourcePath);
+                        // Формируем путь к старому файлу для проверки на дубль
+                        string oldFullPath = null;
 
-                        if (fileInfo.Length > 2 * 1024 * 1024)
-                        {
-                            MessageBox.Show("Изображение не должно превышать 2 МБ!", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                            return;
-                        }
-
-                        byte[] newImageBytes = File.ReadAllBytes(sourcePath);
-
-                        // Сравниваем новое изображение со старым чтобы избежать дублей
                         if (!string.IsNullOrEmpty(CurrentImagePath))
                         {
                             string imagesFolder = GetImagesFolderPath();
-                            string oldFullPath = Path.Combine(imagesFolder, CurrentImagePath);
-
-                            if (File.Exists(oldFullPath))
-                            {
-                                byte[] oldImageBytes = File.ReadAllBytes(oldFullPath);
-
-                                // Сравниваем побайтово
-                                if (oldImageBytes.Length == newImageBytes.Length)
-                                {
-                                    bool isIdentical = true;
-                                    for (int i = 0; i < oldImageBytes.Length; i++)
-                                    {
-                                        if (oldImageBytes[i] != newImageBytes[i])
-                                        {
-                                            isIdentical = false;
-                                            break;
-                                        }
-                                    }
-
-                                    if (isIdentical)
-                                    {
-                                        MessageBox.Show("Вы выбрали изображение с идентичным содержимым. Изменений нет.", "Информация", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                                        return;
-                                    }
-                                }
-                            }
+                            oldFullPath = Path.Combine(imagesFolder, CurrentImagePath);
                         }
 
-                        // Загружаем выбранное изображение во временное хранилище
-                        selectedImagePath = sourcePath;
-                        Image tempImage = Image.FromFile(sourcePath);
-                        pictureBox1.Image = tempImage;
+                        // Обрабатываем выбранный файл через отдельный класс
+                        ImageSelect selector = new ImageSelect();
+                        bool processed = selector.Process(sourcePath, 2L * 1024 * 1024, oldFullPath);
+
+                        // Если дубль показываем сообщение и выходим
+                        if (!processed)
+                        {
+                            if (selector.IsDuplicate)
+                            {
+                                MessageBox.Show("Вы выбрали изображение с идентичным содержимым. Изменений нет.", "Информация", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                            }
+
+                            return;
+                        }
+
+                        // Сохраняем путь и расширение из результата обработки
+                        selectedImagePath = selector.TempFilePath;
+                        selectedImageExtension = selector.FileExtension;
+
+                        // Загружаем через MemoryStream чтобы не блокировать файл
+                        using (MemoryStream ms = new MemoryStream(selector.ImageBytes))
+                        {
+                            pictureBox1.Image = Image.FromStream(ms, true);
+                        }
                     }
                     catch (Exception ex)
                     {
@@ -141,8 +129,6 @@ namespace WebSiteDev
             // Очищаем PictureBox чтобы освободить файл для копирования
             pictureBox1.Image = null;
 
-            string fileName = Path.GetFileNameWithoutExtension(selectedImagePath);
-            string extension = Path.GetExtension(selectedImagePath);
             string imagesFolder = GetImagesFolderPath();
 
             try
@@ -155,62 +141,52 @@ namespace WebSiteDev
                 }
 
                 byte[] newImageBytes = File.ReadAllBytes(selectedImagePath);
-                string destPath = Path.Combine(imagesFolder, fileName + extension);
-                string finalFileName = fileName + extension;
 
-                // Если файл уже существует проверяем содержимое или генерируем новое имя
-                if (File.Exists(destPath))
+                // Формируем имя файла
+                // GUID гарантирует уникальность
+                string guidString = Guid.NewGuid().ToString("N");
+                string baseName = "product_" + productID.ToString() + "_" + guidString;
+
+                string ext;
+
+                if (selectedImageExtension == null)
                 {
-                    byte[] existingImageBytes = File.ReadAllBytes(destPath);
-                    bool isIdentical = false;
-
-                    // Сравниваем файлы побайтово
-                    if (existingImageBytes.Length == newImageBytes.Length)
-                    {
-                        isIdentical = true;
-                        for (int i = 0; i < newImageBytes.Length; i++)
-                        {
-                            if (newImageBytes[i] != existingImageBytes[i])
-                            {
-                                isIdentical = false;
-                                break;
-                            }
-                        }
-                    }
-
-                    // Если идентичны используем существующий файл
-                    if (isIdentical)
-                    {
-                        finalFileName = Path.GetFileName(destPath);
-                    }
-                    else
-                    {
-                        // Если различаются добавляем номер к имени файла
-                        int n = 1;
-
-                        while (File.Exists(destPath))
-                        {
-                            destPath = Path.Combine(imagesFolder, fileName + " (" + n.ToString() + ")" + extension);
-                            n++;
-                        }
-
-                        File.Copy(selectedImagePath, destPath, false);
-                        finalFileName = Path.GetFileName(destPath);
-                    }
+                    ext = ".jpg";
                 }
                 else
                 {
-                    // Копируем новый файл в папку изображений
-                    File.Copy(selectedImagePath, destPath, false);
+                    ext = selectedImageExtension;
                 }
 
-                // Обновляем путь к фото в БД
+                string destPath = Path.Combine(imagesFolder, baseName + ext);
+                string finalFileName = baseName + ext;
+
+                // На случай совпадения GUID добавляем номер к имени
+                int n = 1;
+
+                while (File.Exists(destPath))
+                {
+                    string suffix = "_" + n.ToString();
+                    destPath = Path.Combine(imagesFolder, baseName + suffix + ext);
+                    n++;
+                }
+
+                finalFileName = Path.GetFileName(destPath);
+
+                // Копируем новый файл в папку изображений
+                File.Copy(selectedImagePath, destPath, false);
+
+                // Обновляем путь к фото в базе
                 using (MySqlConnection con = new MySqlConnection(Data.GetConnectionString()))
                 {
+                    string UpdateQuery = "UPDATE Product SET ProductPhoto = @photo WHERE ProductID = @id";
+
                     con.Open();
-                    string updateQuery = "UPDATE Product SET ProductPhoto = '" + finalFileName + "' WHERE ProductID = " + productID;
-                    using (MySqlCommand cmd = new MySqlCommand(updateQuery, con))
+
+                    using (MySqlCommand cmd = new MySqlCommand(UpdateQuery, con))
                     {
+                        cmd.Parameters.AddWithValue("@photo", finalFileName);
+                        cmd.Parameters.AddWithValue("@id", productID);
                         cmd.ExecuteNonQuery();
                     }
                 }
@@ -219,6 +195,7 @@ namespace WebSiteDev
                 LoadImage(finalFileName);
                 CurrentImagePath = finalFileName;
                 selectedImagePath = null;
+                selectedImageExtension = null;
 
                 if (pictureBox1.Image != null)
                 {
@@ -235,9 +212,13 @@ namespace WebSiteDev
             }
         }
 
+        /// <summary>
+        /// Отменяет изменения и возвращает оригинальное изображение
+        /// </summary>
         public void CancelEdit()
         {
             selectedImagePath = null;
+            selectedImageExtension = null;
 
             // Восстанавливаем оригинальное изображение если оно было сохранено
             if (originalImage != null)
