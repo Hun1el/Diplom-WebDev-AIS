@@ -117,6 +117,7 @@
     <Compile Include="AdminForm\UsersControl.Designer.cs">
       <DependentUpon>UsersControl.cs</DependentUpon>
     </Compile>
+    <Compile Include="Data\ImageSelect.cs" />
     <Compile Include="Data\Pagination.cs" />
     <Compile Include="Utils\ScalableMode\ScalableForm.cs">
       <SubType>Form</SubType>
