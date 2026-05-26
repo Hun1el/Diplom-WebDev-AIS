@@ -9,7 +9,7 @@ namespace WebSiteDev
     /// <summary>
     /// Форма оформления заказа
     /// </summary>
-    public partial class BucketForm : Form
+    public partial class BucketForm : ScalableForm
     {
         private DataManipulation dataManipulation;
 

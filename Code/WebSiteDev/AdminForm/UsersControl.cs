@@ -16,8 +16,6 @@ namespace WebSiteDev.AdminForm
         private int selectedUserID = -1;
         private int currentUserID = 0;
 
-        static readonly Random rand = new Random();
-
         private int lastRevealedRowIndex = -1;
         private DataSecurity dataSecurity = new DataSecurity();
 

@@ -1,15 +1,20 @@
 ﻿using MySql.Data.MySqlClient;
 using System;
 using System.Windows.Forms;
+using WebSiteDev.AddForm;
 using WebSiteDev.Service;
 
 namespace WebSiteDev
 {
     public partial class ServiceForm : ScalableForm
     {
+        private DataManipulation dataManipulation;
+
         public ServiceForm()
         {
             InitializeComponent();
+
+                dataManipulation = new DataManipulation(new System.Data.DataTable());
         }
 
         /// <summary>
@@ -120,6 +125,12 @@ namespace WebSiteDev
             {
                 this.Close();
             }
+        }
+
+        private void button6_Click(object sender, EventArgs e)
+        {
+            AddEditUsersForm addEditUsersForm = new AddEditUsersForm(dataManipulation);
+            addEditUsersForm.ShowDialog();
         }
     }
 }

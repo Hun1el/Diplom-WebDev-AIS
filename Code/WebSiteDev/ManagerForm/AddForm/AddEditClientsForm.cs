@@ -65,7 +65,7 @@ namespace WebSiteDev.AddForm
                 comboBox1.SelectedIndex = 0;
             }
 
-            button2.Text = "Редактировать";
+            button2.Text = "Изменить клиента";
             this.Text = "Изменение клиента";
         }
 
