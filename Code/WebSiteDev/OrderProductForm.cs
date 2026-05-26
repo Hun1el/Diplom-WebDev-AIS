@@ -2,13 +2,14 @@
 using System;
 using System.Drawing;
 using System.Windows.Forms;
+using System.IO;
 
 namespace WebSiteDev
 {
     /// <summary>
     /// Форма для просмотра состава заказа отображает все товары в заказе с их характеристиками
     /// </summary>
-    public partial class OrderProductForm : Form
+    public partial class OrderProductForm : ScalableForm
     {
         private int orderID;
 
@@ -29,7 +30,13 @@ namespace WebSiteDev
 
         private void LoadOrderProducts()
         {
-            flowLayoutPanel1.Controls.Clear();
+            while (flowLayoutPanel1.Controls.Count > 0)
+            {
+                Control ctrl = flowLayoutPanel1.Controls[0];
+                UnregisterControl(ctrl, true);
+                flowLayoutPanel1.Controls.Remove(ctrl);
+                ctrl.Dispose();
+            }
 
             using (MySqlConnection con = new MySqlConnection(Data.GetConnectionString()))
             {
@@ -131,6 +138,9 @@ namespace WebSiteDev
                             quantity
                         );
                         flowLayoutPanel1.Controls.Add(productPanel);
+
+                        // Регистрируем панель и все контролы для масштабирования
+                        RegisterDynamicControl(productPanel, true);
                     }
 
                     reader.Close();
@@ -144,12 +154,15 @@ namespace WebSiteDev
                         Label emptyLabel = new Label
                         {
                             Text = "Товары не найдены",
-                            Font = new Font("Microsoft Sans Serif", 16),
+                            Font = new Font("Segoe UI", 22, FontStyle.Bold),
                             ForeColor = Color.Gray,
                             Size = new Size(950, 300),
                             TextAlign = ContentAlignment.MiddleCenter
                         };
                         flowLayoutPanel1.Controls.Add(emptyLabel);
+
+                        // Регистрируем сообщение для масштабирования
+                        RegisterDynamicControl(emptyLabel, false);
                     }
                 }
                 catch (Exception ex)
@@ -201,7 +214,7 @@ namespace WebSiteDev
         {
             Panel panel = new Panel
             {
-                Size = new Size(970, 120),
+                Size = new Size(970, 160),
                 BorderStyle = BorderStyle.FixedSingle,
                 BackColor = Color.White,
                 Margin = new Padding(5)
@@ -210,8 +223,8 @@ namespace WebSiteDev
             // Загружаем и выводим фото товара
             PictureBox pic = new PictureBox
             {
-                Size = new Size(100, 100),
-                Location = new Point(10, 10),
+                Size = new Size(170, 120),
+                Location = new Point(10, 20),
                 SizeMode = PictureBoxSizeMode.Zoom,
                 Image = Properties.Resources.no_image,
                 BorderStyle = BorderStyle.FixedSingle
@@ -220,16 +233,16 @@ namespace WebSiteDev
             // Пытаемся загрузить изображение товара из папки
             if (!string.IsNullOrEmpty(photoPath))
             {
-                string imagePath = System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "WebShop", "Images", photoPath);
-                if (System.IO.File.Exists(imagePath))
+                string imagePath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "WebShop", "Images", photoPath);
+                if (File.Exists(imagePath))
                 {
                     try
                     {
-                        using (var fs = new System.IO.FileStream(imagePath, System.IO.FileMode.Open, System.IO.FileAccess.Read))
+                        using (var fs = new FileStream(imagePath, FileMode.Open, FileAccess.Read))
                         {
                             using (var img = Image.FromStream(fs))
                             {
-                                pic.Image = new Bitmap(img, 100, 100);
+                                pic.Image = new Bitmap(img, 170, 120);
                             }
                         }
                     }
@@ -243,10 +256,10 @@ namespace WebSiteDev
             Label labelName = new Label
             {
                 Text = productName,
-                Font = new Font("Microsoft Sans Serif", 14, FontStyle.Bold),
-                Location = new Point(120, 10),
-                Size = new Size(500, 25),
-                ForeColor = Color.Black,
+                Font = new Font("Segoe UI Semibold", 18, FontStyle.Bold),
+                Location = new Point(190, 10),
+                Size = new Size(500, 35),
+                ForeColor = Color.FromArgb(51, 65, 85),
                 AutoSize = false
             };
             panel.Controls.Add(labelName);
@@ -255,10 +268,10 @@ namespace WebSiteDev
             Label labelCategory = new Label
             {
                 Text = $"Категория: {categoryName}",
-                Font = new Font("Microsoft Sans Serif", 11),
-                Location = new Point(120, 40),
-                Size = new Size(400, 20),
-                ForeColor = Color.Gray,
+                Font = new Font("Segoe UI", 14),
+                Location = new Point(190, 50),
+                Size = new Size(400, 30),
+                ForeColor = Color.Black,
                 AutoSize = false
             };
             panel.Controls.Add(labelCategory);
@@ -267,9 +280,9 @@ namespace WebSiteDev
             Label labelPrice = new Label
             {
                 Text = $"Цена: {price:F2} руб.",
-                Font = new Font("Microsoft Sans Serif", 11),
-                Location = new Point(120, 65),
-                Size = new Size(180, 20),
+                Font = new Font("Segoe UI", 14),
+                Location = new Point(190, 80),
+                Size = new Size(220, 30),
                 ForeColor = Color.Black,
                 AutoSize = false
             };
@@ -279,9 +292,9 @@ namespace WebSiteDev
             Label labelQuantity = new Label
             {
                 Text = $"Количество: {quantity} шт.",
-                Font = new Font("Microsoft Sans Serif", 11, FontStyle.Bold),
-                Location = new Point(310, 65),
-                Size = new Size(200, 20),
+                Font = new Font("Segoe UI", 14, FontStyle.Bold),
+                Location = new Point(410, 75),
+                Size = new Size(200, 30),
                 ForeColor = Color.DarkGreen,
                 AutoSize = false
             };
@@ -294,8 +307,8 @@ namespace WebSiteDev
             Label labelSubtotal = new Label
             {
                 Text = $"Сумма: {baseTotal:F2} руб.",
-                Font = new Font("Microsoft Sans Serif", 12, FontStyle.Bold),
-                Location = new Point(700, 45),
+                Font = new Font("Segoe UI", 14, FontStyle.Bold),
+                Location = new Point(700, 65),
                 Size = new Size(230, 25),
                 ForeColor = Color.DarkGreen,
                 AutoSize = false,
