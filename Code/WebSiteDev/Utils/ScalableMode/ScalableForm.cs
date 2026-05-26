@@ -7,16 +7,7 @@ namespace WebSiteDev
 {
     public partial class ScalableForm : Form
     {
-        /// <summary>
-        /// Минимальный масштаб для этой формы
-        /// По умолчанию 0.8f
-        /// </summary>
         protected virtual float MinScale => 0.8f;
-
-        /// <summary>
-        /// Максимальный масштаб для этой формы
-        /// По умолчанию float.MaxValue — без ограничения
-        /// </summary>
         protected virtual float MaxScale => float.MaxValue;
 
         private Size OriginalSize;
@@ -45,14 +36,12 @@ namespace WebSiteDev
             Initialized = true;
             OriginalSize = this.ClientSize;
 
-            // Устанавливаем физический предел уменьшения самого окна
             float minScale = MinScale;
             this.MinimumSize = new Size(
                 (int)Math.Round(this.Size.Width * minScale),
                 (int)Math.Round(this.Size.Height * minScale)
             );
 
-            // Устанавливаем физический предел увеличения окна
             if (MaxScale < float.MaxValue)
             {
                 this.MaximumSize = new Size(
@@ -77,14 +66,11 @@ namespace WebSiteDev
             {
                 if (!IsPseudoMaximized)
                 {
-                    // Сохраняем текущий размер и позицию
                     PreMaximizeSize = this.Size;
                     PreMaximizeLocation = this.Location;
 
-                    // Устанавливаем размер до лимита
                     this.Size = this.MaximumSize;
 
-                    // Центрируем на экране
                     Rectangle screen = Screen.FromControl(this).WorkingArea;
                     this.Location = new Point(
                         screen.Left + (screen.Width - this.Width) / 2,
@@ -95,13 +81,10 @@ namespace WebSiteDev
                 }
                 else
                 {
-                    // Возвращаем сохранённый размер и позицию
                     this.Size = PreMaximizeSize;
                     this.Location = PreMaximizeLocation;
-
                     IsPseudoMaximized = false;
                 }
-
                 return;
             }
 
@@ -125,6 +108,110 @@ namespace WebSiteDev
                 if (control.Controls.Count > 0)
                 {
                     SaveBoundsRecursive(control);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Регистрирует контрол созданный после загрузки формы чтобы он тоже масштабировался
+        /// </summary>
+        protected void RegisterDynamicControl(Control control, bool recursive = true)
+        {
+            if (control == null)
+            {
+                return;
+            }
+
+            if (!Initialized || OriginalSize.Width <= 0 || OriginalSize.Height <= 0)
+            {
+                // Форма ещё не готова сохраняем как есть
+                OriginalBounds[control] = new Rectangle(control.Location, control.Size);
+
+                if (control.Font != null)
+                {
+                    OriginalFontSizes[control] = control.Font.Size;
+                }
+            }
+            else
+            {
+                float currentScaleX = (float)this.ClientSize.Width / OriginalSize.Width;
+                float currentScaleY = (float)this.ClientSize.Height / OriginalSize.Height;
+
+                if (currentScaleX < MinScale)
+                {
+                    currentScaleX = MinScale;
+                }
+
+                if (currentScaleY < MinScale)
+                {
+                    currentScaleY = MinScale;
+                }
+
+                if (currentScaleX > MaxScale && MaxScale < float.MaxValue)
+                {
+                    currentScaleX = MaxScale;
+                }
+
+                if (currentScaleY > MaxScale && MaxScale < float.MaxValue)
+                {
+                    currentScaleY = MaxScale;
+                }
+
+                float fontScale = Math.Min(currentScaleX, currentScaleY);
+
+                Rectangle current = new Rectangle(control.Location, control.Size);
+                Rectangle original = new Rectangle(
+                    (int)Math.Round(current.X / currentScaleX),
+                    (int)Math.Round(current.Y / currentScaleY),
+                    (int)Math.Round(current.Width / currentScaleX),
+                    (int)Math.Round(current.Height / currentScaleY)
+                );
+
+                OriginalBounds[control] = original;
+
+                if (control.Font != null)
+                {
+                    OriginalFontSizes[control] = control.Font.Size / fontScale;
+                }
+            }
+
+            control.Anchor = AnchorStyles.Top | AnchorStyles.Left;
+            control.Dock = DockStyle.None;
+
+            if (recursive && control.Controls.Count > 0)
+            {
+                foreach (Control child in control.Controls)
+                {
+                    RegisterDynamicControl(child, true);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Удаляет контрол из системы масштабирования (например, перед уничтожением старых карточек).
+        /// </summary>
+        protected void UnregisterControl(Control control, bool recursive = true)
+        {
+            if (control == null)
+            {
+                return;
+            }
+
+            if (OriginalBounds.ContainsKey(control))
+            {
+                OriginalBounds.Remove(control);
+            }
+
+            if (OriginalFontSizes.ContainsKey(control))
+            {
+                OriginalFontSizes.Remove(control);
+            }
+
+            if (recursive)
+            {
+                foreach (Control child in control.Controls)
+                {
+                    UnregisterControl(child, true);
                 }
             }
         }
@@ -259,7 +346,6 @@ namespace WebSiteDev
             float ScaleX = (float)this.ClientSize.Width / OriginalSize.Width;
             float ScaleY = (float)this.ClientSize.Height / OriginalSize.Height;
 
-            // Ограничиваем масштаб минимальным значением
             if (ScaleX < MinScale)
             {
                 ScaleX = MinScale;
@@ -270,15 +356,14 @@ namespace WebSiteDev
                 ScaleY = MinScale;
             }
 
-            // Ограничиваем масштаб максимальным значением
             float maxScale = MaxScale;
 
-            if (ScaleX > maxScale)
+            if (ScaleX > maxScale && maxScale < float.MaxValue)
             {
                 ScaleX = maxScale;
             }
 
-            if (ScaleY > maxScale)
+            if (ScaleY > maxScale && maxScale < float.MaxValue)
             {
                 ScaleY = maxScale;
             }
@@ -290,10 +375,16 @@ namespace WebSiteDev
                 Control control = kvp.Key;
                 Rectangle orig = kvp.Value;
 
-                control.Location = new Point(
-                    (int)Math.Round(orig.X * ScaleX),
-                    (int)Math.Round(orig.Y * ScaleY)
-                );
+                // FlowLayoutPanel сам управляет расположением элементов
+                bool isInFlowPanel = control.Parent is FlowLayoutPanel;
+
+                if (!isInFlowPanel)
+                {
+                    control.Location = new Point(
+                        (int)Math.Round(orig.X * ScaleX),
+                        (int)Math.Round(orig.Y * ScaleY)
+                    );
+                }
 
                 control.Size = new Size(
                     (int)Math.Round(orig.Width * ScaleX),
@@ -322,6 +413,7 @@ namespace WebSiteDev
 
         protected virtual void OnScaledResize()
         {
+
         }
 
         private enum RelativeRuleType

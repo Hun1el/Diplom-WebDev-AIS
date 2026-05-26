@@ -155,7 +155,7 @@ namespace WebSiteDev
                     // Проверяем что это не текущий пользователь
                     if (userID == currentUserID)
                     {
-                        MessageBox.Show("Невозможно удалить пользователя под которым совершён вход!", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                        MessageBox.Show("Невозможно удалить пользователя, под которым совершён вход!", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                         return false;
                     }
 

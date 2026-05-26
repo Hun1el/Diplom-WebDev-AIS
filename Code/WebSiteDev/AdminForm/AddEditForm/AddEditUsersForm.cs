@@ -78,7 +78,7 @@ namespace WebSiteDev.AddForm
                 }
             }
 
-            button2.Text = "Редактировать";
+            button2.Text = "Изменить пользователя";
             this.Text = "Измение пользователя";
         }
 
