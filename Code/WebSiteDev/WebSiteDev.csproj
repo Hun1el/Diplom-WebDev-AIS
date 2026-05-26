@@ -63,28 +63,28 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="AdminForm\AddForm\AddEditCategoryForm.cs">
+    <Compile Include="AdminForm\AddEditForm\AddEditCategoryForm.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="AdminForm\AddForm\AddEditCategoryForm.Designer.cs">
+    <Compile Include="AdminForm\AddEditForm\AddEditCategoryForm.Designer.cs">
       <DependentUpon>AddEditCategoryForm.cs</DependentUpon>
     </Compile>
-    <Compile Include="AdminForm\AddForm\AddEditUsersForm.cs">
+    <Compile Include="AdminForm\AddEditForm\AddEditUsersForm.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="AdminForm\AddForm\AddEditUsersForm.Designer.cs">
+    <Compile Include="AdminForm\AddEditForm\AddEditUsersForm.Designer.cs">
       <DependentUpon>AddEditUsersForm.cs</DependentUpon>
     </Compile>
-    <Compile Include="AdminForm\AddForm\EditRoleForm.cs">
+    <Compile Include="AdminForm\AddEditForm\EditRoleForm.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="AdminForm\AddForm\EditRoleForm.Designer.cs">
+    <Compile Include="AdminForm\AddEditForm\EditRoleForm.Designer.cs">
       <DependentUpon>EditRoleForm.cs</DependentUpon>
     </Compile>
-    <Compile Include="AdminForm\AddForm\EditStatusForm.cs">
+    <Compile Include="AdminForm\AddEditForm\EditStatusForm.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="AdminForm\AddForm\EditStatusForm.Designer.cs">
+    <Compile Include="AdminForm\AddEditForm\EditStatusForm.Designer.cs">
       <DependentUpon>EditStatusForm.cs</DependentUpon>
     </Compile>
     <Compile Include="AuthForm.cs">
@@ -119,6 +119,12 @@
     </Compile>
     <Compile Include="Data\ImageSelect.cs" />
     <Compile Include="Data\Pagination.cs" />
+    <Compile Include="ManagerForm\AddEditForm\EditOrderForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="ManagerForm\AddEditForm\EditOrderForm.Designer.cs">
+      <DependentUpon>EditOrderForm.cs</DependentUpon>
+    </Compile>
     <Compile Include="Utils\ScalableMode\ScalableForm.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -201,16 +207,16 @@
     <Compile Include="AdminForm\AdminMainForm.Designer.cs">
       <DependentUpon>AdminMainForm.cs</DependentUpon>
     </Compile>
-    <Compile Include="AdminForm\AddForm\AddProductForm.cs">
+    <Compile Include="AdminForm\AddEditForm\AddProductForm.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="AdminForm\AddForm\AddProductForm.Designer.cs">
+    <Compile Include="AdminForm\AddEditForm\AddProductForm.Designer.cs">
       <DependentUpon>AddProductForm.cs</DependentUpon>
     </Compile>
-    <Compile Include="ManagerForm\AddForm\AddEditClientsForm.cs">
+    <Compile Include="ManagerForm\AddEditForm\AddEditClientsForm.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="ManagerForm\AddForm\AddEditClientsForm.Designer.cs">
+    <Compile Include="ManagerForm\AddEditForm\AddEditClientsForm.Designer.cs">
       <DependentUpon>AddEditClientsForm.cs</DependentUpon>
     </Compile>
     <Compile Include="ManagerForm\OrderControl.cs">
@@ -257,16 +263,16 @@
     <Compile Include="SettingsForm.Designer.cs">
       <DependentUpon>SettingsForm.cs</DependentUpon>
     </Compile>
-    <EmbeddedResource Include="AdminForm\AddForm\AddEditCategoryForm.resx">
+    <EmbeddedResource Include="AdminForm\AddEditForm\AddEditCategoryForm.resx">
       <DependentUpon>AddEditCategoryForm.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="AdminForm\AddForm\AddEditUsersForm.resx">
+    <EmbeddedResource Include="AdminForm\AddEditForm\AddEditUsersForm.resx">
       <DependentUpon>AddEditUsersForm.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="AdminForm\AddForm\EditRoleForm.resx">
+    <EmbeddedResource Include="AdminForm\AddEditForm\EditRoleForm.resx">
       <DependentUpon>EditRoleForm.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="AdminForm\AddForm\EditStatusForm.resx">
+    <EmbeddedResource Include="AdminForm\AddEditForm\EditStatusForm.resx">
       <DependentUpon>EditStatusForm.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="AuthForm.resx">
@@ -283,6 +289,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="AdminForm\UsersControl.resx">
       <DependentUpon>UsersControl.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="ManagerForm\AddEditForm\EditOrderForm.resx">
+      <DependentUpon>EditOrderForm.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="ManagerForm\BucketForm.resx">
       <DependentUpon>BucketForm.cs</DependentUpon>
@@ -302,10 +311,10 @@
     <EmbeddedResource Include="AdminForm\AdminMainForm.resx">
       <DependentUpon>AdminMainForm.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="AdminForm\AddForm\AddProductForm.resx">
+    <EmbeddedResource Include="AdminForm\AddEditForm\AddProductForm.resx">
       <DependentUpon>AddProductForm.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="ManagerForm\AddForm\AddEditClientsForm.resx">
+    <EmbeddedResource Include="ManagerForm\AddEditForm\AddEditClientsForm.resx">
       <DependentUpon>AddEditClientsForm.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="ManagerForm\OrderControl.resx">
