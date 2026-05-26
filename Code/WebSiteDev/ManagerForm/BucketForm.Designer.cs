@@ -303,11 +303,11 @@
             // 
             // label7
             // 
-            this.label7.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            this.label7.Font = new System.Drawing.Font("Segoe UI", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
             this.label7.ForeColor = System.Drawing.Color.DarkBlue;
             this.label7.Location = new System.Drawing.Point(400, 10);
             this.label7.Name = "label7";
-            this.label7.Size = new System.Drawing.Size(600, 83);
+            this.label7.Size = new System.Drawing.Size(435, 83);
             this.label7.TabIndex = 104;
             // 
             // checkbox3

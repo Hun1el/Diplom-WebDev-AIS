@@ -280,7 +280,7 @@ namespace WebSiteDev
             Label labelPrice = new Label
             {
                 Text = $"Цена: {price:F2} руб.",
-                Font = new Font("Segoe UI", 14),
+                Font = new Font("Segoe UI", 14, FontStyle.Bold),
                 Location = new Point(190, 80),
                 Size = new Size(220, 30),
                 ForeColor = Color.Black,

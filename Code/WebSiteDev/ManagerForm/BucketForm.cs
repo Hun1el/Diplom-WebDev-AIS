@@ -3,6 +3,7 @@ using System;
 using System.Drawing;
 using System.Windows.Forms;
 using WebSiteDev.ManagerForm;
+using System.IO;
 
 namespace WebSiteDev
 {
@@ -59,19 +60,29 @@ namespace WebSiteDev
         /// </summary>
         private void LoadCartItems()
         {
-            flowLayoutPanel1.Controls.Clear();
+            // Удаляем старые динамические контролы из системы масштабирования и из панели
+            while (flowLayoutPanel1.Controls.Count > 0)
+            {
+                Control ctrl = flowLayoutPanel1.Controls[0];
+                UnregisterControl(ctrl, true);
+                flowLayoutPanel1.Controls.Remove(ctrl);
+                ctrl.Dispose();
+            }
 
             if (ProductControl.CurrentOrder.Items.Count == 0)
             {
                 Label emptyLabel = new Label
                 {
                     Text = "Корзина пуста",
-                    Font = new Font("Microsoft Sans Serif", 18),
+                    Font = new Font("Segoe UI SemiBold", 22),
                     ForeColor = Color.Gray,
-                    Size = new Size(1000, 350),
+                    Size = new Size(1020, 300),
                     TextAlign = ContentAlignment.MiddleCenter
                 };
                 flowLayoutPanel1.Controls.Add(emptyLabel);
+
+                RegisterDynamicControl(emptyLabel, false);
+
                 button2.Enabled = false;
                 button3.Enabled = false;
             }
@@ -85,6 +96,9 @@ namespace WebSiteDev
                 {
                     Panel itemPanel = CreateCartItemPanel(item);
                     flowLayoutPanel1.Controls.Add(itemPanel);
+
+                    // Регистрируем панель и все контролы для масштабирования
+                    RegisterDynamicControl(itemPanel, true);
                 }
 
                 Panel spacer = new Panel
@@ -93,6 +107,7 @@ namespace WebSiteDev
                     BackColor = Color.Transparent
                 };
                 flowLayoutPanel1.Controls.Add(spacer);
+                RegisterDynamicControl(spacer, false);
             }
 
             CheckQuantityDiscount();
@@ -105,7 +120,7 @@ namespace WebSiteDev
         {
             Panel panel = new Panel
             {
-                Size = new Size(1000, 150),
+                Size = new Size(1020, 160),
                 BorderStyle = BorderStyle.FixedSingle,
                 BackColor = Color.White,
                 Margin = new Padding(5),
@@ -115,8 +130,8 @@ namespace WebSiteDev
             // Загружаем изображение товара
             PictureBox pic = new PictureBox
             {
-                Size = new Size(135, 135),
-                Location = new Point(20, 5),
+                Size = new Size(170, 120),
+                Location = new Point(10, 20),
                 SizeMode = PictureBoxSizeMode.Zoom,
                 Image = Properties.Resources.no_image,
                 BorderStyle = BorderStyle.FixedSingle
@@ -124,16 +139,16 @@ namespace WebSiteDev
 
             if (!string.IsNullOrEmpty(item.ProductPhoto))
             {
-                string imagePath = System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "WebShop", "Images", item.ProductPhoto);
-                if (System.IO.File.Exists(imagePath))
+                string imagePath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "WebShop", "Images", item.ProductPhoto);
+                if (File.Exists(imagePath))
                 {
                     try
                     {
-                        using (var fs = new System.IO.FileStream(imagePath, System.IO.FileMode.Open, System.IO.FileAccess.Read))
+                        using (var fs = new FileStream(imagePath, FileMode.Open, FileAccess.Read))
                         {
                             using (var img = Image.FromStream(fs))
                             {
-                                pic.Image = img.GetThumbnailImage(110, 110, null, IntPtr.Zero);
+                                pic.Image = img.GetThumbnailImage(170, 120, null, IntPtr.Zero);
                             }
                         }
                     }
@@ -150,10 +165,10 @@ namespace WebSiteDev
             Label labelName = new Label
             {
                 Text = item.ProductName,
-                Font = new Font("Comic Sans Serif", 18, FontStyle.Bold),
-                Location = new Point(175, 10),
-                Size = new Size(700, 25),
-                ForeColor = Color.Black,
+                Font = new Font("Segoe UI Semibold", 18, FontStyle.Bold),
+                Location = new Point(190, 10),
+                Size = new Size(500, 35),
+                ForeColor = Color.FromArgb(51, 65, 85),
                 AutoSize = false
             };
             panel.Controls.Add(labelName);
@@ -162,9 +177,9 @@ namespace WebSiteDev
             Label labelCategory = new Label
             {
                 Text = $"Категория: {item.CategoryName}",
-                Font = new Font("Comic Sans Serif", 14),
-                Location = new Point(175, 40),
-                Size = new Size(380, 25),
+                Font = new Font("Segoe UI", 14),
+                Location = new Point(190, 50),
+                Size = new Size(400, 30),
                 ForeColor = Color.Black,
                 AutoSize = false
             };
@@ -174,9 +189,9 @@ namespace WebSiteDev
             Label labelQuantity = new Label
             {
                 Text = $"Кол-во: {item.Quantity}",
-                Font = new Font("Comic Sans Serif", 12),
-                Location = new Point(175, 80),
-                Size = new Size(150, 20),
+                Font = new Font("Segoe UI", 14),
+                Location = new Point(190, 85),
+                Size = new Size(150, 25),
                 ForeColor = Color.Black
             };
             panel.Controls.Add(labelQuantity);
@@ -210,8 +225,8 @@ namespace WebSiteDev
                 Label labelOldPrice = new Label
                 {
                     Text = $"Было: {itemBasePrice:F2} руб.",
-                    Font = new Font("Comic Sans Serif", 11, FontStyle.Strikeout),
-                    Location = new Point(175, 110),
+                    Font = new Font("Segoe UI", 12, FontStyle.Strikeout),
+                    Location = new Point(190, 115),
                     Size = new Size(200, 20),
                     ForeColor = Color.Gray,
                     AutoSize = false
@@ -222,8 +237,8 @@ namespace WebSiteDev
                 Label labelNewPrice = new Label
                 {
                     Text = $"Сейчас: {itemFinalPrice:F2} руб.",
-                    Font = new Font("Comic Sans Serif", 12, FontStyle.Bold),
-                    Location = new Point(175, 130),
+                    Font = new Font("Segoe UI", 12, FontStyle.Bold),
+                    Location = new Point(190, 135),
                     Size = new Size(200, 20),
                     ForeColor = Color.Red,
                     AutoSize = false
@@ -248,8 +263,8 @@ namespace WebSiteDev
                 Label labelPriceInfo = new Label
                 {
                     Text = priceInfo.TrimEnd('\n'),
-                    Font = new Font("Comic Sans Serif", 9),
-                    Location = new Point(400, 110),
+                    Font = new Font("Segoe UI", 14),
+                    Location = new Point(400, 115),
                     Size = new Size(220, 40),
                     ForeColor = Color.DarkBlue,
                     AutoSize = false
@@ -261,10 +276,11 @@ namespace WebSiteDev
                 Label labelPrice = new Label
                 {
                     Text = $"Цена: {item.BasePrice} руб.",
-                    Font = new Font("Comic Sans Serif", 12),
-                    Location = new Point(175, 110),
-                    Size = new Size(180, 20),
-                    ForeColor = Color.Black
+                    Font = new Font("Segoe UI", 14, FontStyle.Bold),
+                    Location = new Point(190, 115),
+                    Size = new Size(220, 30),
+                    ForeColor = Color.Black,
+                    AutoSize = false
                 };
                 panel.Controls.Add(labelPrice);
             }
@@ -283,11 +299,12 @@ namespace WebSiteDev
             Label labelSubtotal = new Label
             {
                 Text = $"Сумма: {subtotalPrice:F2} руб.",
-                Font = new Font("Comic Sans Serif", 12, FontStyle.Bold),
-                Location = new Point(650, 90),
-                Size = new Size(210, 25),
+                Font = new Font("Segoe UI", 14, FontStyle.Bold),
+                Location = new Point(645, 65),
+                Size = new Size(230, 25),
                 ForeColor = Color.DarkGreen,
-                AutoSize = false
+                AutoSize = false,
+                TextAlign = ContentAlignment.MiddleRight
             };
             panel.Controls.Add(labelSubtotal);
 
@@ -295,12 +312,12 @@ namespace WebSiteDev
             Button buttonRemove = new Button
             {
                 Text = "Удалить",
-                Location = new Point(860, 90),
-                Size = new Size(125, 50),
+                Location = new Point(880, 95),
+                Size = new Size(135, 50),
                 BackColor = Color.FromArgb(220, 20, 60),
                 ForeColor = Color.White,
                 FlatStyle = FlatStyle.Flat,
-                Font = new Font("Comic Sans Serif", 12),
+                Font = new Font("Segoe UI SemiBold", 14),
                 Name = "buttonRemove" + item.ProductID,
                 Tag = item.ProductID,
                 Cursor = Cursors.Hand
@@ -364,7 +381,7 @@ namespace WebSiteDev
         }
 
         /// <summary>
-        /// Проверяет постоянного ли клиента (более 3 заказов) если да, применяет скидку 5%
+        /// Проверяет постоянного ли клиента применяет скидку 5%
         /// </summary>
         private void CheckLoyalClient()
         {
@@ -373,7 +390,7 @@ namespace WebSiteDev
                 int clientID = Convert.ToInt32(comboBox1.SelectedValue);
                 int orderCount = GetClientOrderCount(clientID);
 
-                if (orderCount > 3)
+                if (orderCount >= 3)
                 {
                     checkbox1.Enabled = true;
                     checkbox1.Checked = true;
@@ -394,7 +411,7 @@ namespace WebSiteDev
         }
 
         /// <summary>
-        /// Проверяет срочность заказа (менее 7 дней) если срочно, применяет надбавку 15%
+        /// Проверяет срочность заказа если срочно применяет надбавку 15%
         /// </summary>
         private void CheckUrgency()
         {
@@ -416,7 +433,7 @@ namespace WebSiteDev
         }
 
         /// <summary>
-        /// Проверяет количество товаров (3+) если много, применяет скидку 7%
+        /// Проверяет количество товаров если много применяет скидку 7%
         /// </summary>
         private void CheckQuantityDiscount()
         {
@@ -572,6 +589,7 @@ namespace WebSiteDev
                 comboBox1.SelectedIndex = 0;
                 dateTimePicker1.Value = DateTime.Now.AddDays(7);
                 UpdateTotal();
+                this.Close();
             }
             else
             {
