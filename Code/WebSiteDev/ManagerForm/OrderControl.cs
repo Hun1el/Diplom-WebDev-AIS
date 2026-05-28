@@ -5,6 +5,7 @@ using System.Data;
 using System.IO;
 using System.Windows.Forms;
 using WebSiteDev.ManagerForm.AddEditForm;
+using System.Drawing;
 
 namespace WebSiteDev.ManagerForm
 {
@@ -142,11 +143,19 @@ namespace WebSiteDev.ManagerForm
             // Окрашиваем строки в зависимости от статуса
             if (status == "Завершён")
             {
-                e.CellStyle.BackColor = System.Drawing.Color.LightGreen;
+                e.CellStyle.BackColor = Color.LightGreen;
             }
             else if (status == "Отменён")
             {
-                e.CellStyle.BackColor = System.Drawing.Color.IndianRed;
+                e.CellStyle.BackColor = Color.IndianRed;
+            }
+            else if (status == "Новый")
+            {
+                e.CellStyle.BackColor = Color.FromArgb(144, 202, 249);
+            }
+            else if (status == "В работе")
+            {
+                e.CellStyle.BackColor = Color.Gold;
             }
 
             // Если строка открыта показываем оригинальные данные
