@@ -5,6 +5,7 @@ using System.Data;
 using System.IO;
 using System.Windows.Forms;
 using WebSiteDev.ManagerForm.AddEditForm;
+using System.Drawing;
 
 namespace WebSiteDev.ManagerForm
 {
@@ -12,9 +13,11 @@ namespace WebSiteDev.ManagerForm
     {
         private DataManipulation dataManipulation;
         private string userRole;
+        private Pagination pagination;
         private int selectedOrderID = -1;
         private int lastRevealedRowIndex = -1;
         private Timer timer1 = new Timer();
+        private const int ItemsPerPage = 15; // Сколько показывать на одной странице
 
         public static int CurrentUserID { get; set; } = 0;
         public static string CurrentUserName { get; set; } = "";
@@ -31,6 +34,12 @@ namespace WebSiteDev.ManagerForm
             timer1.Interval = 20000;
             timer1.Tick += Timer1_Tick;
             GetDate();
+
+            pagination = new Pagination(dataManipulation.view.Count, ItemsPerPage);
+            pagination.PageChanged += Pagination_PageChanged; // Подписка на событие
+
+            LoadCurrentPage();      // Загрузка текущей страницы
+            UpdatePaginationUI();   // Обновление UI пагинации
         }
 
         /// <summary>
@@ -44,14 +53,11 @@ namespace WebSiteDev.ManagerForm
 
             dataGridView1.ContextMenuStrip = contextMenuStrip1;
             ClearViewSelection();
-
-            dataGridView1.Columns["OrderID"].AutoSizeMode = DataGridViewAutoSizeColumnMode.AllCells;
-            dataGridView1.Columns["ClientName"].AutoSizeMode = DataGridViewAutoSizeColumnMode.AllCells;
-            dataGridView1.Columns["UserName"].AutoSizeMode = DataGridViewAutoSizeColumnMode.AllCells;
-            dataGridView1.Columns["StatusName"].AutoSizeMode = DataGridViewAutoSizeColumnMode.AllCells;
-            dataGridView1.Columns["OrderCost"].AutoSizeMode = DataGridViewAutoSizeColumnMode.AllCells;
         }
 
+        /// <summary>
+        /// Загружает данные из БД в DataManipulation
+        /// </summary>
         void GetDate()
         {
             using (MySqlConnection con = new MySqlConnection(Data.GetConnectionString()))
@@ -86,37 +92,260 @@ namespace WebSiteDev.ManagerForm
                 dataSecurity.LoadOriginalUserNames(dt, "UserName");
                 lastRevealedRowIndex = -1;
 
-                dataGridView1.DataSource = dt;
-                dataGridView1.Columns["OrderID"].HeaderText = "№ заказа";
-                dataGridView1.Columns["ClientName"].HeaderText = "Клиент";
-                dataGridView1.Columns["UserName"].HeaderText = "Сотрудник";
-                dataGridView1.Columns["OrderDate"].HeaderText = "Дата заказа";
-                dataGridView1.Columns["OrderCompDate"].HeaderText = "Срок выполнения заказа";
-                dataGridView1.Columns["ProductName"].Visible = false;
-                dataGridView1.Columns["StatusName"].HeaderText = "Статус";
-                dataGridView1.Columns["OrderCost"].HeaderText = "Итоговая цена";
-
-                dataGridView1.Columns["OrderID"].SortMode = DataGridViewColumnSortMode.NotSortable;
-                dataGridView1.Columns["ClientName"].SortMode = DataGridViewColumnSortMode.NotSortable;
-                dataGridView1.Columns["UserName"].SortMode = DataGridViewColumnSortMode.NotSortable;
-                dataGridView1.Columns["OrderDate"].SortMode = DataGridViewColumnSortMode.NotSortable;
-                dataGridView1.Columns["OrderCompDate"].SortMode = DataGridViewColumnSortMode.NotSortable;
-                dataGridView1.Columns["ProductName"].SortMode = DataGridViewColumnSortMode.NotSortable;
-                dataGridView1.Columns["StatusName"].SortMode = DataGridViewColumnSortMode.NotSortable;
-                dataGridView1.Columns["OrderCost"].SortMode = DataGridViewColumnSortMode.NotSortable;
-
                 dataManipulation = new DataManipulation(dt);
-
                 dataManipulation.FillComboBoxWithStatuses(comboBox6, "Статус не выбран");
-
-                MySqlCommand count = new MySqlCommand("SELECT COUNT(*) FROM `Order`", con);
-                int resultcount = Convert.ToInt32(count.ExecuteScalar());
-
-                label1.Text = $"Количество записей: {resultcount}";
-
-                // Окрашиваем строки в зависимости от статуса
-                ColorizeRowsByStatus();
             }
+        }
+
+        /// <summary>
+        /// Перезагружает данные из БД и восстанавливает текущую страницу
+        /// </summary>
+        private void RefreshData(bool goToFirstPage = false)
+        {
+            int savedPage = 1;
+
+            if (pagination != null && !goToFirstPage)
+            {
+                savedPage = pagination.CurrentPage;
+            }
+
+            GetDate();
+
+            if (pagination != null)
+            {
+                pagination.TotalItems = dataManipulation.view.Count;
+
+                if (savedPage > pagination.TotalPages)
+                {
+                    savedPage = Math.Max(1, pagination.TotalPages);
+                }
+
+                pagination.GoToPage(savedPage);
+            }
+
+            LoadCurrentPage();
+            UpdatePaginationUI();
+        }
+
+        /// <summary>
+        /// Настраивает колонки DataGridView
+        /// Вызывается после каждой смены DataSource при пагинации источник меняется
+        /// </summary>
+        private void SetupDataGridViewColumns()
+        {
+            if (dataGridView1.Columns["OrderID"] != null)
+            {
+                dataGridView1.Columns["OrderID"].HeaderText = "№ заказа";
+                dataGridView1.Columns["OrderID"].AutoSizeMode = DataGridViewAutoSizeColumnMode.AllCells;
+                dataGridView1.Columns["OrderID"].SortMode = DataGridViewColumnSortMode.NotSortable;
+            }
+            if (dataGridView1.Columns["ClientName"] != null)
+            {
+                dataGridView1.Columns["ClientName"].HeaderText = "Клиент";
+                dataGridView1.Columns["ClientName"].AutoSizeMode = DataGridViewAutoSizeColumnMode.AllCells;
+                dataGridView1.Columns["ClientName"].SortMode = DataGridViewColumnSortMode.NotSortable;
+            }
+            if (dataGridView1.Columns["UserName"] != null)
+            {
+                dataGridView1.Columns["UserName"].HeaderText = "Сотрудник";
+                dataGridView1.Columns["UserName"].AutoSizeMode = DataGridViewAutoSizeColumnMode.AllCells;
+                dataGridView1.Columns["UserName"].SortMode = DataGridViewColumnSortMode.NotSortable;
+            }
+            if (dataGridView1.Columns["OrderDate"] != null)
+            {
+                dataGridView1.Columns["OrderDate"].HeaderText = "Дата заказа";
+                dataGridView1.Columns["OrderDate"].SortMode = DataGridViewColumnSortMode.NotSortable;
+            }
+            if (dataGridView1.Columns["OrderCompDate"] != null)
+            {
+                dataGridView1.Columns["OrderCompDate"].HeaderText = "Срок выполнения заказа";
+                dataGridView1.Columns["OrderCompDate"].SortMode = DataGridViewColumnSortMode.NotSortable;
+            }
+            if (dataGridView1.Columns["ProductName"] != null)
+            {
+                dataGridView1.Columns["ProductName"].Visible = false;
+                dataGridView1.Columns["ProductName"].SortMode = DataGridViewColumnSortMode.NotSortable;
+            }
+            if (dataGridView1.Columns["StatusName"] != null)
+            {
+                dataGridView1.Columns["StatusName"].HeaderText = "Статус";
+                dataGridView1.Columns["StatusName"].AutoSizeMode = DataGridViewAutoSizeColumnMode.AllCells;
+                dataGridView1.Columns["StatusName"].SortMode = DataGridViewColumnSortMode.NotSortable;
+            }
+            if (dataGridView1.Columns["OrderCost"] != null)
+            {
+                dataGridView1.Columns["OrderCost"].HeaderText = "Итоговая цена";
+                dataGridView1.Columns["OrderCost"].AutoSizeMode = DataGridViewAutoSizeColumnMode.AllCells;
+                dataGridView1.Columns["OrderCost"].SortMode = DataGridViewColumnSortMode.NotSortable;
+            }
+
+            dataGridView1.ContextMenuStrip = contextMenuStrip1;
+        }
+
+        /// <summary>
+        /// Загружает только строки текущей страницы из отфильтрованного view
+        /// </summary>
+        private void LoadCurrentPage()
+        {
+            if (pagination == null || dataManipulation == null || dataManipulation.view == null)
+            {
+                return;
+            }
+
+            dataGridView1.SuspendLayout();
+
+            if (dataManipulation.view.Count == 0)
+            {
+                // Пустая таблица с сохранением структуры колонок
+                DataTable emptyTable = dataManipulation.table != null ? dataManipulation.table.Clone() : new DataTable();
+                dataGridView1.DataSource = emptyTable;
+                SetupDataGridViewColumns();
+
+                dataManipulation.UpdateRecordCountLabel(label14);
+                dataGridView1.ResumeLayout();
+                ClearViewSelection();
+
+                return;
+            }
+
+            int start = pagination.GetStartIndex();
+            int count = pagination.GetTakeCount();
+
+            if (start < 0)
+            {
+                start = 0;
+            }
+
+            DataTable pageTable = dataManipulation.table.Clone();
+
+            for (int i = 0; i < count; i++)
+            {
+                int viewIndex = start + i;
+
+                if (viewIndex >= dataManipulation.view.Count)
+                {
+                    break;
+                }
+
+                DataRowView rowView = dataManipulation.view[viewIndex];
+                DataRow newRow = pageTable.NewRow();
+                newRow.ItemArray = rowView.Row.ItemArray;
+                pageTable.Rows.Add(newRow);
+            }
+
+            dataGridView1.DataSource = pageTable;
+            SetupDataGridViewColumns();
+            dataManipulation.UpdateRecordCountLabel(label14);
+
+            dataGridView1.ResumeLayout();
+            ClearViewSelection();
+        }
+
+        /// <summary>
+        /// Обновляет текст и доступность кнопок пагинации
+        /// </summary>
+        private void UpdatePaginationUI()
+        {
+            if (pagination == null)
+            {
+                return;
+            }
+
+            textBox5.Text = pagination.CurrentPage.ToString();
+            textBox5.SelectionStart = textBox5.Text.Length;
+            textBox5.SelectionLength = 0;
+
+            label8.Text = pagination.TotalPages.ToString();
+
+            if (!pagination.HasPrevious && button6.Focused)
+            {
+                dataGridView1.Focus();
+            }
+            else if (!pagination.HasNext && button3.Focused)
+            {
+                dataGridView1.Focus();
+            }
+
+            button6.Enabled = pagination.HasPrevious;
+            button3.Enabled = pagination.HasNext;
+        }
+
+        /// <summary>
+        /// Событие срабатывает при смене страницы в пагинации
+        /// </summary>
+        private void Pagination_PageChanged(object sender, EventArgs e)
+        {
+            LoadCurrentPage();
+            UpdatePaginationUI();
+        }
+
+        /// <summary>
+        /// Кнопка для перехода на прошлую страницу
+        /// </summary>
+        private void button6_Click(object sender, EventArgs e)
+        {
+            pagination.PreviousPage();
+        }
+
+        /// <summary>
+        /// Кнопка для перехода на следующую страницу
+        /// </summary>
+        private void button3_Click(object sender, EventArgs e)
+        {
+            pagination.NextPage();
+        }
+
+        /// <summary>
+        /// Метод события обработки нажатия Enter для перехода на конкретную страницу
+        /// </summary>
+        private void textBox5_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.KeyCode == Keys.Enter)
+            {
+                if (int.TryParse(textBox5.Text, out int page))
+                {
+                    pagination.GoToPage(page);
+                }
+                else
+                {
+                    textBox5.Text = pagination.CurrentPage.ToString();
+                }
+
+                e.Handled = true;
+                e.SuppressKeyPress = true;
+            }
+        }
+
+        private void textBox5_KeyPress(object sender, KeyPressEventArgs e)
+        {
+            InputRest.OnlyNumbers(e);
+        }
+
+        /// <summary>
+        /// Применяет фильтры с обновлением пагинации
+        /// </summary>
+        private void ApplyFiltersInternal(bool resetToFirstPage = true)
+        {
+            dataManipulation.ApplyAllOrder(comboBox1, comboBox6, textBox1);
+            dataManipulation.UpdateRecordCountLabel(label14);
+
+            if (pagination != null)
+            {
+                pagination.TotalItems = dataManipulation.view.Count;
+
+                if (resetToFirstPage)
+                {
+                    pagination.GoToPage(1);
+                }
+                else if (pagination.CurrentPage > pagination.TotalPages)
+                {
+                    pagination.GoToPage(Math.Max(1, pagination.TotalPages));
+                }
+            }
+
+            LoadCurrentPage();
+            UpdatePaginationUI();
+            ClearViewSelection();
         }
 
         /// <summary>
@@ -142,11 +371,19 @@ namespace WebSiteDev.ManagerForm
             // Окрашиваем строки в зависимости от статуса
             if (status == "Завершён")
             {
-                e.CellStyle.BackColor = System.Drawing.Color.LightGreen;
+                e.CellStyle.BackColor = Color.LightGreen;
             }
             else if (status == "Отменён")
             {
-                e.CellStyle.BackColor = System.Drawing.Color.IndianRed;
+                e.CellStyle.BackColor = Color.IndianRed;
+            }
+            else if (status == "Новый")
+            {
+                e.CellStyle.BackColor = Color.FromArgb(144, 202, 249);
+            }
+            else if (status == "В работе")
+            {
+                e.CellStyle.BackColor = Color.Gold;
             }
 
             // Если строка открыта показываем оригинальные данные
@@ -182,6 +419,7 @@ namespace WebSiteDev.ManagerForm
             if (dataGridView1.Columns[e.ColumnIndex].Name == "ClientName")
             {
                 string original = dataSecurity.GetOriginalClientName(orderID);
+
                 if (e.Value != null && original != null)
                 {
                     e.Value = DataSecurity.MaskClientName(original);
@@ -192,6 +430,7 @@ namespace WebSiteDev.ManagerForm
             if (dataGridView1.Columns[e.ColumnIndex].Name == "UserName")
             {
                 string original = dataSecurity.GetOriginalUserName(orderID);
+
                 if (e.Value != null && original != null)
                 {
                     e.Value = DataSecurity.MaskUserName(original);
@@ -222,11 +461,8 @@ namespace WebSiteDev.ManagerForm
         /// </summary>
         private void textBox1_TextChanged(object sender, EventArgs e)
         {
-            dataManipulation.ApplyAllOrder(comboBox1, comboBox6, textBox1);
-            dataManipulation.UpdateRecordCountLabel(label1);
             InputRest.FirstLetter(textBox1);
-
-            ClearViewSelection();
+            ApplyFiltersInternal(resetToFirstPage: true);
         }
 
         /// <summary>
@@ -245,7 +481,7 @@ namespace WebSiteDev.ManagerForm
             EditOrderForm editOrderForm = new EditOrderForm(editingOrderID);
             editOrderForm.ShowDialog();
 
-            GetDate();
+            RefreshData();
 
             // Восстанавливаем выделение отредактированной строки
             foreach (DataGridViewRow row in dataGridView1.Rows)
@@ -287,10 +523,7 @@ namespace WebSiteDev.ManagerForm
         /// </summary>
         private void comboBox1_SelectedIndexChanged(object sender, EventArgs e)
         {
-            dataManipulation.ApplyAllOrder(comboBox1, comboBox6, textBox1);
-            dataManipulation.UpdateRecordCountLabel(label1);
-
-            ClearViewSelection();
+            ApplyFiltersInternal(resetToFirstPage: true);
         }
 
         /// <summary>
@@ -298,10 +531,7 @@ namespace WebSiteDev.ManagerForm
         /// </summary>
         private void comboBox6_SelectedIndexChanged(object sender, EventArgs e)
         {
-            dataManipulation.ApplyAllOrder(comboBox1, comboBox6, textBox1);
-            dataManipulation.UpdateRecordCountLabel(label1);
-
-            ClearViewSelection();
+            ApplyFiltersInternal(resetToFirstPage: true);
         }
 
         /// <summary>
@@ -310,8 +540,7 @@ namespace WebSiteDev.ManagerForm
         private void button4_Click(object sender, EventArgs e)
         {
             dataManipulation.ResetFilters(comboBox1, comboBox6, textBox1);
-
-            ClearViewSelection();
+            ApplyFiltersInternal(resetToFirstPage: true);
         }
 
         /// <summary>
@@ -499,35 +728,6 @@ namespace WebSiteDev.ManagerForm
                 int rowToHide = lastRevealedRowIndex;
                 lastRevealedRowIndex = -1;
                 dataGridView1.InvalidateRow(rowToHide);
-            }
-        }
-
-        /// <summary>
-        /// Окрашивает строки таблицы в зависимости от статуса заказа
-        /// </summary>
-        private void ColorizeRowsByStatus()
-        {
-            foreach (DataGridViewRow row in dataGridView1.Rows)
-            {
-                if (row.Cells["StatusName"].Value != null)
-                {
-                    string status = row.Cells["StatusName"].Value.ToString();
-
-                    if (status == "Завершён")
-                    {
-                        foreach (DataGridViewCell cell in row.Cells)
-                        {
-                            cell.Style.BackColor = System.Drawing.Color.LightGreen;
-                        }
-                    }
-                    else if (status == "Отменён")
-                    {
-                        foreach (DataGridViewCell cell in row.Cells)
-                        {
-                            cell.Style.BackColor = System.Drawing.Color.IndianRed;
-                        }
-                    }
-                }
             }
         }
 
