@@ -130,12 +130,8 @@ namespace WebSiteDev.ManagerForm
 
                 dataManipulation = new DataManipulation(dt);
 
-                MySqlCommand count = new MySqlCommand($"SELECT COUNT(*) FROM `Order` WHERE DATE(OrderDate) BETWEEN '{dateFromStr}' AND '{dateToStr}'", con);
-                
-                int resultcount = Convert.ToInt32(count.ExecuteScalar());
-                label16.Text = "Количество записей: " + resultcount;
-
                 dataManipulation.ApplyAllDirector(comboBox3, comboBox1, textBox1);
+                dataManipulation.UpdateRecordCountLabel(label16);
 
                 if (pagination == null)
                 {
@@ -353,6 +349,7 @@ namespace WebSiteDev.ManagerForm
             }
 
             dataManipulation.ApplyAllDirector(comboBox3, comboBox1, textBox1);
+            dataManipulation.UpdateRecordCountLabel(label16);
 
             if (pagination != null)
             {
@@ -425,14 +422,12 @@ namespace WebSiteDev.ManagerForm
         /// </summary>
         private void button2_Click(object sender, EventArgs e)
         {
-            // Проверяем есть ли данные
             if (dataManipulation == null || dataManipulation.view == null || dataManipulation.view.Count == 0)
             {
                 MessageBox.Show("Нет данных для формирования отчёта!", "Внимание", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
 
-            // Проверяем установлен ли Microsoft Excel
             if (!IsExcelInstalled())
             {
                 MessageBox.Show(
@@ -446,7 +441,6 @@ namespace WebSiteDev.ManagerForm
                 return;
             }
 
-            // Формируем сообщение подтверждения с параметрами отчёта
             string message = "Вы хотите создать отчёт со следующими параметрами:\n\n";
             message = message + "Период: с " + dateTimePicker1.Value.ToString("dd.MM.yyyy") + " по " + dateTimePicker2.Value.ToString("dd.MM.yyyy") + "\n";
 
@@ -495,12 +489,12 @@ namespace WebSiteDev.ManagerForm
                 return;
             }
 
-            // Собираем стоимости всех отфильтрованных заказов (не только текущей страницы)
-            List <decimal> orderCosts = new List<decimal>();
+            // Собираем стоимости всех отфильтрованных заказов
+            List <decimal> orderCosts = new List<decimal> ();
 
             foreach (DataRowView row in dataManipulation.view)
             {
-                if (row["OrderCost"] != null)
+                if (row["OrderCost"] != null && row["OrderCost"] != DBNull.Value)
                 {
                     if (decimal.TryParse(row["OrderCost"].ToString(), out decimal cost))
                     {
@@ -509,22 +503,23 @@ namespace WebSiteDev.ManagerForm
                 }
             }
 
-            // Создаём временный DataGridView со всеми отфильтрованными данными для отчёта
+            // Создаём временный DataGridView со всеми отфильтрованными данными
             DataGridView dataGridView = new DataGridView();
+            dataGridView.Visible = false;
             dataGridView.AutoGenerateColumns = true;
+            dataGridView.AllowUserToAddRows = false;
+            this.Controls.Add(dataGridView);
 
             DataTable fullTable = dataManipulation.table.Clone();
 
             foreach (DataRowView rv in dataManipulation.view)
             {
                 DataRow row = fullTable.NewRow();
-
                 row.ItemArray = rv.Row.ItemArray;
                 fullTable.Rows.Add(row);
             }
             dataGridView.DataSource = fullTable;
 
-            // Копируем заголовки колонок из основного DataGridView
             foreach (DataGridViewColumn col in dataGridView.Columns)
             {
                 if (dataGridView1.Columns[col.Name] != null)
@@ -533,7 +528,6 @@ namespace WebSiteDev.ManagerForm
                 }
             }
 
-            // Экспортируем в Excel
             ExcelReport.ExportToExcel(
                 dataGridView,
                 orderCosts,
@@ -543,6 +537,9 @@ namespace WebSiteDev.ManagerForm
                 selectedStatus,
                 selectedSort
             );
+
+            this.Controls.Remove(dataGridView);
+            dataGridView.Dispose();
         }
 
         /// <summary>
