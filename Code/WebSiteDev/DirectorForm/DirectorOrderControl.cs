@@ -8,7 +8,7 @@ using System.IO;
 
 namespace WebSiteDev.ManagerForm
 {
-    public partial class DirectorOrderControl : UserControl
+    public partial class DirectorOrderControl : ScalableUserControl
     {
         private DataManipulation dataManipulation;
         private DataSecurity dataSecurity = new DataSecurity();
@@ -53,7 +53,7 @@ namespace WebSiteDev.ManagerForm
                         DateTime firstDate = DateTime.Now;
                         DateTime lastDate = DateTime.Now;
 
-                        // Если дата не null используем её иначе используем текущую дату
+                        // Если дата не null используем ее иначе используем текущую дату
                         if (reader["FirstDate"] != DBNull.Value)
                         {
                             firstDate = Convert.ToDateTime(reader["FirstDate"]);
@@ -113,21 +113,18 @@ namespace WebSiteDev.ManagerForm
 
                 con.Open();
 
-                // Получаем заказы за выбранный период
                 MySqlCommand cmd = new MySqlCommand(OrderCmd, con);
 
                 MySqlDataAdapter da = new MySqlDataAdapter(cmd);
                 DataTable dt = new DataTable();
                 da.Fill(dt);
 
-                // Сохраняем оригинальные имена для маскирования
                 dataSecurity.LoadOriginalClientNames(dt, "ClientName");
                 dataSecurity.LoadOriginalUserNames(dt, "UserName");
                 lastRevealedRowIndex = -1;
 
                 dataGridView1.DataSource = dt;
 
-                // Устанавливаем заголовки колонок
                 dataGridView1.Columns["OrderID"].HeaderText = "№ заказа";
                 dataGridView1.Columns["ClientName"].HeaderText = "Клиент";
                 dataGridView1.Columns["UserName"].HeaderText = "Сотрудник";
@@ -137,7 +134,6 @@ namespace WebSiteDev.ManagerForm
                 dataGridView1.Columns["StatusName"].HeaderText = "Статус";
                 dataGridView1.Columns["OrderCost"].HeaderText = "Итоговая цена";
 
-                // Отключаем сортировку по клику
                 dataGridView1.Columns["OrderID"].SortMode = DataGridViewColumnSortMode.NotSortable;
                 dataGridView1.Columns["ClientName"].SortMode = DataGridViewColumnSortMode.NotSortable;
                 dataGridView1.Columns["UserName"].SortMode = DataGridViewColumnSortMode.NotSortable;
@@ -149,17 +145,13 @@ namespace WebSiteDev.ManagerForm
 
                 dataManipulation = new DataManipulation(dt);
 
-                // Показываем количество заказов за период
                 MySqlCommand count = new MySqlCommand($"SELECT COUNT(*) FROM `Order` WHERE DATE(OrderDate) BETWEEN '{dateFromStr}' AND '{dateToStr}'", con);
                 int resultcount = Convert.ToInt32(count.ExecuteScalar());
-                label1.Text = "Количество записей: " + resultcount;
+                label16.Text = "Количество записей: " + resultcount;
 
-                // Применяем фильтры и сортировку
                 dataManipulation.ApplyAllDirector(comboBox3, comboBox1, textBox1);
-                dataManipulation.UpdateRecordCountLabel(label1);
+                dataManipulation.UpdateRecordCountLabel(label16);
 
-                // Окрашиваем строки в зависимости от статуса
-                ColorizeRowsByStatus();
             }
         }
 
@@ -174,7 +166,7 @@ namespace WebSiteDev.ManagerForm
             }
 
             dataManipulation.ApplyAllDirector(comboBox3, comboBox1, textBox1);
-            dataManipulation.UpdateRecordCountLabel(label1);
+            dataManipulation.UpdateRecordCountLabel(label16);
             InputRest.FirstLetter(textBox1);
 
             dataGridView1.ClearSelection();
@@ -329,7 +321,7 @@ namespace WebSiteDev.ManagerForm
             }
 
             dataManipulation.ApplyAllDirector(comboBox3, comboBox1, textBox1);
-            dataManipulation.UpdateRecordCountLabel(label1);
+            dataManipulation.UpdateRecordCountLabel(label16);
 
             dataGridView1.ClearSelection();
             dataGridView1.Refresh();
@@ -346,14 +338,14 @@ namespace WebSiteDev.ManagerForm
             }
 
             dataManipulation.ApplyAllDirector(comboBox3, comboBox1, textBox1);
-            dataManipulation.UpdateRecordCountLabel(label1);
+            dataManipulation.UpdateRecordCountLabel(label16);
 
             dataGridView1.ClearSelection();
             dataGridView1.Refresh();
         }
 
         /// <summary>
-        /// Кнопка "Сброс фильтров" очищает все фильтры и загружает заново
+        /// Кнопка "Очистить" очищает все фильтры и загружает заново
         /// </summary>
         private void button4_Click(object sender, EventArgs e)
         {
@@ -439,7 +431,7 @@ namespace WebSiteDev.ManagerForm
         }
 
         /// <summary>
-        /// Форматирует отображение ячеек окрашивает по статусу, маскирует/показывает имена
+        /// Форматирует отображение ячеек окрашивает по статусу маскирует/показывает имена
         /// </summary>
         private void dataGridView1_CellFormatting(object sender, DataGridViewCellFormattingEventArgs e)
         {
@@ -557,36 +549,6 @@ namespace WebSiteDev.ManagerForm
                 int rowToHide = lastRevealedRowIndex;
                 lastRevealedRowIndex = -1;
                 dataGridView1.InvalidateRow(rowToHide);
-            }
-        }
-
-        /// <summary>
-        /// Окрашивает строки таблицы в зависимости от статуса заказа
-        /// Зелёный - Завершён, Красный - Отменён
-        /// </summary>
-        private void ColorizeRowsByStatus()
-        {
-            foreach (DataGridViewRow row in dataGridView1.Rows)
-            {
-                if (row.Cells["StatusName"].Value != null)
-                {
-                    string status = row.Cells["StatusName"].Value.ToString();
-
-                    if (status == "Завершён")
-                    {
-                        foreach (DataGridViewCell cell in row.Cells)
-                        {
-                            cell.Style.BackColor = System.Drawing.Color.LightGreen;
-                        }
-                    }
-                    else if (status == "Отменён")
-                    {
-                        foreach (DataGridViewCell cell in row.Cells)
-                        {
-                            cell.Style.BackColor = System.Drawing.Color.IndianRed;
-                        }
-                    }
-                }
             }
         }
     }
