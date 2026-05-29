@@ -3,8 +3,9 @@ using MySql.Data.MySqlClient;
 using System;
 using System.Collections.Generic;
 using System.Data;
-using System.Windows.Forms;
+using System.Drawing;
 using System.IO;
+using System.Windows.Forms;
 
 namespace WebSiteDev.ManagerForm
 {
@@ -15,12 +16,21 @@ namespace WebSiteDev.ManagerForm
         private int lastRevealedRowIndex = -1;
         private Timer timer1 = new Timer();
 
+        private Pagination pagination;
+        private const int ItemsPerPage = 15; // Сколько показывать на одной странице
+
         public DirectorOrderControl()
         {
             InitializeComponent();
             timer1.Interval = 20000;
             timer1.Tick += Timer1_Tick;
             GetDate();
+
+            pagination = new Pagination(dataManipulation.view.Count, ItemsPerPage);
+            pagination.PageChanged += Pagination_PageChanged;
+
+            LoadCurrentPage();      // Загрузка текущей страницы
+            UpdatePaginationUI();   // Обновление UI пагинации
         }
 
         private void DirectorOrderControl_Load(object sender, EventArgs e)
@@ -43,7 +53,6 @@ namespace WebSiteDev.ManagerForm
 
                 con.Open();
 
-                // Получаем первую и последнюю дату заказов из БД
                 MySqlCommand cmd = new MySqlCommand(DataCmd, con);
 
                 using (MySqlDataReader reader = cmd.ExecuteReader())
@@ -53,7 +62,6 @@ namespace WebSiteDev.ManagerForm
                         DateTime firstDate = DateTime.Now;
                         DateTime lastDate = DateTime.Now;
 
-                        // Если дата не null используем ее иначе используем текущую дату
                         if (reader["FirstDate"] != DBNull.Value)
                         {
                             firstDate = Convert.ToDateTime(reader["FirstDate"]);
@@ -64,13 +72,11 @@ namespace WebSiteDev.ManagerForm
                             lastDate = Convert.ToDateTime(reader["LastDate"]);
                         }
 
-                        // Устанавливаем диапазон для первого календаря (начальная дата)
                         dateTimePicker1.MinDate = firstDate;
                         dateTimePicker1.MaxDate = lastDate;
                         dateTimePicker1.Value = firstDate;
                         dateTimePicker1.CustomFormat = "dd.MM.yyyy";
 
-                        // Устанавливаем диапазон для второго календаря (конечная дата)
                         dateTimePicker2.MinDate = firstDate;
                         dateTimePicker2.MaxDate = lastDate;
                         dateTimePicker2.Value = lastDate;
@@ -87,7 +93,6 @@ namespace WebSiteDev.ManagerForm
         {
             using (MySqlConnection con = new MySqlConnection(Data.GetConnectionString()))
             {
-                // Формируем даты для фильтрации
                 string dateFromStr = dateTimePicker1.Value.Date.ToString("yyyy-MM-dd");
                 string dateToStr = dateTimePicker2.Value.Date.ToString("yyyy-MM-dd");
 
@@ -123,42 +128,224 @@ namespace WebSiteDev.ManagerForm
                 dataSecurity.LoadOriginalUserNames(dt, "UserName");
                 lastRevealedRowIndex = -1;
 
-                dataGridView1.DataSource = dt;
-
-                dataGridView1.Columns["OrderID"].HeaderText = "№ заказа";
-                dataGridView1.Columns["ClientName"].HeaderText = "Клиент";
-                dataGridView1.Columns["UserName"].HeaderText = "Сотрудник";
-                dataGridView1.Columns["OrderDate"].HeaderText = "Дата заказа";
-                dataGridView1.Columns["OrderCompDate"].HeaderText = "Срок выполнения заказа";
-                dataGridView1.Columns["ProductName"].Visible = false;
-                dataGridView1.Columns["StatusName"].HeaderText = "Статус";
-                dataGridView1.Columns["OrderCost"].HeaderText = "Итоговая цена";
-
-                dataGridView1.Columns["OrderID"].SortMode = DataGridViewColumnSortMode.NotSortable;
-                dataGridView1.Columns["ClientName"].SortMode = DataGridViewColumnSortMode.NotSortable;
-                dataGridView1.Columns["UserName"].SortMode = DataGridViewColumnSortMode.NotSortable;
-                dataGridView1.Columns["OrderDate"].SortMode = DataGridViewColumnSortMode.NotSortable;
-                dataGridView1.Columns["OrderCompDate"].SortMode = DataGridViewColumnSortMode.NotSortable;
-                dataGridView1.Columns["ProductName"].SortMode = DataGridViewColumnSortMode.NotSortable;
-                dataGridView1.Columns["StatusName"].SortMode = DataGridViewColumnSortMode.NotSortable;
-                dataGridView1.Columns["OrderCost"].SortMode = DataGridViewColumnSortMode.NotSortable;
-
                 dataManipulation = new DataManipulation(dt);
 
                 MySqlCommand count = new MySqlCommand($"SELECT COUNT(*) FROM `Order` WHERE DATE(OrderDate) BETWEEN '{dateFromStr}' AND '{dateToStr}'", con);
+                
                 int resultcount = Convert.ToInt32(count.ExecuteScalar());
                 label16.Text = "Количество записей: " + resultcount;
 
                 dataManipulation.ApplyAllDirector(comboBox3, comboBox1, textBox1);
-                dataManipulation.UpdateRecordCountLabel(label16);
 
+                if (pagination == null)
+                {
+                    pagination = new Pagination(dataManipulation.view.Count, ItemsPerPage);
+                    pagination.PageChanged += Pagination_PageChanged;
+                }
+                else
+                {
+                    pagination.TotalItems = dataManipulation.view.Count;
+                    pagination.GoToPage(1);
+                }
+
+                LoadCurrentPage();
+                UpdatePaginationUI();
             }
         }
 
         /// <summary>
-        /// При вводе номера заказа фильтрует таблицу
+        /// Настраивает колонки DataGridView
         /// </summary>
-        private void textBox1_TextChanged(object sender, EventArgs e)
+        private void SetupDataGridViewColumns()
+        {
+            if (dataGridView1.Columns["OrderID"] != null)
+            {
+                dataGridView1.Columns["OrderID"].HeaderText = "№ заказа";
+                dataGridView1.Columns["OrderID"].AutoSizeMode = DataGridViewAutoSizeColumnMode.AllCells;
+                dataGridView1.Columns["OrderID"].SortMode = DataGridViewColumnSortMode.NotSortable;
+            }
+            if (dataGridView1.Columns["ClientName"] != null)
+            {
+                dataGridView1.Columns["ClientName"].HeaderText = "Клиент";
+                dataGridView1.Columns["ClientName"].AutoSizeMode = DataGridViewAutoSizeColumnMode.AllCells;
+                dataGridView1.Columns["ClientName"].SortMode = DataGridViewColumnSortMode.NotSortable;
+            }
+            if (dataGridView1.Columns["UserName"] != null)
+            {
+                dataGridView1.Columns["UserName"].HeaderText = "Сотрудник";
+                dataGridView1.Columns["UserName"].AutoSizeMode = DataGridViewAutoSizeColumnMode.AllCells;
+                dataGridView1.Columns["UserName"].SortMode = DataGridViewColumnSortMode.NotSortable;
+            }
+            if (dataGridView1.Columns["OrderDate"] != null)
+            {
+                dataGridView1.Columns["OrderDate"].HeaderText = "Дата заказа";
+                dataGridView1.Columns["OrderDate"].SortMode = DataGridViewColumnSortMode.NotSortable;
+            }
+            if (dataGridView1.Columns["OrderCompDate"] != null)
+            {
+                dataGridView1.Columns["OrderCompDate"].HeaderText = "Срок выполнения заказа";
+                dataGridView1.Columns["OrderCompDate"].SortMode = DataGridViewColumnSortMode.NotSortable;
+            }
+            if (dataGridView1.Columns["ProductName"] != null)
+            {
+                dataGridView1.Columns["ProductName"].Visible = false;
+                dataGridView1.Columns["ProductName"].SortMode = DataGridViewColumnSortMode.NotSortable;
+            }
+            if (dataGridView1.Columns["StatusName"] != null)
+            {
+                dataGridView1.Columns["StatusName"].HeaderText = "Статус";
+                dataGridView1.Columns["StatusName"].AutoSizeMode = DataGridViewAutoSizeColumnMode.AllCells;
+                dataGridView1.Columns["StatusName"].SortMode = DataGridViewColumnSortMode.NotSortable;
+            }
+            if (dataGridView1.Columns["OrderCost"] != null)
+            {
+                dataGridView1.Columns["OrderCost"].HeaderText = "Итоговая цена";
+                dataGridView1.Columns["OrderCost"].AutoSizeMode = DataGridViewAutoSizeColumnMode.AllCells;
+                dataGridView1.Columns["OrderCost"].SortMode = DataGridViewColumnSortMode.NotSortable;
+            }
+
+            dataGridView1.ContextMenuStrip = contextMenuStrip1;
+        }
+
+        /// <summary>
+        /// Загружает только строки текущей страницы из отфильтрованного view
+        /// </summary>
+        private void LoadCurrentPage()
+        {
+            if (pagination == null || dataManipulation == null || dataManipulation.view == null)
+            {
+                return;
+            }
+
+            dataGridView1.SuspendLayout();
+
+            if (dataManipulation.view.Count == 0)
+            {
+                DataTable emptyTable = dataManipulation.table != null ? dataManipulation.table.Clone() : new DataTable();
+                dataGridView1.DataSource = emptyTable;
+                SetupDataGridViewColumns();
+
+                dataGridView1.ResumeLayout();
+                dataGridView1.ClearSelection();
+                return;
+            }
+
+            int start = pagination.GetStartIndex();
+            int count = pagination.GetTakeCount();
+
+            if (start < 0)
+            {
+                start = 0;
+            }
+
+            DataTable pageTable = dataManipulation.table.Clone();
+
+            for (int i = 0; i < count; i++)
+            {
+                int viewIndex = start + i;
+
+                if (viewIndex >= dataManipulation.view.Count)
+                {
+                    break;
+                }
+
+                DataRowView rowView = dataManipulation.view[viewIndex];
+                DataRow newRow = pageTable.NewRow();
+                newRow.ItemArray = rowView.Row.ItemArray;
+                pageTable.Rows.Add(newRow);
+            }
+
+            dataGridView1.DataSource = pageTable;
+            SetupDataGridViewColumns();
+
+            dataGridView1.ResumeLayout();
+            dataGridView1.ClearSelection();
+        }
+
+        /// <summary>
+        /// Обновляет текст и доступность кнопок пагинации
+        /// </summary>
+        private void UpdatePaginationUI()
+        {
+            if (pagination == null)
+            {
+                return;
+            }
+
+            textBox5.Text = pagination.CurrentPage.ToString();
+            textBox5.SelectionStart = textBox5.Text.Length;
+            textBox5.SelectionLength = 0;
+
+            label1.Text = pagination.TotalPages.ToString();
+
+            if (!pagination.HasPrevious && button6.Focused)
+            {
+                dataGridView1.Focus();
+            }
+            else if (!pagination.HasNext && button3.Focused)
+            {
+                dataGridView1.Focus();
+            }
+
+            button6.Enabled = pagination.HasPrevious;
+            button3.Enabled = pagination.HasNext;
+        }
+
+        /// <summary>
+        /// Событие срабатывает при смене страницы в пагинации
+        /// </summary>
+        private void Pagination_PageChanged(object sender, EventArgs e)
+        {
+            LoadCurrentPage();
+            UpdatePaginationUI();
+        }
+
+        /// <summary>
+        /// Кнопка для перехода на прошлую страницу
+        /// </summary>
+        private void button6_Click(object sender, EventArgs e)
+        {
+            pagination.PreviousPage();
+        }
+
+        /// <summary>
+        /// Кнопка для перехода на следующую страницу
+        /// </summary>
+        private void button3_Click(object sender, EventArgs e)
+        {
+            pagination.NextPage();
+        }
+
+        /// <summary>
+        /// Метод события обработки нажатия Enter для перехода на конкретную страницу
+        /// </summary>
+        private void textBox5_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.KeyCode == Keys.Enter)
+            {
+                if (int.TryParse(textBox5.Text, out int page))
+                {
+                    pagination.GoToPage(page);
+                }
+                else
+                {
+                    textBox5.Text = pagination.CurrentPage.ToString();
+                }
+
+                e.Handled = true;
+                e.SuppressKeyPress = true;
+            }
+        }
+
+        private void textBox5_KeyPress(object sender, KeyPressEventArgs e)
+        {
+            InputRest.OnlyNumbers(e);
+        }
+
+        /// <summary>
+        /// Применяет фильтры с обновлением пагинации
+        /// </summary>
+        private void ApplyFiltersInternal(bool resetToFirstPage = true)
         {
             if (dataManipulation == null)
             {
@@ -166,11 +353,71 @@ namespace WebSiteDev.ManagerForm
             }
 
             dataManipulation.ApplyAllDirector(comboBox3, comboBox1, textBox1);
-            dataManipulation.UpdateRecordCountLabel(label16);
+
+            if (pagination != null)
+            {
+                pagination.TotalItems = dataManipulation.view.Count;
+
+                if (resetToFirstPage)
+                {
+                    pagination.GoToPage(1);
+                }
+                else if (pagination.CurrentPage > pagination.TotalPages)
+                {
+                    pagination.GoToPage(Math.Max(1, pagination.TotalPages));
+                }
+            }
+
+            LoadCurrentPage();
+            UpdatePaginationUI();
+            dataGridView1.ClearSelection();
+            dataGridView1.Refresh();
+        }
+
+        /// <summary>
+        /// При вводе номера заказа фильтрует таблицу
+        /// </summary>
+        private void textBox1_TextChanged(object sender, EventArgs e)
+        {
             InputRest.FirstLetter(textBox1);
+            ApplyFiltersInternal(resetToFirstPage: true);
+        }
+
+        /// <summary>
+        /// При изменении сортировки применяет фильтры
+        /// </summary>
+        private void comboBox3_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            ApplyFiltersInternal(resetToFirstPage: true);
+        }
+
+        /// <summary>
+        /// При изменении фильтра по статусу применяет фильтры
+        /// </summary>
+        private void comboBox1_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            ApplyFiltersInternal(resetToFirstPage: true);
+        }
+
+        /// <summary>
+        /// Кнопка "Очистить" очищает все фильтры и загружает заново
+        /// </summary>
+        private void button4_Click(object sender, EventArgs e)
+        {
+            dataManipulation.ResetFilters(comboBox3, comboBox1, textBox1);
+            SetDatePickerRange();
+            GetDate();
 
             dataGridView1.ClearSelection();
             dataGridView1.Refresh();
+        }
+
+        /// <summary>
+        /// Ограничивает ввод в поле поиска только цифрами
+        /// </summary>
+        private void textBox1_KeyPress(object sender, KeyPressEventArgs e)
+        {
+            InputRest.OnlyNumbers(e);
         }
 
         /// <summary>
@@ -179,7 +426,7 @@ namespace WebSiteDev.ManagerForm
         private void button2_Click(object sender, EventArgs e)
         {
             // Проверяем есть ли данные
-            if (dataGridView1.Rows.Count == 0)
+            if (dataManipulation == null || dataManipulation.view == null || dataManipulation.view.Count == 0)
             {
                 MessageBox.Show("Нет данных для формирования отчёта!", "Внимание", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
@@ -208,7 +455,6 @@ namespace WebSiteDev.ManagerForm
                 message = message + "Поиск по номеру заказа: " + textBox1.Text + "\n";
             }
 
-            // Получаем выбранный статус
             string selectedStatus = "";
             if (comboBox1.SelectedIndex > 0)
             {
@@ -228,7 +474,6 @@ namespace WebSiteDev.ManagerForm
                 }
             }
 
-            // Получаем выбранную сортировку
             string selectedSort = "";
             if (comboBox3.SelectedIndex > 0)
             {
@@ -241,7 +486,7 @@ namespace WebSiteDev.ManagerForm
                 message = message + "\nВсе заказы без поиска, фильтров и сортировки\n";
             }
 
-            message = message + "\nВсего записей: " + dataGridView1.Rows.Count + "\n\nПродолжить?";
+            message = message + "\nВсего записей: " + dataManipulation.view.Count + "\n\nПродолжить?";
 
             var result = MessageBox.Show(message, "Подтверждение создания отчёта", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
 
@@ -250,22 +495,47 @@ namespace WebSiteDev.ManagerForm
                 return;
             }
 
-            // Собираем стоимости всех заказов
-            List<decimal> orderCosts = new List<decimal>();
-            foreach (DataGridViewRow row in dataGridView1.Rows)
+            // Собираем стоимости всех отфильтрованных заказов (не только текущей страницы)
+            List <decimal> orderCosts = new List<decimal>();
+
+            foreach (DataRowView row in dataManipulation.view)
             {
-                if (row.Cells["OrderCost"].Value != null)
+                if (row["OrderCost"] != null)
                 {
-                    if (decimal.TryParse(row.Cells["OrderCost"].Value.ToString(), out decimal cost))
+                    if (decimal.TryParse(row["OrderCost"].ToString(), out decimal cost))
                     {
                         orderCosts.Add(cost);
                     }
                 }
             }
 
+            // Создаём временный DataGridView со всеми отфильтрованными данными для отчёта
+            DataGridView dataGridView = new DataGridView();
+            dataGridView.AutoGenerateColumns = true;
+
+            DataTable fullTable = dataManipulation.table.Clone();
+
+            foreach (DataRowView rv in dataManipulation.view)
+            {
+                DataRow row = fullTable.NewRow();
+
+                row.ItemArray = rv.Row.ItemArray;
+                fullTable.Rows.Add(row);
+            }
+            dataGridView.DataSource = fullTable;
+
+            // Копируем заголовки колонок из основного DataGridView
+            foreach (DataGridViewColumn col in dataGridView.Columns)
+            {
+                if (dataGridView1.Columns[col.Name] != null)
+                {
+                    col.HeaderText = dataGridView1.Columns[col.Name].HeaderText;
+                }
+            }
+
             // Экспортируем в Excel
             ExcelReport.ExportToExcel(
-                dataGridView1,
+                dataGridView,
                 orderCosts,
                 dateTimePicker1.Value,
                 dateTimePicker2.Value,
@@ -308,61 +578,6 @@ namespace WebSiteDev.ManagerForm
             }
 
             return false;
-        }
-
-        /// <summary>
-        /// При изменении сортировки применяет фильтры
-        /// </summary>
-        private void comboBox3_SelectedIndexChanged(object sender, EventArgs e)
-        {
-            if (dataManipulation == null)
-            {
-                return;
-            }
-
-            dataManipulation.ApplyAllDirector(comboBox3, comboBox1, textBox1);
-            dataManipulation.UpdateRecordCountLabel(label16);
-
-            dataGridView1.ClearSelection();
-            dataGridView1.Refresh();
-        }
-
-        /// <summary>
-        /// При изменении фильтра по статусу применяет фильтры
-        /// </summary>
-        private void comboBox1_SelectedIndexChanged(object sender, EventArgs e)
-        {
-            if (dataManipulation == null)
-            {
-                return;
-            }
-
-            dataManipulation.ApplyAllDirector(comboBox3, comboBox1, textBox1);
-            dataManipulation.UpdateRecordCountLabel(label16);
-
-            dataGridView1.ClearSelection();
-            dataGridView1.Refresh();
-        }
-
-        /// <summary>
-        /// Кнопка "Очистить" очищает все фильтры и загружает заново
-        /// </summary>
-        private void button4_Click(object sender, EventArgs e)
-        {
-            dataManipulation.ResetFilters(comboBox3, comboBox1, textBox1);
-            SetDatePickerRange();
-            GetDate();
-
-            dataGridView1.ClearSelection();
-            dataGridView1.Refresh();
-        }
-
-        /// <summary>
-        /// Ограничивает ввод в поле поиска только цифрами
-        /// </summary>
-        private void textBox1_KeyPress(object sender, KeyPressEventArgs e)
-        {
-            InputRest.OnlyNumbers(e);
         }
 
         /// <summary>
@@ -446,11 +661,19 @@ namespace WebSiteDev.ManagerForm
             // Окрашиваем строки в зависимости от статуса
             if (status == "Завершён")
             {
-                e.CellStyle.BackColor = System.Drawing.Color.LightGreen;
+                e.CellStyle.BackColor = Color.LightGreen;
             }
             else if (status == "Отменён")
             {
-                e.CellStyle.BackColor = System.Drawing.Color.IndianRed;
+                e.CellStyle.BackColor = Color.IndianRed;
+            }
+            else if (status == "Новый")
+            {
+                e.CellStyle.BackColor = Color.FromArgb(144, 202, 249);
+            }
+            else if (status == "В работе")
+            {
+                e.CellStyle.BackColor = Color.Gold;
             }
 
             // Если строка открыта показываем оригинальные данные
