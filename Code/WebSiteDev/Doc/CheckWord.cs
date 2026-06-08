@@ -1,25 +1,129 @@
 ﻿using System;
 using System.Windows.Forms;
 using MySql.Data.MySqlClient;
+using System.IO;
 
 namespace WebSiteDev.Doc
 {
     public static class CheckWord
     {
-        /// <summary>
-        /// Создаёт и сохраняет чек заказа в Word файл
-        /// </summary>
+        // Word COM константы
+        private const int WdLineStyleSingle = 1;
+        private const int WdLineWidth075pt = 6;
+        private const int WdColorBlack = 0;
+        private const int WdBorderTop = -1;
+        private const int WdBorderLeft = -2;
+        private const int WdBorderBottom = -3;
+        private const int WdBorderRight = -4;
+        private const int WdAlignParagraphLeft = 0;
+        private const int WdAlignParagraphCenter = 1;
+        private const int WdAlignParagraphRight = 2;
+        private const int WdBoldOn = 1;
+        private const int WdBoldOff = 0;
+        private const int WdSaveFormatDocument = 0;
+        private const int WdSaveFormatDocumentDefault = 16;
+        private const int WdSaveFormatPDF = 17;
+        private const int WdMsoTrue = -1;
+        private const int WdTableBordersOff = 0;
+        private const int FirstItemIndex = 1;
+        private const int FirstSectionIndex = 1;
+
+        // Размеры страницы и отступы
+        private const float PageWidth = 164f;        // 58 мм
+        private const float BasePageHeight = 280f;   // чуть меньше базовая высота
+        private const float RowHeight = 8f;
+        private const float MarginTop = 8f;
+        private const float MarginBottom = 8f;
+        private const float MarginLeft = 6f;
+        private const float MarginRight = 6f;
+        private const float BorderDistance = 4f;
+
+        // Размеры таблицы
+        private const float Column1Width = 82f;   // Услуга
+        private const float Column2Width = 22f;   // Кол.
+        private const float Column3Width = 38f;   // Цена
+        private const float CellPadding = 1f;
+
+        // Разделители
+        private const int SeparatorLineLength = 46;
+        private const char SeparatorDoubleChar = '═';
+        private const char SeparatorSingleChar = '─';
+
+        // Шрифты
+        private const string FontTimesNewRoman = "Times New Roman";
+        private const string FontCourierNew = "Courier New";
+
+        // Размеры шрифтов
+        private const int FontSizeCompanyName = 9;
+        private const int FontSizeCheckNumber = 8;
+        private const int FontSizeTable = 4;
+        private const int FontSizeTotal = 5;
+        private const int FontSizeFooterThanks = 6;
+        private const int FontSizeSubtitle = 6;
+        private const int FontSizeSmall = 5;
+        private const int FontSizeLabel = 6;
+        private const int FontSizeFooterDate = 5;
+
+        // Отступы абзацев
+        private const float SpaceZero = 0f;
+        private const float SpaceAfterTiny = 1f;
+        private const float SpaceBeforeCheck = 3f;
+        private const float SpaceAfterCheck = 3f;
+        private const float SpaceBeforeTable = 2f;
+        private const float SpaceAfterTable = 2f;
+        private const float SpaceBeforeThanks = 6f;
+        private const float SpaceBeforeDate = 4f;
+        private const float SpaceAfterLogo = 2f;
+        private const float SpaceAfterAddress = 1f;
+        private const float SpaceAfterPhone = 3f;
+
+        // Финансовые константы
+        private const string CurrencySymbol = " ₽";
+        private const string NumberFormatMoney = "0.00";
+        private const decimal DiscountPercentClientMin = 4m;
+        private const decimal DiscountPercentClientMax = 6m;
+        private const decimal DiscountPercentQtyMin = 6m;
+        private const decimal DiscountPercentQtyMax = 8m;
+        private const decimal DiscountPercentComboMin = 11m;
+        private const decimal DiscountPercentComboMax = 13m;
+        private const decimal DiscountFactorClient = 0.05m;
+        private const decimal DiscountFactorQty = 0.07m;
+        private const decimal DiscountFactorSurcharge = 0.15m;
+
+        // Табуляция
+        private const float RightTabStopPosition = 184f;
+        private const int RightTabAlignment = 2;
+        private const int TabLeaderNone = 0;
+        private const int LabelPadWidth = 10;
+
+        // Форматы даты
+        private const string DateFormatShort = "dd.MM.yyyy";
+        private const string DateFormatLong = "dd.MM.yyyy  HH:mm:ss";
+
+        // Диалог сохранения
+        private const int FilterIndexPDF = 1;
+        private const string DefaultExtension = "pdf";
+        private const string SaveDialogTitle = "Сохранить чек заказа";
+        private const string FileNamePrefix = "Чек_заказа_№";
+        private const string SaveFilter = "PDF (*.pdf)|*.pdf|Word 2007-2026 (*.docx)|*.docx|Word 97-2003 (*.doc)|*.doc";
+
+        // Расширения файлов
+        private const string ExtPdf = ".pdf";
+        private const string ExtDoc = ".doc";
+
+        // ProgID
+        private const string WordProgID = "Word.Application";
+
         public static void CreateCheck(int orderID)
         {
-            // Диалог сохранения файла
-            SaveFileDialog sfd = new SaveFileDialog();
-            sfd.Filter = "PDF (*.pdf)|*.pdf|Word 2007-20026 (*.docx)|*.docx|Word 97-2003 (*.doc)|*.doc";
-            sfd.FilterIndex = 1;
-            sfd.Title = "Сохранить чек заказа";
-            sfd.FileName = "Чек_Заказа_№" + orderID;
-            sfd.DefaultExt = "pdf";
+            SaveFileDialog saveFileDialog = new SaveFileDialog();
+            saveFileDialog.Filter = SaveFilter;
+            saveFileDialog.FilterIndex = FilterIndexPDF;
+            saveFileDialog.Title = SaveDialogTitle;
+            saveFileDialog.FileName = FileNamePrefix + orderID;
+            saveFileDialog.DefaultExt = DefaultExtension;
 
-            if (sfd.ShowDialog() != DialogResult.OK)
+            if (saveFileDialog.ShowDialog() != DialogResult.OK)
             {
                 return;
             }
@@ -29,456 +133,588 @@ namespace WebSiteDev.Doc
 
             try
             {
-                // Создаём Word приложение и новый документ
-                Type wordAppType = Type.GetTypeFromProgID("Word.Application");
-                app = Activator.CreateInstance(wordAppType);
+                Type wordType = Type.GetTypeFromProgID(WordProgID);
+                app = Activator.CreateInstance(wordType);
                 app.Visible = false;
-
                 doc = app.Documents.Add();
 
-                // Базовая высота страницы для одного товара
-                float baseHeight = 236.8f;
-
-                // Получаем количество товаров в заказе для расчёта размера страницы
-                int productCount = 0;
+                int ProductCount = 0;
+                bool HasDiscountPre = false, HasSurchargePre = false;
+                bool HasClientDiscountPre = false, HasQtyDiscountPre = false;
                 using (MySqlConnection conTemp = new MySqlConnection(Data.GetConnectionString()))
                 {
                     conTemp.Open();
-                    string countQuery = "SELECT COUNT(*) FROM orderproduct WHERE OrderID = " + orderID;
-                    MySqlCommand countCmd = new MySqlCommand(countQuery, conTemp);
-                    productCount = Convert.ToInt32(countCmd.ExecuteScalar());
+                    MySqlCommand countCmd = new MySqlCommand("SELECT COUNT(*) FROM orderproduct WHERE OrderID = " + orderID, conTemp);
+                    ProductCount = Convert.ToInt32(countCmd.ExecuteScalar());
+
+                    using (var rPre = new MySqlCommand("SELECT Discount, Surcharge FROM `Order` WHERE OrderID = " + orderID, conTemp).ExecuteReader())
+                    {
+                        if (rPre.Read())
+                        {
+                            if (rPre["Discount"] != DBNull.Value)
+                            {
+                                decimal d = Convert.ToDecimal(rPre["Discount"]);
+
+                                if (d > 0)
+                                {
+                                    HasDiscountPre = true;
+                                }
+                            }
+                            if (rPre["Surcharge"] != DBNull.Value)
+                            {
+                                decimal s = Convert.ToDecimal(rPre["Surcharge"]);
+
+                                if (s > 0)
+                                {
+                                    HasSurchargePre = true;
+                                }
+                            }
+                        }
+                    }
+
+                    if (HasDiscountPre)
+                    {
+                        object SumObj = new MySqlCommand(
+                            "SELECT SUM(op.ProductCount * p.BasePrice) FROM orderproduct op " +
+                            "LEFT JOIN Product p ON op.ProductID = p.ProductID WHERE op.OrderID = " + orderID, conTemp).ExecuteScalar();
+                        if (SumObj != null && SumObj != DBNull.Value)
+                        {
+                            decimal SumV = Convert.ToDecimal(SumObj);
+                            object DiscValObj = new MySqlCommand("SELECT Discount FROM `Order` WHERE OrderID = " + orderID, conTemp).ExecuteScalar();
+
+                            if (DiscValObj != null && DiscValObj != DBNull.Value && SumV > 0)
+                            {
+                                decimal dv = Convert.ToDecimal(DiscValObj);
+                                decimal pct = (dv / SumV) * 100;
+
+                                HasClientDiscountPre = (pct >= DiscountPercentClientMin && pct <= DiscountPercentClientMax) || (pct >= DiscountPercentComboMin && pct <= DiscountPercentComboMax);
+                                HasQtyDiscountPre = (pct >= DiscountPercentQtyMin && pct <= DiscountPercentComboMax);
+
+                                if (pct >= DiscountPercentComboMin && pct <= DiscountPercentComboMax)
+                                {
+                                    HasClientDiscountPre = true;
+                                    HasQtyDiscountPre = true;
+                                }
+                                else if (pct >= DiscountPercentQtyMin && pct <= DiscountPercentQtyMax)
+                                {
+                                    HasQtyDiscountPre = true;
+                                    HasClientDiscountPre = false;
+                                }
+                                else if (pct >= DiscountPercentClientMin && pct <= DiscountPercentClientMax)
+                                {
+                                    HasClientDiscountPre = true;
+                                    HasQtyDiscountPre = false;
+                                }
+                            }
+                        }
+                    }
                 }
 
-                // Если товаров больше одного - добавляем высоту за каждый товар
-                float additionalHeight = (productCount > 1) ? (productCount - 1) * 5f : 0f;
-                float totalHeight = baseHeight + additionalHeight;
+                int DiscountRows = 0;
 
-                // Настраиваем размер страницы как кассовая лента (узкий чек)
-                doc.PageSetup.PageWidth = 226.8f;
-                doc.PageSetup.PageHeight = totalHeight;
-                doc.PageSetup.TopMargin = 20;
-                doc.PageSetup.BottomMargin = 20;
-                doc.PageSetup.LeftMargin = 14;
-                doc.PageSetup.RightMargin = 14;
+                if (HasClientDiscountPre)
+                {
+                    DiscountRows = DiscountRows + 1;
+                }
+
+                if (HasQtyDiscountPre)
+                {
+                    DiscountRows = DiscountRows + 1;
+                }
+                if (!HasClientDiscountPre && !HasQtyDiscountPre && HasDiscountPre)
+                {
+                    DiscountRows = 1;
+                }
+
+                float PageHeight = BasePageHeight;
+
+                if (ProductCount > 1)
+                {
+                    PageHeight = PageHeight + (ProductCount - 1) * RowHeight;
+                }
+
+                PageHeight = PageHeight + DiscountRows * RowHeight;
+
+                if (HasSurchargePre)
+                {
+                    PageHeight = PageHeight + RowHeight;
+                }
+
+                doc.PageSetup.PageWidth = PageWidth;
+                doc.PageSetup.PageHeight = PageHeight;
+                doc.PageSetup.TopMargin = MarginTop;
+                doc.PageSetup.BottomMargin = MarginBottom;
+                doc.PageSetup.LeftMargin = MarginLeft;
+                doc.PageSetup.RightMargin = MarginRight;
+
+                foreach (int side in new int[] { WdBorderTop, WdBorderLeft, WdBorderBottom, WdBorderRight })
+                {
+                    doc.Sections[FirstSectionIndex].Borders[side].LineStyle = WdLineStyleSingle;
+                    doc.Sections[FirstSectionIndex].Borders[side].LineWidth = WdLineWidth075pt;
+                    doc.Sections[FirstSectionIndex].Borders[side].Color = WdColorBlack;
+                }
+                doc.Sections[FirstSectionIndex].Borders.DistanceFromTop = BorderDistance;
+                doc.Sections[FirstSectionIndex].Borders.DistanceFromBottom = BorderDistance;
+                doc.Sections[FirstSectionIndex].Borders.DistanceFromLeft = BorderDistance;
+                doc.Sections[FirstSectionIndex].Borders.DistanceFromRight = BorderDistance;
 
                 using (MySqlConnection con = new MySqlConnection(Data.GetConnectionString()))
                 {
                     con.Open();
 
-                    // Получаем основную информацию о заказе
-                    string query = @"SELECT o.OrderID, CONCAT(c.Surname, ' ', c.FirstName, ' ', COALESCE(c.MiddleName, '')) AS ClientName, " +
-                        "CONCAT(u.Surname, ' ', u.FirstName, ' ', COALESCE(u.MiddleName, '')) AS UserName, u.PhoneNumber AS UserPhone, " +
-                        "o.OrderDate, o.OrderCompDate, o.OrderCost, o.Discount, o.Surcharge FROM `Order` o LEFT JOIN Clients c ON o.ClientID = c.ClientID " +
-                        "LEFT JOIN Users u ON o.UserID = u.UserID WHERE o.OrderID = " + orderID;
+                    AddParagraph(doc, "WebSiteDev", FontTimesNewRoman, FontSizeCompanyName, bold: true, align: WdAlignParagraphCenter, sb: SpaceZero, sa: SpaceZero);
+                    AddParagraph(doc, "Разработка веб-сайтов", FontTimesNewRoman, FontSizeSubtitle, bold: false, align: WdAlignParagraphCenter, sb: SpaceZero, sa: SpaceZero);
+                    AddParagraph(doc, "г. Заволжье, ул. Рождественская, д. 1", FontTimesNewRoman, FontSizeSmall, bold: false, align: WdAlignParagraphCenter, sb: SpaceZero, sa: SpaceAfterAddress);
+                    AddParagraph(doc, "Тел: +7 (911) 222-33-44", FontTimesNewRoman, FontSizeSmall, bold: false, align: WdAlignParagraphCenter, sb: SpaceZero, sa: SpaceAfterPhone);
+
+                    AddSeparator(doc, SeparatorDoubleChar);
+
+                    AddParagraph(doc, "Чек заказа № " + orderID, FontTimesNewRoman, FontSizeCheckNumber, bold: true, align: WdAlignParagraphCenter, sb: SpaceBeforeCheck, sa: SpaceAfterCheck);
+
+                    AddSeparator(doc, SeparatorSingleChar);
+
+                    string query = @"
+                        SELECT o.OrderID,
+                               CONCAT(c.Surname, ' ', c.FirstName, ' ', COALESCE(c.MiddleName,'')) AS ClientName,
+                               CONCAT(u.Surname, ' ', u.FirstName, ' ', COALESCE(u.MiddleName,'')) AS UserName,
+                               o.OrderDate, o.OrderCompDate,
+                               o.OrderCost, o.Discount, o.Surcharge
+                        FROM `Order` o
+                        LEFT JOIN Clients c ON o.ClientID = c.ClientID
+                        LEFT JOIN Users   u ON o.UserID   = u.UserID
+                        WHERE o.OrderID = " + orderID;
 
                     MySqlCommand cmd = new MySqlCommand(query, con);
 
-                    decimal discount = 0;
-                    decimal surcharge = 0;
-                    bool hasDiscount = false;
-                    bool hasSurcharge = false;
+                    decimal Discount = 0, Surcharge = 0;
+                    bool HasDiscount = false, HasSurcharge = false;
 
                     using (MySqlDataReader r = cmd.ExecuteReader())
                     {
                         if (r.Read())
                         {
-                            // Проверяем наличие скидки
                             if (r["Discount"] != DBNull.Value)
                             {
-                                discount = Convert.ToDecimal(r["Discount"]);
-                                if (discount > 0) hasDiscount = true;
+                                Discount = Convert.ToDecimal(r["Discount"]);
+
+                                if (Discount > 0)
+                                {
+                                    HasDiscount = true;
+                                }
                             }
 
-                            // Проверяем наличие надбавки
                             if (r["Surcharge"] != DBNull.Value)
                             {
-                                surcharge = Convert.ToDecimal(r["Surcharge"]);
-                                if (surcharge > 0) hasSurcharge = true;
+                                Surcharge = Convert.ToDecimal(r["Surcharge"]);
+
+                                if (Surcharge > 0)
+                                {
+                                    HasSurcharge = true;
+                                }
                             }
 
-                            // Заголовок чека - номер заказа
-                            dynamic p1 = doc.Paragraphs.Add();
-                            p1.Range.Text = "ЧЕК ЗАКАЗА № " + r["OrderID"].ToString();
-                            p1.Range.Font.Name = "Times New Roman";
-                            p1.Range.Font.Size = 9;
-                            p1.Range.Font.Bold = 1;
-                            p1.Alignment = GetWdAlignParagraphCenter();
-                            p1.SpaceBefore = 2;
-                            p1.SpaceAfter = 3;
-                            p1.Range.InsertParagraphAfter();
-
-                            // Дата заказа и срок выполнения
                             DateTime dt1 = Convert.ToDateTime(r["OrderDate"]);
                             DateTime dt2 = Convert.ToDateTime(r["OrderCompDate"]);
 
-                            dynamic p2 = doc.Paragraphs.Add();
-                            p2.Range.Text = "Дата заказа: " + dt1.ToString("dd.MM.yyyy") + "         " + "Срок выполнения: " + dt2.ToString("dd.MM.yyyy");
-                            p2.Range.Font.Name = "Times New Roman";
-                            p2.Range.Font.Size = 6;
-                            p2.Range.Font.Bold = 0;
-                            p2.Alignment = GetWdAlignParagraphCenter();
-                            p2.SpaceBefore = 6;
-                            p2.SpaceAfter = 0;
-                            p2.Range.InsertParagraphAfter();
+                            AddLeftRight(doc, "Дата заказа:", dt1.ToString(DateFormatShort), FontSizeLabel);
+                            AddLeftRight(doc, "Срок выполнения:", dt2.ToString(DateFormatShort), FontSizeLabel);
 
-                            // Имя клиента
-                            dynamic p3 = doc.Paragraphs.Add();
-                            p3.Range.Text = "Клиент: " + r["ClientName"].ToString();
-                            p3.Range.Font.Name = "Times New Roman";
-                            p3.Range.Font.Size = 6;
-                            p3.Range.Font.Bold = 0;
-                            p3.Alignment = GetWdAlignParagraphLeft();
-                            p3.SpaceBefore = 10;
-                            p3.SpaceAfter = 2;
-                            p3.Range.InsertParagraphAfter();
+                            AddSeparator(doc, SeparatorSingleChar);
 
-                            // Разделительная линия
-                            dynamic line2 = doc.Paragraphs.Add();
-                            line2.Range.Text = "__________________________________________________________";
-                            line2.Range.Font.Name = "Times New Roman";
-                            line2.Range.Font.Size = 6;
-                            line2.Alignment = GetWdAlignParagraphCenter();
-                            line2.SpaceBefore = 0;
-                            line2.SpaceAfter = 0;
-                            line2.Range.InsertParagraphAfter();
-
-                            // Имя сотрудника
-                            dynamic p4 = doc.Paragraphs.Add();
-                            p4.Range.Text = "Сотрудник: " + r["UserName"].ToString();
-                            p4.Range.Font.Name = "Times New Roman";
-                            p4.Range.Font.Size = 6;
-                            p4.Range.Font.Bold = 0;
-                            p4.Alignment = GetWdAlignParagraphLeft();
-                            p4.SpaceBefore = 0;
-                            p4.SpaceAfter = 0;
-                            p4.Range.InsertParagraphAfter();
-
-                            // Телефон сотрудника
-                            dynamic p5 = doc.Paragraphs.Add();
-                            p5.Range.Text = "Тел: + 7 (900) 111-22-33";
-                            p5.Range.Font.Name = "Times New Roman";
-                            p5.Range.Font.Size = 6;
-                            p5.Range.Font.Bold = 0;
-                            p5.Alignment = GetWdAlignParagraphLeft();
-                            p5.SpaceBefore = 0;
-                            p5.SpaceAfter = 2;
-                            p5.Range.InsertParagraphAfter();
-
-                            // Разделительная линия
-                            dynamic line3 = doc.Paragraphs.Add();
-                            line3.Range.Text = "__________________________________________________________";
-                            line3.Range.Font.Name = "Times New Roman";
-                            line3.Range.Font.Size = 6;
-                            line3.Alignment = GetWdAlignParagraphCenter();
-                            line3.SpaceBefore = 0;
-                            line3.SpaceAfter = 0;
-                            line3.Range.InsertParagraphAfter();
+                            AddAligned(doc, "Клиент:", r["ClientName"].ToString(), FontSizeLabel);
+                            AddAligned(doc, "Сотрудник:", r["UserName"].ToString(), FontSizeLabel);
                         }
                     }
 
-                    // Получаем список товаров в заказе
-                    string query2 = "SELECT p.ProductName, op.ProductCount, p.BasePrice AS ProductCost " +
-                        "FROM orderproduct op LEFT JOIN Product p ON op.ProductID = p.ProductID " +
-                        "WHERE op.OrderID = " + orderID;
+                    AddSeparator(doc, SeparatorSingleChar);
+
+                    AddParagraph(doc, "СОСТАВ ЗАКАЗА", FontTimesNewRoman, FontSizeTable, bold: true, align: WdAlignParagraphCenter, sb: SpaceBeforeTable, sa: SpaceAfterTable);
+
+                    string query2 = @"
+                        SELECT p.ProductName, op.ProductCount, p.BasePrice AS ProductCost
+                        FROM orderproduct op
+                        LEFT JOIN Product p ON op.ProductID = p.ProductID
+                        WHERE op.OrderID = " + orderID;
 
                     MySqlCommand cmd2 = new MySqlCommand(query2, con);
 
-                    // Заголовок состава заказа
-                    dynamic p6 = doc.Paragraphs.Add();
-                    p6.Range.Text = "СОСТАВ ЗАКАЗА";
-                    p6.Range.Font.Name = "Times New Roman";
-                    p6.Range.Font.Size = 6;
-                    p6.Range.Font.Bold = 1;
-                    p6.Alignment = GetWdAlignParagraphCenter();
-                    p6.SpaceBefore = 2;
-                    p6.SpaceAfter = 2;
-                    p6.Range.InsertParagraphAfter();
+                    decimal SumRaw = 0;
+                    object ObjSum = new MySqlCommand(
+                        "SELECT SUM(op.ProductCount * p.BasePrice) FROM orderproduct op " +
+                        "LEFT JOIN Product p ON op.ProductID = p.ProductID WHERE op.OrderID = " + orderID, con).ExecuteScalar();
+
+                    if (ObjSum != null && ObjSum != DBNull.Value)
+                    {
+                        SumRaw = Convert.ToDecimal(ObjSum);
+                    }
+
+                    string TotalCost = "0.00";
+                    object Obj2 = new MySqlCommand("SELECT OrderCost FROM `Order` WHERE OrderID = " + orderID, con).ExecuteScalar();
+
+                    if (Obj2 != null && Obj2 != DBNull.Value)
+                    {
+                        TotalCost = Convert.ToDecimal(Obj2).ToString(NumberFormatMoney);
+                    }
+
+                    decimal ClientDiscount = 0, QtyDiscount = 0;
+                    bool HasClientDiscount = false, HasQtyDiscount = false;
+
+                    if (HasDiscount)
+                    {
+                        decimal Percent;
+
+                        if (SumRaw > 0)
+                        {
+                            Percent = (Discount / SumRaw) * 100;
+                        }
+                        else
+                        {
+                            Percent = 0;
+                        }
+
+                        if (Percent >= DiscountPercentComboMin && Percent <= DiscountPercentComboMax)
+                        {
+                            HasClientDiscount = true;
+                            HasQtyDiscount = true;
+                            QtyDiscount = Math.Round(SumRaw * DiscountFactorQty, 2);
+                            ClientDiscount = Discount - QtyDiscount;
+                        }
+                        else if (Percent >= DiscountPercentQtyMin && Percent <= DiscountPercentQtyMax)
+                        {
+                            HasQtyDiscount = true;
+                            QtyDiscount = Discount;
+                        }
+                        else if (Percent >= DiscountPercentClientMin && Percent <= DiscountPercentClientMax)
+                        {
+                            HasClientDiscount = true;
+                            ClientDiscount = Discount;
+                        }
+                        else
+                        {
+                            HasClientDiscount = true;
+                            ClientDiscount = Discount;
+                        }
+                    }
 
                     using (MySqlDataReader r2 = cmd2.ExecuteReader())
                     {
-                        // Считаем количество товаров
-                        int count = 0;
-                        while (r2.Read()) count = count + 1;
+                        var rows = new System.Collections.Generic.List<string[]>();
 
-                        if (count > 0)
+                        while (r2.Read())
                         {
-                            r2.Close();
-                            MySqlDataReader r3 = cmd2.ExecuteReader();
+                            decimal price = 0;
+                            decimal.TryParse(r2["ProductCost"].ToString(), out price);
 
-                            // Создаём таблицу для товаров (строка для заголовка + строки для товаров)
-                            dynamic tbl = doc.Tables.Add(doc.Paragraphs[doc.Paragraphs.Count].Range, count + 1, 3);
-                            tbl.Borders.Enable = 1;
-
-                            // Заголовки таблицы
-                            tbl.Cell(1, 1).Range.Text = "Товар";
-                            tbl.Cell(1, 2).Range.Text = "Количество";
-                            tbl.Cell(1, 3).Range.Text = "Цена";
-
-                            // Форматируем строку заголовка
-                            tbl.Rows[1].Range.Font.Name = "Times New Roman";
-                            tbl.Rows[1].Range.Font.Bold = 1;
-                            tbl.Rows[1].Range.Font.Size = 5;
-                            tbl.Rows[1].Shading.BackgroundPatternColor = System.Drawing.ColorTranslator.ToOle(System.Drawing.Color.FromArgb(45, 156, 219));
-                            tbl.Rows[1].Range.Font.Color = GetWdColorWhite();
-
-                            // Заполняем таблицу товарами из БД
-                            int i = 2;
-                            while (r3.Read())
+                            rows.Add(new string[]
                             {
-                                tbl.Cell(i, 1).Range.Text = r3["ProductName"].ToString();
-                                tbl.Cell(i, 2).Range.Text = r3["ProductCount"].ToString();
+                                r2["ProductName"].ToString(),
+                                r2["ProductCount"].ToString(),
+                                price.ToString(NumberFormatMoney) + CurrencySymbol
+                            });
+                        }
 
-                                decimal price = 0;
-                                decimal.TryParse(r3["ProductCost"].ToString(), out price);
-                                tbl.Cell(i, 3).Range.Text = price.ToString("0.00") + " ₽";
+                        if (rows.Count > 0)
+                        {
+                            int DiscLines = 0;
 
-                                tbl.Rows[i].Range.Font.Name = "Times New Roman";
-                                tbl.Rows[i].Range.Font.Size = 4;
-                                tbl.Rows[i].Range.Font.Bold = 0;
-
-                                i = i + 1;
+                            if (HasClientDiscount)
+                            {
+                                DiscLines = DiscLines + 1;
                             }
-                            r3.Close();
+
+                            if (HasQtyDiscount)
+                            {
+                                DiscLines = DiscLines + 1;
+                            }
+
+                            if (!HasClientDiscount && !HasQtyDiscount && HasDiscount)
+                            {
+                                DiscLines = 1;
+                            }
+
+                            int SummaryRows = 2 + DiscLines;
+
+                            if (HasSurcharge)
+                            {
+                                SummaryRows = SummaryRows + 1;
+                            }
+
+                            int TotalTableRows = rows.Count + 1 + SummaryRows;
+
+                            dynamic LastPara = doc.Paragraphs[doc.Paragraphs.Count];
+                            dynamic tbl = doc.Tables.Add(LastPara.Range, TotalTableRows, 3);
+                            tbl.Borders.Enable = WdTableBordersOff;
+
+                            SetCell(tbl, 1, 1, "Услуга", FontSizeTable, bold: true);
+                            SetCell(tbl, 1, 2, "Кол.", FontSizeTable, bold: true);
+                            SetCell(tbl, 1, 3, "Цена", FontSizeTable, bold: true);
+                            tbl.Cell(1, 3).Range.ParagraphFormat.Alignment = WdAlignParagraphRight;
+
+                            tbl.Columns[1].Width = Column1Width;
+                            tbl.Columns[2].Width = Column2Width;
+                            tbl.Columns[3].Width = Column3Width;
+
+                            tbl.Rows[1].Borders[WdBorderBottom].LineStyle = WdLineStyleSingle;
+
+                            for (int i = 0; i < rows.Count; i++)
+                            {
+                                int row = i + 2;
+                                SetCell(tbl, row, 1, rows[i][0], FontSizeTable, bold: false);
+                                SetCell(tbl, row, 2, rows[i][1], FontSizeTable, bold: false);
+                                SetCell(tbl, row, 3, rows[i][2], FontSizeTable, bold: false);
+                                tbl.Cell(row, 3).Range.ParagraphFormat.Alignment = WdAlignParagraphRight;
+                            }
+
+                            int sr = rows.Count + 2;
+
+                            tbl.Rows[sr].Borders[WdBorderTop].LineStyle = WdLineStyleSingle;
+
+                            tbl.Cell(sr, 1).Merge(tbl.Cell(sr, 2));
+                            tbl.Cell(sr, 1).Merge(tbl.Cell(sr, 2));
+                            SetCell(tbl, sr, 1, "Сумма: " + SumRaw.ToString(NumberFormatMoney) + CurrencySymbol, FontSizeTable, bold: false);
+                            tbl.Cell(sr, 1).Range.ParagraphFormat.Alignment = WdAlignParagraphRight;
+                            sr++;
+
+                            if (HasQtyDiscount)
+                            {
+                                tbl.Cell(sr, 1).Merge(tbl.Cell(sr, 2));
+                                tbl.Cell(sr, 1).Merge(tbl.Cell(sr, 2));
+                                SetCell(tbl, sr, 1, "Скидка за товары (7%): -" + QtyDiscount.ToString(NumberFormatMoney) + CurrencySymbol, FontSizeTable, bold: false);
+                                tbl.Cell(sr, 1).Range.ParagraphFormat.Alignment = WdAlignParagraphRight;
+                                sr++;
+                            }
+
+                            if (HasClientDiscount)
+                            {
+                                tbl.Cell(sr, 1).Merge(tbl.Cell(sr, 2));
+                                tbl.Cell(sr, 1).Merge(tbl.Cell(sr, 2));
+                                SetCell(tbl, sr, 1, "Скидка клиента (5%): -" + ClientDiscount.ToString(NumberFormatMoney) + CurrencySymbol, FontSizeTable, bold: false);
+                                tbl.Cell(sr, 1).Range.ParagraphFormat.Alignment = WdAlignParagraphRight;
+                                sr++;
+                            }
+
+                            if (HasDiscount && !HasQtyDiscount && !HasClientDiscount)
+                            {
+                                tbl.Cell(sr, 1).Merge(tbl.Cell(sr, 2));
+                                tbl.Cell(sr, 1).Merge(tbl.Cell(sr, 2));
+                                SetCell(tbl, sr, 1, "Скидка: -" + Discount.ToString(NumberFormatMoney) + CurrencySymbol, FontSizeTable, bold: false);
+                                tbl.Cell(sr, 1).Range.ParagraphFormat.Alignment = WdAlignParagraphRight;
+                                sr++;
+                            }
+
+                            if (HasSurcharge)
+                            {
+                                tbl.Cell(sr, 1).Merge(tbl.Cell(sr, 2));
+                                tbl.Cell(sr, 1).Merge(tbl.Cell(sr, 2));
+                                SetCell(tbl, sr, 1, "Срочность (15%): +" + Surcharge.ToString(NumberFormatMoney) + CurrencySymbol, FontSizeTable, bold: false);
+                                tbl.Cell(sr, 1).Range.ParagraphFormat.Alignment = WdAlignParagraphRight;
+                                sr++;
+                            }
+
+                            tbl.Rows[sr].Borders[WdBorderTop].LineStyle = WdLineStyleSingle;
+                            tbl.Cell(sr, 1).Merge(tbl.Cell(sr, 2));
+                            tbl.Cell(sr, 1).Merge(tbl.Cell(sr, 2));
+                            SetCell(tbl, sr, 1, "ИТОГО: " + TotalCost + CurrencySymbol, FontSizeTotal, bold: true);
+                            tbl.Cell(sr, 1).Range.ParagraphFormat.Alignment = WdAlignParagraphRight;
                         }
                     }
 
-                    // Если есть скидка - добавляем информацию о ней
-                    if (hasDiscount == true)
-                    {
-                        // Получаем сумму товаров для определения типа скидки
-                        string query3 = "SELECT SUM(op.ProductCount * p.BasePrice) AS Total " +
-                            "FROM orderproduct op " +
-                            "LEFT JOIN Product p ON op.ProductID = p.ProductID WHERE op.OrderID = " + orderID;
-                        MySqlCommand cmd3 = new MySqlCommand(query3, con);
+                    AddSeparator(doc, SeparatorDoubleChar);
 
-                        decimal total = 0;
-                        object obj = cmd3.ExecuteScalar();
-                        if (obj != null && obj != DBNull.Value) total = Convert.ToDecimal(obj);
-
-                        // Определяем причину скидки по проценту
-                        string reason = "";
-                        if (total > 0)
-                        {
-                            decimal percent = (discount / total) * 100;
-                            if (percent >= 11 && percent <= 13)
-                            {
-                                reason = "Скидка клиента + товары";
-                            }
-                            else if (percent >= 6 && percent <= 8)
-                            {
-                                reason = "Скидка за товары (7%)";
-                            }
-                            else if (percent >= 4 && percent <= 6)
-                            {
-                                reason = "Скидка клиента (5%)";
-                            }
-                            else
-                            {
-                                reason = "Скидка";
-                            }
-                        }
-
-                        // Выводим скидку с причиной
-                        dynamic p7 = doc.Paragraphs.Add();
-                        p7.Range.Text = reason + ": ";
-                        p7.Range.Font.Name = "Times New Roman";
-                        p7.Range.Font.Size = 6;
-                        p7.Range.Font.Bold = 0;
-                        p7.Range.Font.Color = GetWdColorBlack();
-
-                        dynamic rng = p7.Range.Duplicate;
-                        rng.Start = p7.Range.End;
-                        rng.Text = "-" + discount.ToString("0.00") + " ₽";
-                        rng.Font.Bold = 1;
-                        rng.Font.Name = "Times New Roman";
-                        rng.Font.Size = 6;
-
-                        p7.Range.End = rng.End;
-                        p7.Alignment = GetWdAlignParagraphRight();
-                        p7.SpaceBefore = 2;
-                        p7.SpaceAfter = 0;
-                        p7.Range.InsertParagraphAfter();
-                    }
-
-                    // Если есть надбавка - добавляем информацию о ней
-                    if (hasSurcharge == true)
-                    {
-                        dynamic p8 = doc.Paragraphs.Add();
-                        p8.Range.Text = "Срочность (15%): ";
-                        p8.Range.Font.Name = "Times New Roman";
-                        p8.Range.Font.Size = 6;
-                        p8.Range.Font.Bold = 0;
-                        p8.Range.Font.Color = GetWdColorBlack();
-
-                        dynamic rng = p8.Range.Duplicate;
-                        rng.Start = p8.Range.End;
-                        rng.Text = "+" + surcharge.ToString("0.00") + " ₽";
-                        rng.Font.Bold = 1;
-                        rng.Font.Name = "Times New Roman";
-                        rng.Font.Size = 6;
-
-                        p8.Range.End = rng.End;
-                        p8.Alignment = GetWdAlignParagraphRight();
-                        p8.SpaceBefore = 0;
-                        p8.SpaceAfter = 2;
-                        p8.Range.InsertParagraphAfter();
-                    }
-
-                    // Получаем итоговую стоимость заказа
-                    string query4 = "SELECT OrderCost FROM `Order` WHERE OrderID = " + orderID;
-                    MySqlCommand cmd4 = new MySqlCommand(query4, con);
-
-                    string totalCost = "0";
-                    object obj2 = cmd4.ExecuteScalar();
-                    if (obj2 != null)
-                    {
-                        decimal val = Convert.ToDecimal(obj2);
-                        totalCost = val.ToString("0.00");
-                    }
-
-                    // Выводим итого
-                    dynamic p9 = doc.Paragraphs.Add();
-                    p9.Range.Text = "ИТОГО: ";
-                    p9.Range.Font.Name = "Times New Roman";
-                    p9.Range.Font.Size = 7;
-                    p9.Range.Font.Bold = 0;
-
-                    dynamic rng2 = p9.Range.Duplicate;
-                    rng2.Start = p9.Range.End;
-                    rng2.Text = totalCost + " ₽";
-                    rng2.Font.Bold = 1;
-                    rng2.Font.Size = 7;
-                    rng2.Font.Name = "Times New Roman";
-
-                    p9.Range.End = rng2.End;
-                    p9.Alignment = GetWdAlignParagraphRight();
-                    p9.SpaceBefore = 0;
-                    p9.SpaceAfter = 2;
-                    p9.Range.InsertParagraphAfter();
-
-                    // Спасибо за покупку
-                    dynamic p10 = doc.Paragraphs.Add();
-                    p10.Range.Text = "Спасибо за покупку!";
-                    p10.Range.Font.Name = "Times New Roman";
-                    p10.Range.Font.Size = 7;
-                    p10.Range.Font.Bold = 1;
-                    p10.Alignment = GetWdAlignParagraphCenter();
-                    p10.SpaceBefore = 16;
-                    p10.SpaceAfter = 2;
-                    p10.Range.InsertParagraphAfter();
-
-                    // Время печати чека
-                    dynamic p11 = doc.Paragraphs.Add();
-                    p11.Range.Text = DateTime.Now.ToString("dd.MM.yyyy HH:mm:ss");
-                    p11.Range.Font.Name = "Times New Roman";
-                    p11.Range.Font.Size = 5;
-                    p11.Range.Font.Bold = 0;
-                    p11.Alignment = GetWdAlignParagraphRight();
-                    p11.SpaceBefore = 4;
-                    p11.SpaceAfter = 0;
+                    AddParagraph(doc, "Спасибо за заказ!", FontTimesNewRoman, FontSizeFooterThanks, bold: true, align: WdAlignParagraphCenter, sb: SpaceBeforeThanks, sa: SpaceZero);
+                    AddParagraph(doc, "www.websitedev.ru", FontTimesNewRoman, FontSizeSmall, bold: false, align: WdAlignParagraphCenter, sb: SpaceZero, sa: SpaceZero);
+                    AddParagraph(doc, DateTime.Now.ToString(DateFormatLong), FontTimesNewRoman, FontSizeFooterDate, bold: false, align: WdAlignParagraphCenter, sb: SpaceBeforeDate, sa: SpaceZero);
                 }
 
-                // Определяем формат для сохранения
-                string ext = System.IO.Path.GetExtension(sfd.FileName).ToLower();
+                string ext = Path.GetExtension(saveFileDialog.FileName).ToLower();
 
-                if (ext == ".pdf")
+                if (ext == ExtPdf)
                 {
-                    // PDF
-                    doc.SaveAs(sfd.FileName, 17);
-                    doc.Saved = true;
+                    doc.SaveAs(saveFileDialog.FileName, WdSaveFormatPDF);
                 }
-                else if (ext == ".doc")
+                else if (ext == ExtDoc)
                 {
-                    // Сохраняем в старом формате Word 97-2003
-                    doc.SaveAs(sfd.FileName, GetWdFormatDocument97());
+                    doc.SaveAs(saveFileDialog.FileName, WdSaveFormatDocument);
                 }
                 else
                 {
-                    // Сохраняем в новом формате Word 2007+
-                    doc.SaveAs(sfd.FileName, GetWdFormatDocumentDefault());
+                    doc.SaveAs(saveFileDialog.FileName, WdSaveFormatDocumentDefault);
                 }
 
                 doc.Close(false);
                 app.Quit(false);
 
-                // Показываем сообщение об успехе
-                MessageBox.Show("Чек успешно сформирован!\n\nПуть сохранения:\n" + sfd.FileName, "Успех", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                MessageBox.Show("Чек успешно сформирован!\n\n" + saveFileDialog.FileName, "Успех", MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
             catch (Exception ex)
             {
-                // Ошибка при создании документа
                 MessageBox.Show("Ошибка при создании чека:\n" + ex.Message, "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
             finally
             {
                 try
                 {
-                    // Освобождаем объект документа
                     if (doc != null)
                     {
                         System.Runtime.InteropServices.Marshal.FinalReleaseComObject(doc);
-                        doc = null;
                     }
                 }
-                catch { }
+                catch
+                {
+
+                }
 
                 try
                 {
-                    // Освобождаем объект приложения Word
                     if (app != null)
                     {
-                        System.Runtime.InteropServices.Marshal.FinalReleaseComObject(app);
-                        app = null;
+                        System.Runtime.InteropServices.Marshal.FinalReleaseComObject(app); app = null;
                     }
                 }
-                catch { }
+                catch
+                {
 
-                // Принудительно вызываем сборку мусора
+                }
+
                 GC.Collect();
                 GC.WaitForPendingFinalizers();
             }
         }
 
-        // Константа для выравнивания по центру
-        private static int GetWdAlignParagraphCenter()
+        private static void AddParagraph(dynamic doc, string text, string font, int size,
+            bool bold, int align, float sb, float sa)
         {
-            return 1;
+            dynamic p = doc.Paragraphs.Add();
+            p.Range.Text = text;
+            p.Range.Font.Name = font;
+            p.Range.Font.Size = size;
+
+            if (bold)
+            {
+                p.Range.Font.Bold = WdBoldOn;
+            }
+            else
+            {
+                p.Range.Font.Bold = WdBoldOff;
+            }
+
+            p.Alignment = align;
+            p.SpaceBefore = sb;
+            p.SpaceAfter = sa;
+            p.Range.InsertParagraphAfter();
         }
 
-        // Константа для выравнивания влево
-        private static int GetWdAlignParagraphLeft()
+        private static void AddLeftRight(dynamic doc, string label, string value, int size, bool boldValue = false)
         {
-            return 0;
+            dynamic p = doc.Paragraphs.Add();
+            p.Range.Font.Name = FontCourierNew;
+            p.Range.Font.Size = size;
+            p.Range.Font.Bold = WdBoldOff;
+            p.Alignment = WdAlignParagraphLeft;
+            p.SpaceBefore = SpaceZero;
+            p.SpaceAfter = SpaceAfterTiny;
+
+            p.TabStops.Add(RightTabStopPosition, RightTabAlignment, TabLeaderNone);
+
+            p.Range.Text = label + "\t" + value;
+
+            if (boldValue)
+            {
+                dynamic rng = p.Range.Duplicate;
+                rng.Start = p.Range.Start + label.Length + 1;
+                rng.End = p.Range.End;
+                rng.Font.Bold = WdBoldOn;
+            }
+
+            p.Range.InsertParagraphAfter();
         }
 
-        // Константа для выравнивания вправо
-        private static int GetWdAlignParagraphRight()
+        private static void AddSeparator(dynamic doc, char separatorChar)
         {
-            return 2;
+            string line = new string(separatorChar, SeparatorLineLength);
+            dynamic p = doc.Paragraphs.Add();
+            p.Range.Text = line;
+            p.Range.Font.Name = FontCourierNew;
+            p.Range.Font.Size = FontSizeSmall;
+            p.Range.Font.Bold = WdBoldOff;
+            p.Alignment = WdAlignParagraphCenter;
+            p.SpaceBefore = SpaceAfterTiny;
+            p.SpaceAfter = SpaceAfterTiny;
+            p.Range.InsertParagraphAfter();
         }
 
-        // Константа для белого цвета
-        private static int GetWdColorWhite()
+        private static void SetCell(dynamic tbl, int row, int col, string text, int size, bool bold)
         {
-            return 16777215;
+            tbl.Cell(row, col).Range.Text = text;
+            tbl.Cell(row, col).Range.Font.Name = FontCourierNew;
+            tbl.Cell(row, col).Range.Font.Size = size;
+
+            if (bold)
+            {
+                tbl.Cell(row, col).Range.Font.Bold = WdBoldOn;
+            }
+            else
+            {
+                tbl.Cell(row, col).Range.Font.Bold = WdBoldOff;
+            }
+
+            tbl.Cell(row, col).TopPadding = CellPadding;
+            tbl.Cell(row, col).BottomPadding = CellPadding;
+            tbl.Cell(row, col).LeftPadding = CellPadding;
+            tbl.Cell(row, col).RightPadding = CellPadding;
         }
 
-        // Константа для чёрного цвета
-        private static int GetWdColorBlack()
+        private static string GetDiscountReason(MySqlConnection con, int orderID, decimal discount)
         {
-            return 0;
+            object obj = new MySqlCommand(
+                "SELECT SUM(op.ProductCount * p.BasePrice) FROM orderproduct op " +
+                "LEFT JOIN Product p ON op.ProductID = p.ProductID WHERE op.OrderID = " + orderID, con).ExecuteScalar();
+
+            if (obj == null || obj == DBNull.Value)
+            {
+                return "Скидка";
+            }
+
+            decimal Total = Convert.ToDecimal(obj);
+
+            if (Total <= 0)
+            {
+                return "Скидка";
+            }
+
+            decimal Percent = (discount / Total) * 100;
+
+            if (Percent >= DiscountPercentComboMin && Percent <= DiscountPercentComboMax)
+            {
+                return "Скидка клиента + товары";
+            }
+
+            if (Percent >= DiscountPercentQtyMin && Percent <= DiscountPercentQtyMax)
+            {
+                return "Скидка за товары (7%)";
+            }
+            if (Percent >= DiscountPercentClientMin && Percent <= DiscountPercentClientMax)
+            {
+                return "Скидка клиента (5%)";
+            }
+
+            return "Скидка";
         }
 
-        // Константа для формата Word 97-2003
-        private static int GetWdFormatDocument97()
+        private static void AddAligned(dynamic doc, string label, string value, int size)
         {
-            return 0;
-        }
+            // Отделяем метку от значения ровно одним пробелом
+            string text = label + " " + value;
 
-        // Константа для формата Word 2007+
-        private static int GetWdFormatDocumentDefault()
-        {
-            return 16;
+            dynamic p = doc.Paragraphs.Add();
+            p.Range.Font.Name = FontCourierNew;
+            p.Range.Font.Size = size;
+            p.Range.Font.Bold = WdBoldOff;
+            p.Alignment = WdAlignParagraphLeft;
+            p.SpaceBefore = SpaceZero;
+            p.SpaceAfter = SpaceAfterTiny;
+            p.Range.Text = text;
+            p.Range.InsertParagraphAfter();
         }
     }
 }
