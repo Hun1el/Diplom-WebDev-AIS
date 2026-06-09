@@ -17,7 +17,7 @@ namespace WebSiteDev.ManagerForm
         private Timer timer1 = new Timer();
 
         private Pagination pagination;
-        private const int ItemsPerPage = 15; // Сколько показывать на одной странице
+        private const int ItemsPerPage = 12; // Сколько показывать на одной странице
 
         public DirectorOrderControl()
         {

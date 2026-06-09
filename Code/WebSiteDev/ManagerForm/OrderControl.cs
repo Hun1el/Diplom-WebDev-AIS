@@ -17,7 +17,7 @@ namespace WebSiteDev.ManagerForm
         private int selectedOrderID = -1;
         private int lastRevealedRowIndex = -1;
         private Timer timer1 = new Timer();
-        private const int ItemsPerPage = 15; // Сколько показывать на одной странице
+        private const int ItemsPerPage = 12; // Сколько показывать на одной странице
 
         public static int CurrentUserID { get; set; } = 0;
         public static string CurrentUserName { get; set; } = "";
