@@ -1,23 +1,26 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Drawing;
+using System.IO;
+using System.Reflection;
+using System.Runtime.InteropServices;
 using System.Windows.Forms;
 
 namespace WebSiteDev
 {
     public class ExcelReport
     {
-        public static void ExportToExcel(DataGridView dataGridView, List<decimal> orderCosts, DateTime dateFrom, DateTime dateTo, string searchText, string selectedStatus, string selectedSort)
+        public static void ExportToExcel(DataGridView DataGridView, List<decimal> OrderCosts, DateTime DateFrom, DateTime DateTo, string SearchText, string SelectedStatus, string SelectedSort)
         {
-            dynamic excelApp = null;
+            dynamic ExcelApp = null;
             dynamic workbook = null;
             dynamic worksheet = null;
 
-            // Диалог сохранения файла
             SaveFileDialog saveFileDialog = new SaveFileDialog();
             saveFileDialog.Filter = "PDF (*.pdf)|*.pdf|Excel 2007-2026 (*.xlsx)|*.xlsx|Excel 97-2003 (*.xls)|*.xls";
             saveFileDialog.FilterIndex = 1;
             saveFileDialog.Title = "Сохранить отчёт по заказам";
-            saveFileDialog.FileName = "Отчет_заказы_" + dateFrom.ToString("dd.MM.yyyy") + "-" + dateTo.ToString("dd.MM.yyyy");
+            saveFileDialog.FileName = "Отчет_заказы_" + DateFrom.ToString("dd.MM.yyyy") + "-" + DateTo.ToString("dd.MM.yyyy");
 
             if (saveFileDialog.ShowDialog() != DialogResult.OK)
             {
@@ -26,524 +29,703 @@ namespace WebSiteDev
 
             try
             {
-                // Создаём приложение Excel
-                Type excelAppType = Type.GetTypeFromProgID("Excel.Application");
-                excelApp = Activator.CreateInstance(excelAppType);
-                excelApp.Visible = false;
+                Type ExcelAppType = Type.GetTypeFromProgID("Excel.Application");
+                ExcelApp = Activator.CreateInstance(ExcelAppType);
+                ExcelApp.Visible = false;
 
-                workbook = excelApp.Workbooks.Add();
+                workbook = ExcelApp.Workbooks.Add();
                 worksheet = workbook.ActiveSheet;
                 worksheet.Name = "Отчет";
-                worksheet.Cells.Font.Name = "Times New Roman";
-                worksheet.Cells.Font.Size = 14;
+                worksheet.Cells.Font.Name = "Calibri";
+                worksheet.Cells.Font.Size = 11;
 
-                int currentRow = 1;
+                worksheet.PageSetup.TopMargin = 10;
+                worksheet.PageSetup.BottomMargin = 10;
+                worksheet.PageSetup.LeftMargin = 10;
+                worksheet.PageSetup.RightMargin = 10;
+                worksheet.PageSetup.HeaderMargin = 5;
+                worksheet.PageSetup.FooterMargin = 5;
 
-                // Заголовок отчёта
-                worksheet.Cells[currentRow, 1].Value = "ОТЧЁТ ПО ЗАКАЗАМ";
-                worksheet.Cells[currentRow, 1].Font.Bold = true;
-                worksheet.Cells[currentRow, 1].Font.Size = 20;
-                worksheet.Cells[currentRow, 1].Font.Color = System.Drawing.Color.White;
-                worksheet.Cells[currentRow, 1].Interior.Color = System.Drawing.Color.FromArgb(45, 156, 219);
-                worksheet.Range[worksheet.Cells[currentRow, 1], worksheet.Cells[currentRow, 8]].Merge();
-                worksheet.Range[worksheet.Cells[currentRow, 1], worksheet.Cells[currentRow, 8]].HorizontalAlignment = GetXlHAlignCenter();
-                currentRow = currentRow + 2;
+                int CurrentRow = 1;
 
-                // Период отчёта
-                string periodStr = dateFrom.ToString("dd.MM.yyyy") + " - " + dateTo.ToString("dd.MM.yyyy");
-                worksheet.Cells[currentRow, 1].Value = "Выбранный период отчёта: " + periodStr;
-                worksheet.Cells[currentRow, 1].Font.Bold = true;
-                worksheet.Cells[currentRow, 1].Font.Size = 14;
-                currentRow = currentRow + 1;
+                // ==================== ЗАГОЛОВОК ====================
+                worksheet.Cells[CurrentRow, 1].Value = "ОТЧЁТ ПО ЗАКАЗАМ";
+                worksheet.Cells[CurrentRow, 1].Font.Bold = true;
+                worksheet.Cells[CurrentRow, 1].Font.Size = 16;
+                worksheet.Cells[CurrentRow, 1].Font.Color = Color.White;
+                worksheet.Cells[CurrentRow, 1].Interior.Color = Color.FromArgb(45, 156, 219);
+                worksheet.Range[worksheet.Cells[CurrentRow, 1], worksheet.Cells[CurrentRow, 8]].Merge();
+                worksheet.Range[worksheet.Cells[CurrentRow, 1], worksheet.Cells[CurrentRow, 8]].HorizontalAlignment = HAlignCenter();
+                worksheet.Range[worksheet.Cells[CurrentRow, 1], worksheet.Cells[CurrentRow, 8]].VerticalAlignment = VAlignCenter();
+                worksheet.Rows[CurrentRow].RowHeight = 28;
+                CurrentRow = CurrentRow + 1;
 
-                // Дата создания
-                worksheet.Cells[currentRow, 1].Value = "Дата создания отчёта: " + DateTime.Now.ToString("dd.MM.yyyy HH:mm");
-                worksheet.Cells[currentRow, 1].Font.Size = 14;
-                currentRow = currentRow + 2;
+                // ==================== ИНФОРМАЦИЯ ОБ ОТЧЁТЕ ====================
+                string PeriodStr = DateFrom.ToString("dd.MM.yyyy") + " - " + DateTo.ToString("dd.MM.yyyy");
+                worksheet.Cells[CurrentRow, 1].Value = "Период: " + PeriodStr;
+                worksheet.Cells[CurrentRow, 1].WrapText = false;
+                worksheet.Cells[CurrentRow, 1].Font.Bold = true;
+                worksheet.Cells[CurrentRow, 1].Font.Size = 11;
+                worksheet.Cells[CurrentRow, 6].Value = "Дата создания: " + DateTime.Now.ToString("dd.MM.yyyy HH:mm");
+                worksheet.Cells[CurrentRow, 6].Font.Size = 11;
+                CurrentRow = CurrentRow + 1;
 
-                // Заголовок фильтров
-                worksheet.Cells[currentRow, 1].Value = "ПРИМЕНЁННЫЕ ФИЛЬТРЫ:";
-                worksheet.Cells[currentRow, 1].Font.Bold = true;
-                worksheet.Cells[currentRow, 1].Font.Size = 16;
-                currentRow = currentRow + 1;
+                // ==================== ФИЛЬТРЫ ====================
+                bool HasFilters = false;
+                string FiltersText = "";
 
-                bool hasFilters = false;
-
-                // Показываем активные фильтры
-                if (searchText != "")
+                if (SearchText != "")
                 {
-                    worksheet.Cells[currentRow, 1].Value = "Поиск: " + searchText;
-                    worksheet.Cells[currentRow, 1].Font.Size = 14;
-                    currentRow = currentRow + 1;
-                    hasFilters = true;
+                    FiltersText = FiltersText + "Поиск: " + SearchText + " | ";
+                    HasFilters = true;
                 }
 
-                if (selectedStatus != "Статус не выбран" && selectedStatus != "")
+                if (SelectedStatus != "Статус не выбран" && SelectedStatus != "")
                 {
-                    worksheet.Cells[currentRow, 1].Value = "Статус: " + selectedStatus;
-                    worksheet.Cells[currentRow, 1].Font.Size = 14;
-                    currentRow = currentRow + 1;
-                    hasFilters = true;
+                    FiltersText = FiltersText + "Статус: " + SelectedStatus + " | ";
+                    HasFilters = true;
                 }
 
-                if (selectedSort != "Сортировка не выбрана" && selectedSort != "")
+                if (SelectedSort != "Сортировка не выбрана" && SelectedSort != "")
                 {
-                    worksheet.Cells[currentRow, 1].Value = "Сортировка: " + selectedSort;
-                    worksheet.Cells[currentRow, 1].Font.Size = 14;
-                    currentRow = currentRow + 1;
-                    hasFilters = true;
+                    FiltersText = FiltersText + "Сортировка: " + SelectedSort;
+                    HasFilters = true;
                 }
 
-                // Если фильтров нет - показываем сообщение
-                if (hasFilters == false)
+                if (!HasFilters)
                 {
-                    worksheet.Cells[currentRow, 1].Value = "Все данные за выбранный период";
-                    worksheet.Cells[currentRow, 1].Font.Italic = true;
-                    worksheet.Cells[currentRow, 1].Font.Size = 14;
-                    currentRow = currentRow + 1;
+                    FiltersText = "Все данные за выбранный период";
+                }
+                else if (FiltersText.EndsWith(" | "))
+                {
+                    FiltersText = FiltersText.Substring(0, FiltersText.Length - 3);
                 }
 
-                // Легенда статусов (справа)
-                worksheet.Cells[3, 3].Value = "ЛЕГЕНДА СТАТУСОВ";
-                worksheet.Cells[3, 3].Font.Bold = true;
-                worksheet.Cells[3, 3].Font.Size = 16;
-                worksheet.Cells[3, 3].Font.Color = System.Drawing.Color.White;
-                worksheet.Cells[3, 3].Interior.Color = System.Drawing.Color.FromArgb(45, 156, 219);
-                worksheet.Range[worksheet.Cells[3, 3], worksheet.Cells[3, 4]].Merge();
+                worksheet.Cells[CurrentRow, 1].Value = FiltersText;
+                worksheet.Cells[CurrentRow, 1].Font.Size = 10;
+                worksheet.Cells[CurrentRow, 1].Font.Italic = true;
+                worksheet.Range[worksheet.Cells[CurrentRow, 1], worksheet.Cells[CurrentRow, 8]].WrapText = false;
+                worksheet.Range[worksheet.Cells[CurrentRow, 1], worksheet.Cells[CurrentRow, 8]].Merge();
+                CurrentRow = CurrentRow + 1;
+                CurrentRow = CurrentRow + 1;
 
-                // "Завершён" - зелёный
-                worksheet.Cells[4, 3].Value = "Завершён";
-                worksheet.Cells[4, 3].Interior.Color = System.Drawing.Color.FromArgb(200, 255, 200);
-                worksheet.Cells[4, 3].Font.Bold = true;
-                worksheet.Cells[4, 3].Font.Size = 14;
-                worksheet.Cells[4, 3].HorizontalAlignment = GetXlHAlignCenter();
-                worksheet.Cells[4, 4].Value = "Заказ успешно выполнен";
-                worksheet.Cells[4, 4].Font.Size = 14;
+                // ==================== ЗАГОЛОВОК ТАБЛИЦЫ ====================
+                int HeaderRow = CurrentRow;
+                worksheet.Cells[HeaderRow, 1].Value = "№";
+                worksheet.Cells[HeaderRow, 2].Value = "Клиент";
+                worksheet.Cells[HeaderRow, 3].Value = "Сотрудник";
+                worksheet.Cells[HeaderRow, 4].Value = "Дата";
+                worksheet.Cells[HeaderRow, 5].Value = "Срок";
+                worksheet.Cells[HeaderRow, 6].Value = "Состав заказа";
+                worksheet.Cells[HeaderRow, 7].Value = "Статус";
+                worksheet.Cells[HeaderRow, 8].Value = "Сумма, руб.";
 
-                // "Отменён" - красный
-                worksheet.Cells[5, 3].Value = "Отменён";
-                worksheet.Cells[5, 3].Interior.Color = System.Drawing.Color.FromArgb(255, 200, 200);
-                worksheet.Cells[5, 3].Font.Bold = true;
-                worksheet.Cells[5, 3].Font.Size = 14;
-                worksheet.Cells[5, 3].HorizontalAlignment = GetXlHAlignCenter();
-                worksheet.Cells[5, 4].Value = "Заказ был отменён";
-                worksheet.Cells[5, 4].Font.Size = 14;
+                dynamic HeaderRange = worksheet.Range[worksheet.Cells[HeaderRow, 1], worksheet.Cells[HeaderRow, 8]];
+                HeaderRange.Font.Bold = true;
+                HeaderRange.Font.Size = 11;
+                HeaderRange.Font.Color = Color.White;
+                HeaderRange.Interior.Color = Color.FromArgb(45, 156, 219);
+                HeaderRange.HorizontalAlignment = HAlignCenter();
+                HeaderRange.VerticalAlignment = VAlignCenter();
+                HeaderRange.WrapText = true;
+                worksheet.Rows[HeaderRow].RowHeight = 24;
 
-                currentRow = currentRow + 2;
+                CurrentRow = CurrentRow + 1;
+                int DataStartRow = CurrentRow;
 
-                // Заголовок таблицы
-                int headerRow = currentRow;
-                worksheet.Cells[headerRow, 1].Value = "№ Заказа";
-                worksheet.Cells[headerRow, 2].Value = "Клиент";
-                worksheet.Cells[headerRow, 3].Value = "Сотрудник";
-                worksheet.Cells[headerRow, 4].Value = "Дата заказа";
-                worksheet.Cells[headerRow, 5].Value = "Срок выполнения";
-                worksheet.Cells[headerRow, 6].Value = "Состав заказа";
-                worksheet.Cells[headerRow, 7].Value = "Статус";
-                worksheet.Cells[headerRow, 8].Value = "Сумма, руб.";
+                decimal TotalSum = 0;
+                int NewCount = 0;
+                int InProgressCount = 0;
+                int CompletedCount = 0;
+                int CancelledCount = 0;
 
-                dynamic headerRange = worksheet.Range[worksheet.Cells[headerRow, 1], worksheet.Cells[headerRow, 8]];
-                headerRange.Font.Bold = true;
-                headerRange.Font.Size = 16;
-                headerRange.Font.Color = System.Drawing.Color.White;
-                headerRange.Interior.Color = System.Drawing.Color.FromArgb(45, 156, 219);
-                headerRange.HorizontalAlignment = GetXlHAlignCenter();
-                headerRange.VerticalAlignment = GetXlVAlignCenter();
+                // Данные для графика по месяцам
+                Dictionary<string, decimal> MonthlySales = new Dictionary<string, decimal>();
+                Dictionary<string, int> MonthlyOrderCount = new Dictionary<string, int>();
+                Dictionary<string, string> MonthlyLabels = new Dictionary<string, string>();
 
-                currentRow = currentRow + 1;
-                int dataStartRow = currentRow;
+                // Предзаполняем все месяцы диапазона нулями
+                DateTime fillMonth = new DateTime(DateFrom.Year, DateFrom.Month, 1);
+                DateTime endMonth = new DateTime(DateTo.Year, DateTo.Month, 1);
 
-                // Счётчики для статистики
-                decimal totalSum = 0;
-                int newCount = 0;
-                int inProgressCount = 0;
-                int completedCount = 0;
-                int cancelledCount = 0;
-
-                // Заполняем данные заказов
-                for (int i = 0; i < dataGridView.Rows.Count; i++)
+                while (fillMonth <= endMonth)
                 {
-                    // Получаем номер заказа
-                    object orderIDObj = dataGridView.Rows[i].Cells["OrderID"].Value;
-                    string orderID = "";
+                    string key = fillMonth.Year.ToString() + "-" + fillMonth.Month.ToString("D2");
+                    string label = GetMonthName(fillMonth.Month) + " " + fillMonth.Year;
 
-                    if (orderIDObj != null)
+                    if (!MonthlySales.ContainsKey(key))
                     {
-                        orderID = orderIDObj.ToString();
+                        MonthlySales[key] = 0;
+                        MonthlyOrderCount[key] = 0;
+                        MonthlyLabels[key] = label;
+                    }
+                    fillMonth = fillMonth.AddMonths(1);
+                }
+
+                // ==================== ЗАПОЛНЕНИЕ ДАННЫХ ====================
+                for (int i = 0; i < DataGridView.Rows.Count; i++)
+                {
+                    string OrderID = "";
+                    object OrderIDObj = DataGridView.Rows[i].Cells["OrderID"].Value;
+
+                    if (OrderIDObj != null)
+                    {
+                        OrderID = OrderIDObj.ToString();
                     }
 
-                    // Получаем имя клиента
-                    object clientNameObj = dataGridView.Rows[i].Cells["ClientName"].Value;
-                    string clientName = "";
+                    string ClientName = "";
+                    object ClientNameObj = DataGridView.Rows[i].Cells["ClientName"].Value;
 
-                    if (clientNameObj != null)
+                    if (ClientNameObj != null)
                     {
-                        clientName = clientNameObj.ToString();
+                        ClientName = ClientNameObj.ToString();
                     }
 
-                    // Получаем имя сотрудника
-                    object userNameObj = dataGridView.Rows[i].Cells["UserName"].Value;
-                    string userName = "";
+                    string UserName = "";
+                    object UserNameObj = DataGridView.Rows[i].Cells["UserName"].Value;
 
-                    if (userNameObj != null)
+                    if (UserNameObj != null)
                     {
-                        userName = userNameObj.ToString();
+                        UserName = UserNameObj.ToString();
                     }
 
-                    // Получаем дату заказа
-                    object orderDateObj = dataGridView.Rows[i].Cells["OrderDate"].Value;
-                    string orderDate = "";
+                    string OrderDate = "";
+                    object OrderDateObj = DataGridView.Rows[i].Cells["OrderDate"].Value;
 
-                    if (orderDateObj != null)
+                    if (OrderDateObj != null)
                     {
-                        DateTime dt = Convert.ToDateTime(orderDateObj);
-                        orderDate = dt.ToString("dd.MM.yy");
+                        DateTime dt = Convert.ToDateTime(OrderDateObj);
+                        OrderDate = dt.ToString("dd.MM.yy");
+
+                        string MonthKey = dt.Year.ToString() + "-" + dt.Month.ToString("D2");
+
+                        if (!MonthlySales.ContainsKey(MonthKey))
+                        {
+                            MonthlySales[MonthKey] = 0;
+                            MonthlyOrderCount[MonthKey] = 0;
+                            MonthlyLabels[MonthKey] = GetMonthName(dt.Month) + " " + dt.Year;
+                        }
+
+                        decimal CostVal = 0;
+                        object CostForMonth = DataGridView.Rows[i].Cells["OrderCost"].Value;
+
+                        if (CostForMonth != null)
+                        {
+                            decimal.TryParse(CostForMonth.ToString(), out CostVal);
+                        }
+
+                        MonthlySales[MonthKey] = MonthlySales[MonthKey] + CostVal;
+                        MonthlyOrderCount[MonthKey] = MonthlyOrderCount[MonthKey] + 1;
                     }
 
-                    // Получаем срок выполнения
-                    object compDateObj = dataGridView.Rows[i].Cells["OrderCompDate"].Value;
-                    string compDate = "";
+                    string CompDate = "";
+                    object CompDateObj = DataGridView.Rows[i].Cells["OrderCompDate"].Value;
 
-                    if (compDateObj != null)
+                    if (CompDateObj != null)
                     {
-                        DateTime dt = Convert.ToDateTime(compDateObj);
-                        compDate = dt.ToString("dd.MM.yy");
+                        DateTime dt = Convert.ToDateTime(CompDateObj);
+                        CompDate = dt.ToString("dd.MM.yy");
                     }
 
-                    // Получаем список товаров
-                    object productNameObj = dataGridView.Rows[i].Cells["ProductName"].Value;
-                    string productName = "";
+                    string ProductName = "";
+                    object ProductNameObj = DataGridView.Rows[i].Cells["ProductName"].Value;
 
-                    if (productNameObj != null)
+                    if (ProductNameObj != null)
                     {
-                        productName = productNameObj.ToString();
+                        ProductName = ProductNameObj.ToString();
                     }
 
-                    // Разделяем товары на отдельные строки
-                    if (productName != "")
+                    if (ProductName != "")
                     {
-                        string[] products = productName.Split(new string[] { ", " }, System.StringSplitOptions.None);
-                        productName = string.Join("\n", products);
+                        string[] products = ProductName.Split(new string[] { ", " }, StringSplitOptions.None);
+                        ProductName = string.Join("\n", products);
                     }
 
-                    // Получаем статус
-                    object statusNameObj = dataGridView.Rows[i].Cells["StatusName"].Value;
-                    string statusName = "";
+                    string StatusName = "";
+                    object StatusNameObj = DataGridView.Rows[i].Cells["StatusName"].Value;
 
-                    if (statusNameObj != null)
+                    if (StatusNameObj != null)
                     {
-                        statusName = statusNameObj.ToString();
+                        StatusName = StatusNameObj.ToString();
                     }
 
-                    // Получаем стоимость
-                    object orderCostObj = dataGridView.Rows[i].Cells["OrderCost"].Value;
-                    string orderCostStr = "0";
+                    string OrderCostStr = "0";
+                    object OrderCostObj = DataGridView.Rows[i].Cells["OrderCost"].Value;
 
-                    if (orderCostObj != null)
+                    if (OrderCostObj != null)
                     {
-                        orderCostStr = orderCostObj.ToString();
+                        OrderCostStr = OrderCostObj.ToString();
                     }
 
-                    decimal orderCost = 0;
-                    bool parsed = decimal.TryParse(orderCostStr, out orderCost);
+                    decimal OrderCost = 0;
+                    bool Parsed = decimal.TryParse(OrderCostStr, out OrderCost);
 
-                    if (parsed == true)
+                    if (Parsed)
                     {
-                        totalSum = totalSum + orderCost;
+                        TotalSum = TotalSum + OrderCost;
                     }
 
-                    // Считаем статусы для статистики
-                    if (statusName == "Новый")
+                    if (StatusName == "Новый")
                     {
-                        newCount = newCount + 1;
+                        NewCount++;
                     }
 
-                    if (statusName == "В работе")
+                    if (StatusName == "В работе")
                     {
-                        inProgressCount = inProgressCount + 1;
+                        InProgressCount++;
                     }
 
-                    if (statusName == "Завершён")
+                    if (StatusName == "Завершён")
                     {
-                        completedCount = completedCount + 1;
+                        CompletedCount++;
                     }
 
-                    if (statusName == "Отменён")
+                    if (StatusName == "Отменён")
                     {
-                        cancelledCount = cancelledCount + 1;
+                        CancelledCount++;
                     }
 
-                    // Заполняем ячейки
-                    worksheet.Cells[currentRow, 1].Value = orderID;
-                    worksheet.Cells[currentRow, 2].Value = clientName;
-                    worksheet.Cells[currentRow, 3].Value = userName;
-                    worksheet.Cells[currentRow, 4].Value = orderDate;
-                    worksheet.Cells[currentRow, 5].Value = compDate;
-                    worksheet.Cells[currentRow, 6].Value = productName;
-                    worksheet.Cells[currentRow, 7].Value = statusName;
-                    worksheet.Cells[currentRow, 8].Value = orderCost + " руб.";
+                    worksheet.Cells[CurrentRow, 1].Value = OrderID;
+                    worksheet.Cells[CurrentRow, 2].Value = ClientName;
+                    worksheet.Cells[CurrentRow, 3].Value = UserName;
+                    worksheet.Cells[CurrentRow, 4].Value = OrderDate;
+                    worksheet.Cells[CurrentRow, 5].Value = CompDate;
+                    worksheet.Cells[CurrentRow, 6].Value = ProductName;
+                    worksheet.Cells[CurrentRow, 7].Value = StatusName;
+                    worksheet.Cells[CurrentRow, 8].Value = OrderCost;
 
-                    // Форматируем строку данных
-                    dynamic dataRow = worksheet.Range[worksheet.Cells[currentRow, 1], worksheet.Cells[currentRow, 8]];
-                    dataRow.Font.Size = 14;
-                    dataRow.HorizontalAlignment = GetXlHAlignCenter();
-                    dataRow.VerticalAlignment = GetXlVAlignCenter();
+                    dynamic DataRow = worksheet.Range[worksheet.Cells[CurrentRow, 1], worksheet.Cells[CurrentRow, 8]];
+                    DataRow.Font.Size = 10;
+                    DataRow.HorizontalAlignment = HAlignCenter();
+                    DataRow.VerticalAlignment = VAlignCenter();
+                    DataRow.Borders.LineStyle = BorderStyleContinuous();
 
-                    // Форматируем ячейку товаров (переносится текст)
-                    dynamic productCell = worksheet.Cells[currentRow, 6];
-                    productCell.WrapText = true;
-                    productCell.HorizontalAlignment = GetXlHAlignCenter();
-                    productCell.VerticalAlignment = GetXlVAlignCenter();
+                    worksheet.Cells[CurrentRow, 2].WrapText = true;
+                    worksheet.Cells[CurrentRow, 3].WrapText = true;
 
-                    // Расчитываем высоту строки в зависимости от количества товаров
+                    dynamic ProductCell = worksheet.Cells[CurrentRow, 6];
+                    ProductCell.WrapText = true;
+                    ProductCell.HorizontalAlignment = HAlignLeft();
+                    ProductCell.VerticalAlignment = VAlignCenter();
+
+                    dynamic CostCell = worksheet.Cells[CurrentRow, 8];
+                    CostCell.NumberFormatLocal = "# ##0,00 ₽";
+
                     int productCount = 1;
-                    if (productName != "")
+
+                    if (ProductName != "")
                     {
-                        string[] lines = productName.Split('\n');
+                        string[] lines = ProductName.Split('\n');
                         productCount = lines.Length;
                     }
-                    worksheet.Rows[currentRow].RowHeight = 20 + (productCount * 20);
 
-                    // Форматируем статус
-                    dynamic statusCell = worksheet.Cells[currentRow, 7];
-                    statusCell.HorizontalAlignment = GetXlHAlignCenter();
-                    statusCell.VerticalAlignment = GetXlVAlignCenter();
+                    worksheet.Rows[CurrentRow].RowHeight = 18 + (productCount * 14);
 
-                    // Окрашиваем статус "Отменён" в красный
-                    if (statusName == "Отменён")
+                    dynamic StatusCell = worksheet.Cells[CurrentRow, 7];
+                    StatusCell.HorizontalAlignment = HAlignCenter();
+                    StatusCell.VerticalAlignment = VAlignCenter();
+                    StatusCell.Font.Bold = true;
+                    StatusCell.Font.Color = Color.Black;
+
+                    if (StatusName == "Новый")
                     {
-                        statusCell.Interior.Color = System.Drawing.Color.FromArgb(255, 200, 200);
-                        statusCell.Font.Bold = true;
+                        StatusCell.Interior.Color = Color.FromArgb(217, 225, 242);
+                    }
+                    else if (StatusName == "В работе")
+                    {
+                        StatusCell.Interior.Color = Color.FromArgb(255, 242, 204);
+                    }
+                    else if (StatusName == "Завершён")
+                    {
+                        StatusCell.Interior.Color = Color.FromArgb(198, 232, 207);
+                    }
+                    else if (StatusName == "Отменён")
+                    {
+                        StatusCell.Interior.Color = Color.FromArgb(242, 220, 219);
                     }
 
-                    // Окрашиваем статус "Завершён" в зелёный
-                    if (statusName == "Завершён")
-                    {
-                        statusCell.Interior.Color = System.Drawing.Color.FromArgb(200, 255, 200);
-                        statusCell.Font.Bold = true;
-                    }
-
-                    currentRow = currentRow + 1;
+                    CurrentRow = CurrentRow + 1;
                 }
 
-                currentRow = currentRow + 2;
+                CurrentRow = CurrentRow + 1;
 
-                // Рассчитываем среднюю сумму
-                decimal averageSum = 0;
-                if (dataGridView.Rows.Count > 0)
+                // ==================== СТАТИСТИКА ====================
+                decimal AverageSum = 0;
+                if (DataGridView.Rows.Count > 0)
                 {
-                    averageSum = totalSum / dataGridView.Rows.Count;
+                    AverageSum = TotalSum / DataGridView.Rows.Count;
                 }
 
-                // Заголовок итоговой информации
-                worksheet.Cells[currentRow, 1].Value = "ИТОГОВАЯ ИНФОРМАЦИЯ";
-                worksheet.Cells[currentRow, 1].Font.Bold = true;
-                worksheet.Cells[currentRow, 1].Font.Size = 18;
-                worksheet.Cells[currentRow, 1].Font.Color = System.Drawing.Color.White;
-                worksheet.Cells[currentRow, 1].Interior.Color = System.Drawing.Color.FromArgb(45, 156, 219);
-                worksheet.Range[worksheet.Cells[currentRow, 1], worksheet.Cells[currentRow, 8]].Merge();
-                currentRow = currentRow + 2;
+                int StatsHeaderRow = CurrentRow;
+                worksheet.Cells[StatsHeaderRow, 1].Value = "УСЛОВНЫЕ ОБОЗНАЧЕНИЯ";
+                worksheet.Cells[StatsHeaderRow, 1].Font.Bold = true;
+                worksheet.Cells[StatsHeaderRow, 1].Font.Size = 11;
+                worksheet.Cells[StatsHeaderRow, 1].Font.Color = Color.White;
+                worksheet.Cells[StatsHeaderRow, 1].Interior.Color = Color.FromArgb(45, 156, 219);
+                worksheet.Range[worksheet.Cells[StatsHeaderRow, 1], worksheet.Cells[StatsHeaderRow, 3]].WrapText = false;
+                worksheet.Range[worksheet.Cells[StatsHeaderRow, 1], worksheet.Cells[StatsHeaderRow, 3]].Merge();
+                worksheet.Range[worksheet.Cells[StatsHeaderRow, 1], worksheet.Cells[StatsHeaderRow, 3]].HorizontalAlignment = HAlignCenter();
 
-                // Заголовок левой колонки (статусы)
-                worksheet.Cells[currentRow, 1].Value = "СТАТУСЫ";
-                worksheet.Cells[currentRow, 1].Font.Bold = true;
-                worksheet.Cells[currentRow, 1].Font.Size = 16;
-                worksheet.Cells[currentRow, 1].Font.Color = System.Drawing.Color.White;
-                worksheet.Cells[currentRow, 1].Interior.Color = System.Drawing.Color.FromArgb(45, 156, 219);
-                worksheet.Range[worksheet.Cells[currentRow, 1], worksheet.Cells[currentRow, 2]].Merge();
+                worksheet.Cells[StatsHeaderRow, 5].Value = "ИТОГОВАЯ ИНФОРМАЦИЯ";
+                worksheet.Cells[StatsHeaderRow, 5].Font.Bold = true;
+                worksheet.Cells[StatsHeaderRow, 5].Font.Size = 11;
+                worksheet.Cells[StatsHeaderRow, 5].Font.Color = Color.White;
+                worksheet.Cells[StatsHeaderRow, 5].Interior.Color = Color.FromArgb(45, 156, 219);
+                worksheet.Range[worksheet.Cells[StatsHeaderRow, 5], worksheet.Cells[StatsHeaderRow, 8]].Merge();
+                worksheet.Range[worksheet.Cells[StatsHeaderRow, 5], worksheet.Cells[StatsHeaderRow, 8]].HorizontalAlignment = HAlignCenter();
 
-                // Заголовок правой колонки (финансовые показатели)
-                worksheet.Cells[currentRow, 7].Value = "ФИНАНСОВЫЕ ПОКАЗАТЕЛИ";
-                worksheet.Cells[currentRow, 7].Font.Bold = true;
-                worksheet.Cells[currentRow, 7].Font.Size = 16;
-                worksheet.Cells[currentRow, 7].Font.Color = System.Drawing.Color.White;
-                worksheet.Cells[currentRow, 7].Interior.Color = System.Drawing.Color.FromArgb(45, 156, 219);
-                worksheet.Range[worksheet.Cells[currentRow, 7], worksheet.Cells[currentRow, 8]].Merge();
-                currentRow = currentRow + 1;
+                CurrentRow = CurrentRow + 1;
+                int LegendRow = CurrentRow;
 
-                // Выводим все заказы
-                worksheet.Cells[currentRow, 1].Value = "Всего заказов:";
-                worksheet.Cells[currentRow, 1].Font.Bold = true;
-                worksheet.Cells[currentRow, 1].Font.Size = 14;
-                worksheet.Cells[currentRow, 2].Value = dataGridView.Rows.Count;
-                worksheet.Cells[currentRow, 2].Font.Size = 14;
-                currentRow = currentRow + 1;
+                // Новый
+                worksheet.Cells[LegendRow, 1].Value = "Новый";
+                worksheet.Cells[LegendRow, 1].Interior.Color = Color.FromArgb(217, 225, 242);
+                worksheet.Cells[LegendRow, 1].Font.Bold = true;
+                worksheet.Cells[LegendRow, 1].Font.Size = 10;
+                worksheet.Cells[LegendRow, 1].Font.Color = Color.Black;
+                worksheet.Cells[LegendRow, 1].HorizontalAlignment = HAlignCenter();
+                worksheet.Cells[LegendRow, 1].VerticalAlignment = VAlignCenter();
+                worksheet.Range[worksheet.Cells[LegendRow, 2], worksheet.Cells[LegendRow, 3]].Merge();
+                worksheet.Cells[LegendRow, 2].Value = "Заказ создан, ждет обработки";
+                worksheet.Cells[LegendRow, 2].Font.Size = 10;
+                worksheet.Rows[LegendRow].RowHeight = 20;
+                worksheet.Cells[LegendRow, 5].Value = "Всего заказов:";
+                worksheet.Cells[LegendRow, 5].Font.Bold = true;
+                worksheet.Cells[LegendRow, 5].Font.Size = 10;
+                worksheet.Cells[LegendRow, 6].Value = DataGridView.Rows.Count;
+                worksheet.Cells[LegendRow, 6].Font.Size = 10;
+                worksheet.Cells[LegendRow, 6].NumberFormatLocal = "# ##0";
+                worksheet.Cells[LegendRow, 6].HorizontalAlignment = HAlignLeft();
+                worksheet.Cells[LegendRow, 6].IndentLevel = 6;
+                worksheet.Cells[LegendRow, 7].Value = "Общая сумма:";
+                worksheet.Cells[LegendRow, 7].Font.Bold = true;
+                worksheet.Cells[LegendRow, 7].Font.Size = 10;
+                worksheet.Cells[LegendRow, 7].IndentLevel = 1;
+                worksheet.Cells[LegendRow, 8].Value = TotalSum;
+                worksheet.Cells[LegendRow, 8].NumberFormatLocal = "# ##0,00 ₽";
+                worksheet.Cells[LegendRow, 8].Font.Size = 10;
+                LegendRow = LegendRow + 1;
 
-                // Статус "Новый"
-                worksheet.Cells[currentRow, 1].Value = "Новый:";
-                worksheet.Cells[currentRow, 1].Font.Bold = true;
-                worksheet.Cells[currentRow, 1].Font.Size = 14;
-                worksheet.Cells[currentRow, 2].Value = newCount;
-                worksheet.Cells[currentRow, 2].Font.Size = 14;
-                currentRow = currentRow + 1;
+                // В работе
+                worksheet.Cells[LegendRow, 1].Value = "В работе";
+                worksheet.Cells[LegendRow, 1].Interior.Color = Color.FromArgb(255, 242, 204);
+                worksheet.Cells[LegendRow, 1].Font.Bold = true;
+                worksheet.Cells[LegendRow, 1].Font.Size = 10;
+                worksheet.Cells[LegendRow, 1].Font.Color = Color.Black;
+                worksheet.Cells[LegendRow, 1].HorizontalAlignment = HAlignCenter();
+                worksheet.Cells[LegendRow, 1].VerticalAlignment = VAlignCenter();
+                worksheet.Range[worksheet.Cells[LegendRow, 2], worksheet.Cells[LegendRow, 3]].Merge();
+                worksheet.Cells[LegendRow, 2].Value = "Заказ находится в процессе выполнения";
+                worksheet.Cells[LegendRow, 2].Font.Size = 10;
+                worksheet.Rows[LegendRow].RowHeight = 20;
+                worksheet.Cells[LegendRow, 5].Value = "Новых:";
+                worksheet.Cells[LegendRow, 5].Font.Bold = true;
+                worksheet.Cells[LegendRow, 5].Font.Size = 10;
+                worksheet.Cells[LegendRow, 6].Value = NewCount;
+                worksheet.Cells[LegendRow, 6].Font.Size = 10;
+                worksheet.Cells[LegendRow, 6].NumberFormatLocal = "# ##0";
+                worksheet.Cells[LegendRow, 6].HorizontalAlignment = HAlignLeft();
+                worksheet.Cells[LegendRow, 6].IndentLevel = 6;
+                worksheet.Cells[LegendRow, 7].Value = "Средняя сумма:";
+                worksheet.Cells[LegendRow, 7].Font.Bold = true;
+                worksheet.Cells[LegendRow, 7].Font.Size = 10;
+                worksheet.Cells[LegendRow, 7].IndentLevel = 1;
+                worksheet.Cells[LegendRow, 8].Value = AverageSum;
+                worksheet.Cells[LegendRow, 8].NumberFormatLocal = "# ##0,00 ₽";
+                worksheet.Cells[LegendRow, 8].Font.Size = 10;
+                LegendRow = LegendRow + 1;
 
-                // Статус "В работе"
-                worksheet.Cells[currentRow, 1].Value = "В работе:";
-                worksheet.Cells[currentRow, 1].Font.Bold = true;
-                worksheet.Cells[currentRow, 1].Font.Size = 14;
-                worksheet.Cells[currentRow, 2].Value = inProgressCount;
-                worksheet.Cells[currentRow, 2].Font.Size = 14;
-                currentRow = currentRow + 1;
+                // Завершён
+                worksheet.Cells[LegendRow, 1].Value = "Завершён";
+                worksheet.Cells[LegendRow, 1].Interior.Color = Color.FromArgb(198, 232, 207);
+                worksheet.Cells[LegendRow, 1].Font.Bold = true;
+                worksheet.Cells[LegendRow, 1].Font.Size = 10;
+                worksheet.Cells[LegendRow, 1].Font.Color = Color.Black;
+                worksheet.Cells[LegendRow, 1].HorizontalAlignment = HAlignCenter();
+                worksheet.Cells[LegendRow, 1].VerticalAlignment = VAlignCenter();
+                worksheet.Range[worksheet.Cells[LegendRow, 2], worksheet.Cells[LegendRow, 3]].Merge();
+                worksheet.Cells[LegendRow, 2].Value = "Заказ успешно выполнен";
+                worksheet.Cells[LegendRow, 2].Font.Size = 10;
+                worksheet.Rows[LegendRow].RowHeight = 20;
+                worksheet.Cells[LegendRow, 5].Value = "В работе:";
+                worksheet.Cells[LegendRow, 5].Font.Bold = true;
+                worksheet.Cells[LegendRow, 5].Font.Size = 10;
+                worksheet.Cells[LegendRow, 6].Value = InProgressCount;
+                worksheet.Cells[LegendRow, 6].Font.Size = 10;
+                worksheet.Cells[LegendRow, 6].NumberFormatLocal = "# ##0";
+                worksheet.Cells[LegendRow, 6].HorizontalAlignment = HAlignLeft();
+                worksheet.Cells[LegendRow, 6].IndentLevel = 6;
+                worksheet.Cells[LegendRow, 7].Value = "Макс. заказ:";
+                worksheet.Cells[LegendRow, 7].Font.Bold = true;
+                worksheet.Cells[LegendRow, 7].Font.Size = 10;
+                worksheet.Cells[LegendRow, 7].IndentLevel = 1;
+                decimal MaxCost = 0;
 
-                // Статус "Завершён" - зелёный
-                worksheet.Cells[currentRow, 1].Value = "Завершён:";
-                worksheet.Cells[currentRow, 1].Font.Bold = true;
-                worksheet.Cells[currentRow, 1].Font.Size = 14;
-                worksheet.Cells[currentRow, 1].Font.Color = System.Drawing.Color.Green;
-                worksheet.Cells[currentRow, 2].Value = completedCount;
-                worksheet.Cells[currentRow, 2].Font.Size = 14;
-                worksheet.Cells[currentRow, 2].Font.Color = System.Drawing.Color.Green;
-                worksheet.Cells[currentRow, 2].Font.Bold = true;
-                currentRow = currentRow + 1;
-
-                // Статус "Отменён" - красный
-                worksheet.Cells[currentRow, 1].Value = "Отменён:";
-                worksheet.Cells[currentRow, 1].Font.Bold = true;
-                worksheet.Cells[currentRow, 1].Font.Size = 14;
-                worksheet.Cells[currentRow, 1].Font.Color = System.Drawing.Color.Red;
-                worksheet.Cells[currentRow, 2].Value = cancelledCount;
-                worksheet.Cells[currentRow, 2].Font.Size = 14;
-                worksheet.Cells[currentRow, 2].Font.Color = System.Drawing.Color.Red;
-                worksheet.Cells[currentRow, 2].Font.Bold = true;
-                currentRow = currentRow + 1;
-
-                int summaryRow = currentRow - 4;
-
-                // Финансовые показатели - общая сумма
-                worksheet.Cells[summaryRow, 7].Value = "Общая сумма:";
-                worksheet.Cells[summaryRow, 7].Font.Bold = true;
-                worksheet.Cells[summaryRow, 7].Font.Size = 14;
-                worksheet.Cells[summaryRow, 8].Value = totalSum + " руб.";
-                worksheet.Cells[summaryRow, 8].Font.Bold = true;
-                worksheet.Cells[summaryRow, 8].Font.Size = 14;
-                summaryRow = summaryRow + 1;
-
-                // Средняя сумма
-                worksheet.Cells[summaryRow, 7].Value = "Средняя сумма:";
-                worksheet.Cells[summaryRow, 7].Font.Bold = true;
-                worksheet.Cells[summaryRow, 7].Font.Size = 14;
-                worksheet.Cells[summaryRow, 8].Value = averageSum.ToString("0.00") + " руб.";
-                worksheet.Cells[summaryRow, 8].Font.Bold = true;
-                worksheet.Cells[summaryRow, 8].Font.Size = 14;
-                summaryRow = summaryRow + 1;
-
-                // Максимальный заказ
-                decimal maxCost = 0;
-                for (int i = 0; i < orderCosts.Count; i++)
+                for (int i = 0; i < OrderCosts.Count; i++)
                 {
-                    if (orderCosts[i] > maxCost)
+                    if (OrderCosts[i] > MaxCost)
                     {
-                        maxCost = orderCosts[i];
-                    }
-                }
-                worksheet.Cells[summaryRow, 7].Value = "Макс. заказ:";
-                worksheet.Cells[summaryRow, 7].Font.Bold = true;
-                worksheet.Cells[summaryRow, 7].Font.Size = 14;
-                worksheet.Cells[summaryRow, 8].Value = maxCost + " руб.";
-                worksheet.Cells[summaryRow, 8].Font.Bold = true;
-                worksheet.Cells[summaryRow, 8].Font.Size = 14;
-                summaryRow = summaryRow + 1;
-
-                // Минимальный заказ
-                decimal minCost = 99999999;
-                for (int i = 0; i < orderCosts.Count; i++)
-                {
-                    if (orderCosts[i] > 0 && orderCosts[i] < minCost)
-                    {
-                        minCost = orderCosts[i];
+                        MaxCost = OrderCosts[i];
                     }
                 }
-                if (minCost == 99999999)
-                {
-                    minCost = 0;
-                }
-                worksheet.Cells[summaryRow, 7].Value = "Мин. заказ:";
-                worksheet.Cells[summaryRow, 7].Font.Bold = true;
-                worksheet.Cells[summaryRow, 7].Font.Size = 14;
-                worksheet.Cells[summaryRow, 8].Value = minCost + " руб.";
-                worksheet.Cells[summaryRow, 8].Font.Bold = true;
-                worksheet.Cells[summaryRow, 8].Font.Size = 14;
+                worksheet.Cells[LegendRow, 8].Value = MaxCost;
+                worksheet.Cells[LegendRow, 8].NumberFormatLocal = "# ##0,00 ₽";
+                worksheet.Cells[LegendRow, 8].Font.Size = 10;
+                LegendRow = LegendRow + 1;
 
-                // Устанавливаем ширину колонок
-                worksheet.Columns[1].ColumnWidth = 18;
-                worksheet.Columns[2].ColumnWidth = 52;
-                worksheet.Columns[3].ColumnWidth = 40;
-                worksheet.Columns[4].ColumnWidth = 30;
-                worksheet.Columns[5].ColumnWidth = 24;
-                worksheet.Columns[6].ColumnWidth = 40;
+                // Отменён
+                worksheet.Cells[LegendRow, 1].Value = "Отменён";
+                worksheet.Cells[LegendRow, 1].Interior.Color = Color.FromArgb(242, 220, 219);
+                worksheet.Cells[LegendRow, 1].Font.Bold = true;
+                worksheet.Cells[LegendRow, 1].Font.Size = 10;
+                worksheet.Cells[LegendRow, 1].Font.Color = Color.Black;
+                worksheet.Cells[LegendRow, 1].HorizontalAlignment = HAlignCenter();
+                worksheet.Cells[LegendRow, 1].VerticalAlignment = VAlignCenter();
+                worksheet.Range[worksheet.Cells[LegendRow, 2], worksheet.Cells[LegendRow, 3]].Merge();
+                worksheet.Cells[LegendRow, 2].Value = "Заказ был отменён";
+                worksheet.Cells[LegendRow, 2].Font.Size = 10;
+                worksheet.Rows[LegendRow].RowHeight = 20;
+                worksheet.Cells[LegendRow, 5].Value = "Завершено:";
+                worksheet.Cells[LegendRow, 5].Font.Bold = true;
+                worksheet.Cells[LegendRow, 5].Font.Size = 10;
+                worksheet.Cells[LegendRow, 6].Value = CompletedCount;
+                worksheet.Cells[LegendRow, 6].Font.Size = 10;
+                worksheet.Cells[LegendRow, 6].NumberFormatLocal = "# ##0";
+                worksheet.Cells[LegendRow, 6].HorizontalAlignment = HAlignLeft();
+                worksheet.Cells[LegendRow, 6].IndentLevel = 6;
+                worksheet.Cells[LegendRow, 7].Value = "Мин. заказ:";
+                worksheet.Cells[LegendRow, 7].Font.Bold = true;
+                worksheet.Cells[LegendRow, 7].Font.Size = 10;
+                worksheet.Cells[LegendRow, 7].IndentLevel = 1;
+                decimal MinCost = 99999999;
+
+                for (int i = 0; i < OrderCosts.Count; i++)
+                {
+                    if (OrderCosts[i] > 0 && OrderCosts[i] < MinCost)
+                    {
+                        MinCost = OrderCosts[i];
+                    }
+                }
+
+                if (MinCost == 99999999)
+                {
+                    MinCost = 0;
+                }
+                worksheet.Cells[LegendRow, 8].Value = MinCost;
+                worksheet.Cells[LegendRow, 8].NumberFormatLocal = "# ##0,00 ₽";
+                worksheet.Cells[LegendRow, 8].Font.Size = 10;
+                LegendRow = LegendRow + 1;
+
+                // Отменено
+                worksheet.Cells[LegendRow, 5].Value = "Отменено:";
+                worksheet.Cells[LegendRow, 5].Font.Bold = true;
+                worksheet.Cells[LegendRow, 5].Font.Size = 10;
+                worksheet.Cells[LegendRow, 6].Value = CancelledCount;
+                worksheet.Cells[LegendRow, 6].Font.Size = 10;
+                worksheet.Cells[LegendRow, 6].NumberFormatLocal = "# ##0";
+                worksheet.Cells[LegendRow, 6].HorizontalAlignment = HAlignLeft();
+                worksheet.Cells[LegendRow, 6].IndentLevel = 6;
+
+                // ==================== ШИРИНА КОЛОНОК ====================
+                worksheet.Columns[1].ColumnWidth = 10;
+                worksheet.Columns[2].ColumnWidth = 22;
+                worksheet.Columns[3].ColumnWidth = 26;
+                worksheet.Columns[4].ColumnWidth = 10;
+                worksheet.Columns[5].ColumnWidth = 16;
+                worksheet.Columns[6].ColumnWidth = 32;
                 worksheet.Columns[6].WrapText = true;
-                worksheet.Columns[7].ColumnWidth = 24;
-                worksheet.Columns[8].ColumnWidth = 40;
+                worksheet.Columns[7].ColumnWidth = 14;
+                worksheet.Columns[8].ColumnWidth = 16;
 
-                // Автофит высоты строк
-                worksheet.UsedRange.EntireRow.AutoFit();
+                // ==================== НАСТРОЙКА ПЕЧАТИ ====================
+                worksheet.PageSetup.PaperSize = PaperA4();
+                worksheet.PageSetup.Orientation = OrientationLandscape();
+                worksheet.PageSetup.Zoom = false;
+                worksheet.PageSetup.FitToPagesWide = 1;
+                worksheet.PageSetup.FitToPagesTall = false;
+                worksheet.PageSetup.PrintArea = worksheet.UsedRange.Address;
+                worksheet.PageSetup.CenterHorizontally = false;
+                worksheet.PageSetup.CenterVertically = false;
 
-                // Определяем формат для сохранения
-                string extension = System.IO.Path.GetExtension(saveFileDialog.FileName).ToLower();
+                // ==================== ЛИСТ С ГРАФИКОМ ====================
+                object missing = Missing.Value;
+                dynamic ChartWorksheet = workbook.Sheets.Add(missing, workbook.Sheets[workbook.Sheets.Count], missing, missing);
+                ChartWorksheet.Name = "График продаж";
+                ChartWorksheet.Cells.Font.Name = "Calibri";
+
+                // Заголовок листа
+                ChartWorksheet.Cells[1, 1].Value = "ПРОДАЖИ ПО МЕСЯЦАМ";
+                ChartWorksheet.Cells[1, 1].Font.Bold = true;
+                ChartWorksheet.Cells[1, 1].Font.Size = 14;
+                ChartWorksheet.Cells[1, 1].Font.Color = Color.White;
+                ChartWorksheet.Cells[1, 1].Interior.Color = Color.FromArgb(45, 156, 219);
+                ChartWorksheet.Range[ChartWorksheet.Cells[1, 1], ChartWorksheet.Cells[1, 3]].Merge();
+                ChartWorksheet.Range[ChartWorksheet.Cells[1, 1], ChartWorksheet.Cells[1, 3]].HorizontalAlignment = HAlignCenter();
+                ChartWorksheet.Rows[1].RowHeight = 28;
+
+                // Заголовки таблицы данных
+                ChartWorksheet.Cells[2, 1].Value = "Месяц";
+                ChartWorksheet.Cells[2, 2].Value = "Сумма продаж, ₽";
+                ChartWorksheet.Cells[2, 3].Value = "Кол-во заказов";
+                dynamic ChartDataHeader = ChartWorksheet.Range[ChartWorksheet.Cells[2, 1], ChartWorksheet.Cells[2, 3]];
+                ChartDataHeader.Font.Bold = true;
+                ChartDataHeader.Font.Size = 11;
+                ChartDataHeader.Font.Color = Color.White;
+                ChartDataHeader.Interior.Color = Color.FromArgb(45, 156, 219);
+                ChartDataHeader.HorizontalAlignment = HAlignCenter();
+                ChartDataHeader.VerticalAlignment = VAlignCenter();
+                ChartDataHeader.Borders.LineStyle = BorderStyleContinuous();
+
+                // Сортировка ключей по дате и запись данных
+                List<string> SortedKeys = new List<string>(MonthlySales.Keys);
+                SortedKeys.Sort();
+
+                int ChartDataRow = 3;
+                foreach (string key in SortedKeys)
+                {
+                    ChartWorksheet.Cells[ChartDataRow, 1].Value = MonthlyLabels[key];
+                    ChartWorksheet.Cells[ChartDataRow, 2].Value = (double)MonthlySales[key];
+                    ChartWorksheet.Cells[ChartDataRow, 2].NumberFormatLocal = "# ##0,00 ₽";
+                    ChartWorksheet.Cells[ChartDataRow, 3].Value = MonthlyOrderCount[key];
+                    ChartWorksheet.Cells[ChartDataRow, 3].NumberFormatLocal = "# ##0";
+
+                    dynamic RowRange = ChartWorksheet.Range[ChartWorksheet.Cells[ChartDataRow, 1], ChartWorksheet.Cells[ChartDataRow, 3]];
+                    RowRange.Font.Size = 10;
+                    RowRange.HorizontalAlignment = HAlignCenter();
+                    RowRange.Borders.LineStyle = BorderStyleContinuous();
+
+                    bool IsEvenRow = (ChartDataRow % 2 == 0);
+
+                    if (IsEvenRow)
+                    {
+                        RowRange.Interior.Color = Color.FromArgb(235, 245, 253);
+                    }
+
+                    ChartDataRow = ChartDataRow + 1;
+                }
+
+                // Ширина колонок таблицы данных
+                ChartWorksheet.Columns[1].ColumnWidth = 20;
+                ChartWorksheet.Columns[2].ColumnWidth = 22;
+                ChartWorksheet.Columns[3].ColumnWidth = 18;
+
+                // Создание графика
+                int ChartDataCount = SortedKeys.Count;
+                if (ChartDataCount > 0)
+                {
+                    dynamic ChartObjects = ChartWorksheet.ChartObjects();
+                    dynamic ChartObj = ChartObjects.Add(20, (ChartDataRow + 1) * 15, 700, 380);
+                    dynamic chart = ChartObj.Chart;
+
+                    // Источник данных колонки А (месяц) и B (сумма)
+                    dynamic SourceRange = ChartWorksheet.Range[ChartWorksheet.Cells[2, 1], ChartWorksheet.Cells[2 + ChartDataCount, 2]];
+                    chart.SetSourceData(SourceRange);
+                    chart.ChartType = ChartTypeLineMarkers();
+
+                    // Заголовок графика
+                    chart.HasTitle = true;
+                    chart.ChartTitle.Text = "Сумма продаж по месяцам (" + DateFrom.ToString("dd.MM.yyyy") + " - " + DateTo.ToString("dd.MM.yyyy") + ")";
+                    chart.ChartTitle.Font.Bold = true;
+                    chart.ChartTitle.Font.Size = 13;
+
+                    // Стиль линии и маркеров
+                    dynamic series = chart.SeriesCollection(1);
+                    series.Format.Line.ForeColor.RGB = ColorTranslator.ToOle(Color.FromArgb(45, 156, 219));
+                    series.Format.Line.Weight = 2.5f;
+                    series.MarkerStyle = MarkerStyleSquare();
+                    series.MarkerSize = 7;
+                    series.MarkerForegroundColor = ColorTranslator.ToOle(Color.FromArgb(45, 156, 219));
+                    series.MarkerBackgroundColor = ColorTranslator.ToOle(Color.White);
+
+                    // Подписи данных
+                    series.HasDataLabels = true;
+                    series.DataLabels.Font.Size = 9;
+                    series.DataLabels.Font.Bold = true;
+                    series.DataLabels.NumberFormatLocal = "#\u00a0##0\u00a0## ₽";
+
+                    // Ось категорий X
+                    chart.Axes(AxisCategory()).HasTitle = false;
+                    chart.Axes(AxisCategory()).TickLabels.Font.Size = 10;
+
+                    // Ось значений Y
+                    chart.Axes(AxisValue()).HasTitle = true;
+                    chart.Axes(AxisValue()).AxisTitle.Text = "Сумма, ₽";
+                    chart.Axes(AxisValue()).AxisTitle.Font.Size = 10;
+                    chart.Axes(AxisValue()).TickLabels.NumberFormatLocal = "#\u00a0##0\u00a0## ₽";
+
+                    // Легенда не нужна для одного ряда
+                    chart.HasLegend = false;
+
+                    // Настройка печати листа графика
+                    ChartWorksheet.PageSetup.PaperSize = PaperA4();
+                    ChartWorksheet.PageSetup.Orientation = OrientationLandscape();
+                    ChartWorksheet.PageSetup.Zoom = false;
+                    ChartWorksheet.PageSetup.FitToPagesWide = 1;
+                    ChartWorksheet.PageSetup.FitToPagesTall = 1;
+                    ChartWorksheet.PageSetup.TopMargin = 10;
+                    ChartWorksheet.PageSetup.BottomMargin = 10;
+                    ChartWorksheet.PageSetup.LeftMargin = 10;
+                    ChartWorksheet.PageSetup.RightMargin = 10;
+                    ChartWorksheet.PageSetup.CenterHorizontally = true;
+                }
+
+                // ==================== СОХРАНЕНИЕ ====================
+                worksheet.Activate();
+
+                string extension = Path.GetExtension(saveFileDialog.FileName).ToLower();
 
                 if (extension == ".pdf")
                 {
-                    // PDF
-                    worksheet.PageSetup.PaperSize = 9; // A4
-                    worksheet.PageSetup.Orientation = 2; // Landscape
-                    worksheet.PageSetup.Zoom = false;
-                    worksheet.PageSetup.FitToPagesWide = 1;
-                    worksheet.PageSetup.FitToPagesTall = false;
-                    worksheet.PageSetup.PrintArea = worksheet.UsedRange.Address;
-                    worksheet.PageSetup.TopMargin = 10;
-                    worksheet.PageSetup.BottomMargin = 10;
-                    worksheet.PageSetup.LeftMargin = 10;
-                    worksheet.PageSetup.RightMargin = 10;
-                    worksheet.PageSetup.HeaderMargin = 0;
-                    worksheet.PageSetup.FooterMargin = 0;
-                    worksheet.PageSetup.CenterHorizontally = false;
-                    worksheet.PageSetup.CenterVertically = false;
-                    workbook.ExportAsFixedFormat(0, saveFileDialog.FileName);
+                    workbook.ExportAsFixedFormat(ExportFormatPDF(), saveFileDialog.FileName);
                     workbook.Saved = true;
                 }
                 else if (extension == ".xls")
                 {
-                    // Сохраняем в старом формате Excel 97-2003
-                    workbook.SaveAs(saveFileDialog.FileName, GetXlWorkbookNormal());
+                    workbook.SaveAs(saveFileDialog.FileName, FormatXls());
                 }
                 else
                 {
-                    // Сохраняем в новом формате Excel 2007+
-                    workbook.SaveAs(saveFileDialog.FileName, GetXlOpenXMLWorkbook());
+                    workbook.SaveAs(saveFileDialog.FileName, FormatXlsx());
                 }
 
                 workbook.Close(false);
-        workbook = null;
+                workbook = null;
                 MessageBox.Show("Отчёт успешно сформирован!\n\nПуть сохранения:\n" + saveFileDialog.FileName, "Успех", MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
             catch (Exception ex)
             {
-                // Ошибка при создании отчёта
                 MessageBox.Show("Ошибка при создании отчёта:\n" + ex.Message, "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
             finally
             {
                 try
                 {
-                    if (excelApp != null)
+                    if (ExcelApp != null)
                     {
-                        excelApp.DisplayAlerts = false;
-                        excelApp.Quit();
+                        ExcelApp.DisplayAlerts = false;
+                        ExcelApp.Quit();
                     }
                 }
-                catch { }
+                catch
+                {
+
+                }
 
                 worksheet = null;
                 workbook = null;
 
-                if (excelApp != null)
+                if (ExcelApp != null)
                 {
-                    try 
-                    { 
-                        System.Runtime.InteropServices.Marshal.ReleaseComObject(excelApp);
+                    try
+                    {
+                        Marshal.ReleaseComObject(ExcelApp);
                     }
-                    catch { }
-                    excelApp = null;
+                    catch
+                    {
+
+                    }
+
+                    ExcelApp = null;
                 }
 
                 GC.Collect();
@@ -551,26 +733,73 @@ namespace WebSiteDev
             }
         }
 
-        // Константа для выравнивания по центру
-        private static int GetXlHAlignCenter()
+        // ==================== ВСПОМОГАТЕЛЬНЫЕ МЕТОДЫ ====================
+
+        private static string GetMonthName(int month)
+        {
+            string[] months = { "Январь", "Февраль", "Март", "Апрель", "Май", "Июнь",
+                                 "Июль", "Август", "Сентябрь", "Октябрь", "Ноябрь", "Декабрь" };
+            if (month >= 1 && month <= 12)
+            {
+                return months[month - 1];
+            }
+
+            return month.ToString();
+        }
+
+        private static int HAlignCenter()
         {
             return -4108;
         }
-
-        // Константа для вертикального выравнивания по центру
-        private static int GetXlVAlignCenter()
+        private static int HAlignLeft() 
+        {
+            return -4131; 
+        }
+        private static int HAlignRight() 
+        { 
+            return -4152; 
+        }
+        private static int VAlignCenter()
         {
             return -4108;
         }
-
-        // Константа для формата OpenXML (Excel 2007+)
-        private static int GetXlOpenXMLWorkbook()
+        private static int BorderStyleContinuous()
+        {
+            return 1;
+        }
+        private static int ChartTypeLineMarkers()
+        {
+            return 65;
+        }
+        private static int MarkerStyleSquare() 
+        {
+            return 2;
+        }
+        private static int AxisCategory()
+        {
+            return 1;
+        }
+        private static int AxisValue()
+        {
+            return 2;
+        }
+        private static int PaperA4() 
+        {
+            return 9;
+        }
+        private static int OrientationLandscape()
+        {
+            return 2;
+        }
+        private static int ExportFormatPDF()
+        {
+            return 0;
+        }
+        private static int FormatXlsx()
         {
             return 51;
         }
-
-        // Константа для формата Excel 97-2003
-        private static int GetXlWorkbookNormal()
+        private static int FormatXls()
         {
             return 56;
         }
