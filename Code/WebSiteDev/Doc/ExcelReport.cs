@@ -10,14 +10,23 @@ namespace WebSiteDev
 {
     public class ExcelReport
     {
-        public static void ExportToExcel(DataGridView DataGridView, List<decimal> OrderCosts, DateTime DateFrom, DateTime DateTo, string SearchText, string SelectedStatus, string SelectedSort)
+        public static void ExportToExcel(DataGridView DataGridView, List<decimal> OrderCosts, DateTime DateFrom, DateTime DateTo, string SearchText, string SelectedStatus, string SelectedSort, bool excelInstalled = true)
         {
             dynamic ExcelApp = null;
             dynamic workbook = null;
             dynamic worksheet = null;
 
             SaveFileDialog saveFileDialog = new SaveFileDialog();
-            saveFileDialog.Filter = "PDF (*.pdf)|*.pdf|Excel 2007-2026 (*.xlsx)|*.xlsx|Excel 97-2003 (*.xls)|*.xls";
+
+            if (excelInstalled)
+            {
+                saveFileDialog.Filter = "PDF (*.pdf)|*.pdf|Excel 2007-2026 (*.xlsx)|*.xlsx|Excel 97-2003 (*.xls)|*.xls";
+            }
+            else
+            {
+                saveFileDialog.Filter = "PDF (*.pdf)|*.pdf";
+            }
+
             saveFileDialog.FilterIndex = 1;
             saveFileDialog.Title = "Сохранить отчёт по заказам";
             saveFileDialog.FileName = "Отчет_заказы_" + DateFrom.ToString("dd.MM.yyyy") + "-" + DateTo.ToString("dd.MM.yyyy");
@@ -30,6 +39,19 @@ namespace WebSiteDev
             try
             {
                 Type ExcelAppType = Type.GetTypeFromProgID("Excel.Application");
+
+                if (ExcelAppType == null)
+                {
+                    MessageBox.Show(
+                        "Microsoft Excel не обнаружен на этом компьютере.\n\n" +
+                        "Для создания отчёта (включая PDF) требуется установленный Microsoft Office Excel.",
+                        "Excel не найден",
+                        MessageBoxButtons.OK,
+                        MessageBoxIcon.Error
+                    );
+                    return;
+                }
+
                 ExcelApp = Activator.CreateInstance(ExcelAppType);
                 ExcelApp.Visible = false;
 
@@ -751,13 +773,13 @@ namespace WebSiteDev
         {
             return -4108;
         }
-        private static int HAlignLeft() 
+        private static int HAlignLeft()
         {
-            return -4131; 
+            return -4131;
         }
-        private static int HAlignRight() 
-        { 
-            return -4152; 
+        private static int HAlignRight()
+        {
+            return -4152;
         }
         private static int VAlignCenter()
         {
@@ -771,7 +793,7 @@ namespace WebSiteDev
         {
             return 65;
         }
-        private static int MarkerStyleSquare() 
+        private static int MarkerStyleSquare()
         {
             return 2;
         }
@@ -783,7 +805,7 @@ namespace WebSiteDev
         {
             return 2;
         }
-        private static int PaperA4() 
+        private static int PaperA4()
         {
             return 9;
         }
