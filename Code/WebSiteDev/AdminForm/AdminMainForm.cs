@@ -1,4 +1,5 @@
-﻿using System;
+﻿using MySqlX.XDevAPI.Common;
+using System;
 using System.Drawing;
 using System.Windows.Forms;
 using WebSiteDev.ManagerForm;
@@ -155,16 +156,21 @@ namespace WebSiteDev
         private void button6_Click(object sender, EventArgs e)
         {
             SelectButton(button6);
-            var result = MessageBox.Show("Вы действительно хотите выйти из приложения?", "Подтверждение", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
+            var result1 = MessageBox.Show("Вы действительно хотите выйти из приложения?", "Подтверждение", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
+            var result2 = Service.Service.CanOpenForm();
 
-            if (result == DialogResult.Yes)
+            if (result1 == DialogResult.Yes)
             {
-                Application.Exit();
-            }
-            else
-            {
-                SelectButton(currentSelectedButton);
-                this.ActiveControl = null;
+                if (result2.ErrorCode == null)
+                {
+                    Service.Service.MakeBackup();
+                    Application.Exit();
+                }
+                else
+                {
+                    SelectButton(currentSelectedButton);
+                    this.ActiveControl = null;
+                }
             }
         }
 

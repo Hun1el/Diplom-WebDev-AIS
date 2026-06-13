@@ -32,15 +32,19 @@ namespace WebSiteDev.Service
         /// </summary>
         public static string MakeBackup()
         {
-            string PathProject = string.Join("\\", Directory.GetCurrentDirectory().Split('\\').TakeWhile(item => item != "bin"));
-            
-            if (!Directory.Exists($@"{PathProject}\Resources\Backups\"))
+            string backupFolder = Path.Combine(
+                Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
+                "WebShop",
+                "Backups"
+            );
+
+            if (!Directory.Exists(backupFolder))
             {
-                Directory.CreateDirectory($@"{PathProject}\Resources\Backups\");
+                Directory.CreateDirectory(backupFolder);
             }
 
-            string FileName = $@"{PathProject}\Resources\Backups\backup_{DateTime.Now:yyyyMMdd_HHmmss_}{DateTime.Now.Millisecond}.sql";
-            
+            string FileName = Path.Combine(backupFolder, $"backup_{DateTime.Now:yyyyMMdd_HHmmss_}{DateTime.Now.Millisecond}.sql");
+
             using (MySqlConnection con = new MySqlConnection(Data.GetConnectionString()))
             {
                 using (MySqlCommand cmd = con.CreateCommand())
