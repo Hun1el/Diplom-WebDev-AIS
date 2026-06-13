@@ -366,7 +366,7 @@ namespace WebSiteDev
 
         private void button2_Click(object sender, EventArgs e)
         {
-            var result1 = MessageBox.Show("Вы действительно хотите выйти?", "Подтверждение", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
+            var result1 = MessageBox.Show("Вы действительно хотите выйти из приложения?", "Подтверждение", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
             var result2 = Service.Service.CanOpenForm();
 
             if (result1 == DialogResult.Yes)

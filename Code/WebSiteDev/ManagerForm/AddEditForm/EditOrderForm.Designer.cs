@@ -69,7 +69,7 @@
             this.dateTimePicker1.Location = new System.Drawing.Point(15, 40);
             this.dateTimePicker1.Margin = new System.Windows.Forms.Padding(6);
             this.dateTimePicker1.MaxDate = new System.DateTime(2026, 12, 31, 0, 0, 0, 0);
-            this.dateTimePicker1.MinDate = new System.DateTime(2025, 10, 17, 18, 46, 20, 0);
+            this.dateTimePicker1.MinDate = new System.DateTime(2024, 12, 31, 0, 0, 0, 0);
             this.dateTimePicker1.Name = "dateTimePicker1";
             this.dateTimePicker1.Size = new System.Drawing.Size(328, 33);
             this.dateTimePicker1.TabIndex = 45;

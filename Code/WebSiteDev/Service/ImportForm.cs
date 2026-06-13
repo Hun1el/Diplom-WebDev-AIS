@@ -113,7 +113,7 @@ namespace WebSiteDev.Service
         {
             if (comboBox1.SelectedItem == null || comboBox1.SelectedItem.ToString() == "- -" || string.IsNullOrEmpty(textBox1.Text))
             {
-                MessageBox.Show("Заполните поля, отмеченные *", "Внимание", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                MessageBox.Show("Заполните поля, отмеченные \"*\"", "Внимание", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
 

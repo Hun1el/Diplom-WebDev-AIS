@@ -110,7 +110,7 @@ namespace WebSiteDev
             }
             else
             {
-                MessageBox.Show("Не удалось открыть форму импорта!\nКод ошибки: " + result.ErrorCode + "\n" + result.ErrorMessage, "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show("Не удалось открыть форму экспорта!\nКод ошибки: " + result.ErrorCode + "\n" + result.ErrorMessage, "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
