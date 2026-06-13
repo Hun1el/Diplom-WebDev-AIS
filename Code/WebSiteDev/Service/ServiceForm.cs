@@ -13,8 +13,8 @@ namespace WebSiteDev
         public ServiceForm()
         {
             InitializeComponent();
-
-                dataManipulation = new DataManipulation(new System.Data.DataTable());
+            
+            dataManipulation = new DataManipulation(new System.Data.DataTable());
         }
 
         /// <summary>
@@ -36,9 +36,12 @@ namespace WebSiteDev
 
                     if (result == DialogResult.Yes)
                     {
-                        Service.Service.RestoreBackup(FilePath);
+                        bool isRestored = Service.Service.RestoreBackup(FilePath);
 
-                        MessageBox.Show("База данных успешно восстановлена!", "Успех", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                        if (isRestored)
+                        {
+                            MessageBox.Show("База данных успешно восстановлена!", "Успех", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                        }
                     }
                 }
             }
@@ -129,8 +132,17 @@ namespace WebSiteDev
 
         private void button6_Click(object sender, EventArgs e)
         {
-            AddEditUsersForm addEditUsersForm = new AddEditUsersForm(dataManipulation);
-            addEditUsersForm.ShowDialog();
+            var result = Service.Service.CanOpenForm();
+
+            if (result.ErrorCode == null)
+            {
+                AddEditUsersForm addEditUsersForm = new AddEditUsersForm(dataManipulation);
+                addEditUsersForm.ShowDialog();
+            }
+            else
+            {
+                MessageBox.Show("Не удалось открыть форму добавления пользователя!\nКод ошибки: " + result.ErrorCode + "\n" + result.ErrorMessage, "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
         }
     }
 }

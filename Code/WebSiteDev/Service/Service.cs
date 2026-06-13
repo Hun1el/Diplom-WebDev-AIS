@@ -59,20 +59,20 @@ namespace WebSiteDev.Service
         /// <summary>
         /// Восстановление базы данных из sql файла
         /// </summary>
-        public static void RestoreBackup(string FilePath)
+        public static bool RestoreBackup(string FilePath)
         {
             // Проверка наличия файла
             if (!File.Exists(FilePath))
             {
                 MessageBox.Show("Файл для восстановления не найден!", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                return;
+                return false;
             }
 
             bool hasConnection = false;
             bool hasCreateTable = false;
 
-            // Проверка подключения к БД
-            using (MySqlConnection test = new MySqlConnection(Data.GetConnectionString()))
+            // Проверка подключения к серверу БД БЕЗ указания конкретной базы
+            using (MySqlConnection test = new MySqlConnection(Data.GetConnectionStringNoDB()))
             {
                 try
                 {
@@ -81,7 +81,6 @@ namespace WebSiteDev.Service
                 }
                 catch (MySqlException)
                 {
-
                 }
             }
 
@@ -93,7 +92,7 @@ namespace WebSiteDev.Service
             var warnings = new List<string>();
             if (!hasConnection)
             {
-                warnings.Add("Нет подключения к базе данных - восстановление может не выполниться!");
+                warnings.Add("Нет подключения к серверу баз данных - восстановление может не выполниться!");
             }
             if (!hasCreateTable)
             {
@@ -104,10 +103,32 @@ namespace WebSiteDev.Service
             {
                 string message = string.Join("\n", warnings) + "\n\nВсё равно продолжить восстановление?";
                 var result = MessageBox.Show(message, "Предупреждение", MessageBoxButtons.YesNo, MessageBoxIcon.Warning);
-                
+
                 if (result != DialogResult.Yes)
                 {
-                    return;
+                    return false; // Отмена пользователем
+                }
+            }
+
+            // Если подключение к серверу есть принудительно создаем нужную базу данных если её нет
+            if (hasConnection)
+            {
+                try
+                {
+                    using (MySqlConnection con = new MySqlConnection(Data.GetConnectionStringNoDB()))
+                    {
+                        con.Open();
+                        // Получаем имя БД из настроек проекта
+                        string dbName = Properties.Settings.Default.DbName;
+                        using (MySqlCommand cmd = new MySqlCommand($"CREATE DATABASE IF NOT EXISTS `{dbName}`;", con))
+                        {
+                            cmd.ExecuteNonQuery();
+                        }
+                    }
+                }
+                catch 
+                {
+
                 }
             }
 
@@ -123,6 +144,8 @@ namespace WebSiteDev.Service
                     }
                 }
             }
+
+            return true; // Восстановление прошло успешно
         }
 
         /// <summary>
