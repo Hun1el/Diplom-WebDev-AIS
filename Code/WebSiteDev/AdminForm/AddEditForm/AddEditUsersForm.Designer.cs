@@ -167,7 +167,7 @@
             // 
             this.textBox3.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.textBox3.Location = new System.Drawing.Point(12, 110);
-            this.textBox3.MaxLength = 75;
+            this.textBox3.MaxLength = 70;
             this.textBox3.Name = "textBox3";
             this.textBox3.Size = new System.Drawing.Size(310, 33);
             this.textBox3.TabIndex = 41;
