@@ -224,7 +224,7 @@ DROP TABLE IF EXISTS `Users`;
 CREATE TABLE `Users` (
   `UserID` int NOT NULL AUTO_INCREMENT,
   `Surname` varchar(90) NOT NULL,
-  `FirstName` varchar(75) NOT NULL,
+  `FirstName` varchar(70) NOT NULL,
   `MiddleName` varchar(90) DEFAULT NULL,
   `UserLogin` varchar(20) NOT NULL,
   `UserPassword` varchar(255) NOT NULL,
