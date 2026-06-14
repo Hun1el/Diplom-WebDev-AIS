@@ -109,6 +109,7 @@ namespace WebSiteDev.AdminForm
             addEditCategoryForm.ShowDialog();
 
             GetDate();
+            ClearViewSelection();
         }
 
         /// <summary>
