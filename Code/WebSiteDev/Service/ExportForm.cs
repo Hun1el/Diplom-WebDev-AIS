@@ -16,6 +16,9 @@ namespace WebSiteDev.Service
 
         private void ExportForm_Load(object sender, EventArgs e)
         {
+            Inactivity.OnFormLoad(this);
+            LabelColor.ApplyRedStar(this);
+
             comboBox2.Items.AddRange(new string[] { ";", ",", ":", "|" });
             comboBox2.SelectedIndex = 0;
             LabelColor.ApplyRedStar(this);
@@ -213,6 +216,11 @@ namespace WebSiteDev.Service
         {
             dataGridView1.ClearSelection();
             dataGridView1.CurrentCell = null;
+        }
+
+        private void ExportForm_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            Inactivity.OnFormClosing(this);
         }
     }
 }

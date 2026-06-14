@@ -144,5 +144,16 @@ namespace WebSiteDev
                 MessageBox.Show("Не удалось открыть форму добавления пользователя!\nКод ошибки: " + result.ErrorCode + "\n" + result.ErrorMessage, "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
+
+        private void ServiceForm_Load(object sender, EventArgs e)
+        {
+            Inactivity.OnFormLoad(this);
+            LabelColor.ApplyRedStar(this);
+        }
+
+        private void ServiceForm_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            Inactivity.OnFormClosing(this);
+        }
     }
 }

@@ -251,6 +251,7 @@
             this.Name = "ImportForm";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "Импорт данных";
+            this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.ImportForm_FormClosing);
             this.Load += new System.EventHandler(this.ImportForm_Load);
             this.SizeChanged += new System.EventHandler(this.ImportForm_SizeChanged);
             ((System.ComponentModel.ISupportInitialize)(this.dataGridView1)).EndInit();

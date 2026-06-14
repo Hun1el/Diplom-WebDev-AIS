@@ -235,6 +235,7 @@
             this.Name = "ExportForm";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "Экспорт данных";
+            this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.ExportForm_FormClosing);
             this.Load += new System.EventHandler(this.ExportForm_Load);
             this.SizeChanged += new System.EventHandler(this.ExportForm_SizeChanged);
             ((System.ComponentModel.ISupportInitialize)(this.dataGridView1)).EndInit();

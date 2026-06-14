@@ -15,6 +15,9 @@ namespace WebSiteDev.Service
 
         private void ImportForm_Load(object sender, EventArgs e)
         {
+            Inactivity.OnFormLoad(this);
+            LabelColor.ApplyRedStar(this);
+
             comboBox2.Items.AddRange(new string[] { ";", ",", ":", "|" });
             comboBox2.SelectedIndex = 0;
             LabelColor.ApplyRedStar(this);
@@ -292,6 +295,11 @@ namespace WebSiteDev.Service
         private void checkBox1_CheckedChanged(object sender, EventArgs e)
         {
             LoadCsvPreview();
+        }
+
+        private void ImportForm_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            Inactivity.OnFormClosing(this);
         }
     }
 }
