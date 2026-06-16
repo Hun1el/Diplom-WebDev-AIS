@@ -69,7 +69,6 @@ namespace WebSiteDev.Service
         /// </summary>
         public static bool RestoreBackup(string FilePath)
         {
-            // Проверка наличия файла
             if (!File.Exists(FilePath))
             {
                 MessageBox.Show("Файл для восстановления не найден!", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
@@ -77,9 +76,7 @@ namespace WebSiteDev.Service
             }
 
             bool hasConnection = false;
-            bool hasCreateTable = false;
 
-            // Проверка подключения к серверу БД БЕЗ указания конкретной базы
             using (MySqlConnection test = new MySqlConnection(Data.GetConnectionStringNoDB()))
             {
                 try
@@ -92,47 +89,54 @@ namespace WebSiteDev.Service
                 }
             }
 
-            // Проверка наличия CREATE TABLE в SQL-файле
-            string fileContent = File.ReadAllText(FilePath, Encoding.UTF8);
-            hasCreateTable = fileContent.IndexOf("CREATE TABLE", StringComparison.OrdinalIgnoreCase) >= 0;
-
-            // Формируем предупреждения
-            var warnings = new List<string>();
             if (!hasConnection)
             {
-                warnings.Add("Нет подключения к серверу баз данных - восстановление может не выполниться!");
+                MessageBox.Show("Нет подключения к серверу баз данных.", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return false;
             }
+
+            string fileContent = File.ReadAllText(FilePath, Encoding.UTF8);
+
+            bool hasCreateTable = fileContent.IndexOf("CREATE TABLE", StringComparison.OrdinalIgnoreCase) >= 0;
+            
             if (!hasCreateTable)
             {
-                warnings.Add("В файле не обнаружено инструкций CREATE TABLE — таблицы не будут созданы заново.");
-            }
-
-            if (warnings.Count > 0)
-            {
-                string message = string.Join("\n", warnings) + "\n\nВсё равно продолжить восстановление?";
-                var result = MessageBox.Show(message, "Предупреждение", MessageBoxButtons.YesNo, MessageBoxIcon.Warning);
-
+                var result = MessageBox.Show("В файле не обнаружено инструкций CREATE TABLE.\nВсё равно продолжить?", "Предупреждение", MessageBoxButtons.YesNo, MessageBoxIcon.Warning);
+                
                 if (result != DialogResult.Yes)
                 {
-                    return false; // Отмена пользователем
+                    return false;
                 }
             }
 
-            // Если подключение к серверу есть принудительно создаем нужную базу данных если её нет
-            if (hasConnection)
+            if (!fileContent.TrimStart().StartsWith("SET NAMES", StringComparison.OrdinalIgnoreCase))
+            {
+                fileContent = "SET NAMES utf8mb4;\n" + fileContent;
+            }
+
+            string tempFilePath = Path.GetTempFileName() + ".sql";
+            File.WriteAllText(tempFilePath, fileContent, new UTF8Encoding(false));
+
+            try
+            {
+                // Подключаемся БЕЗ указания базы — дамп сам создаст db67
+                using (MySqlConnection con = new MySqlConnection(Data.GetConnectionStringNoDB()))
+                {
+                    using (MySqlCommand cmd = con.CreateCommand())
+                    {
+                        using (MySqlBackup mb = new MySqlBackup(cmd))
+                        {
+                            con.Open();
+                            mb.ImportFromFile(tempFilePath);
+                        }
+                    }
+                }
+            }
+            finally
             {
                 try
                 {
-                    using (MySqlConnection con = new MySqlConnection(Data.GetConnectionStringNoDB()))
-                    {
-                        con.Open();
-                        // Получаем имя БД из настроек проекта
-                        string dbName = Properties.Settings.Default.DbName;
-                        using (MySqlCommand cmd = new MySqlCommand($"CREATE DATABASE IF NOT EXISTS `{dbName}` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;", con))
-                        {
-                            cmd.ExecuteNonQuery();
-                        }
-                    }
+                    File.Delete(tempFilePath);
                 }
                 catch
                 {
@@ -140,26 +144,7 @@ namespace WebSiteDev.Service
                 }
             }
 
-            if (!fileContent.TrimStart().StartsWith("SET NAMES", StringComparison.OrdinalIgnoreCase))
-            {
-                string fixedContent = "SET NAMES utf8mb4;\n" + fileContent;
-                File.WriteAllText(FilePath, fixedContent, new UTF8Encoding(false));
-            }
-
-            // Восстановление
-            using (MySqlConnection con = new MySqlConnection(Data.GetConnectionString()))
-            {
-                using (MySqlCommand cmd = con.CreateCommand())
-                {
-                    using (MySqlBackup mb = new MySqlBackup(cmd))
-                    {
-                        con.Open();
-                        mb.ImportFromFile(FilePath);
-                    }
-                }
-            }
-
-            return true; // Восстановление прошло успешно
+            return true;
         }
 
         /// <summary>
