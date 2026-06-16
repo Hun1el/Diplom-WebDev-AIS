@@ -17,7 +17,8 @@ namespace WebSiteDev
                    $"uid={Properties.Settings.Default.DbUser};" +
                    $"pwd={Properties.Settings.Default.DbPassword};" +
                    $"database={Properties.Settings.Default.DbName};" +
-                   $"AllowLoadLocalInfile=true;";
+                   $"AllowLoadLocalInfile=true;" +
+                   $"charset=utf8mb4;";
         }
 
         /// <summary>
@@ -28,7 +29,8 @@ namespace WebSiteDev
             return $"host={Properties.Settings.Default.DbHost};" +
                    $"uid={Properties.Settings.Default.DbUser};" +
                    $"pwd={Properties.Settings.Default.DbPassword};" +
-                   $"AllowLoadLocalInfile=true;";
+                   $"AllowLoadLocalInfile=true;" +
+                   $"charset=utf8mb4;";
         }
 
         /// <summary>
@@ -40,7 +42,8 @@ namespace WebSiteDev
                    $"uid={Properties.Settings.Default.DbUser};" +
                    $"pwd={Properties.Settings.Default.DbPassword};" +
                    $"database={Properties.Settings.Default.DbName};" +
-                   $"AllowLoadLocalInfile=true;";
+                   $"AllowLoadLocalInfile=true;" +
+                   $"charset=utf8mb4;";
         }
     }
 }

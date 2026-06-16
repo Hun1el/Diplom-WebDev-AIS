@@ -11,12 +11,27 @@ namespace WebSiteDev
         /// </summary>
         public static void FirstLetter(TextBox textBox)
         {
-            if (textBox.Text.Length > 0)
+            if (string.IsNullOrEmpty(textBox.Text))
             {
-                string text = textBox.Text;
-                textBox.Text = char.ToUpper(text[0]) + text.Substring(1);
-                textBox.SelectionStart = textBox.Text.Length;
+                return;
             }
+
+            string text = textBox.Text;
+            string newText = char.ToUpper(text[0]) + text.Substring(1);
+
+            if (newText == text)
+            {
+                return;
+            }
+
+            int selStart = textBox.SelectionStart;
+            int selLength = textBox.SelectionLength;
+
+            textBox.Text = newText;
+
+            // Восстанавливаем позицию курсора
+            textBox.SelectionStart = Math.Min(selStart, textBox.Text.Length);
+            textBox.SelectionLength = selLength;
         }
 
         /// <summary>

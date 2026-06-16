@@ -28,7 +28,7 @@ namespace WebSiteDev.Service
         }
 
         /// <summary>
-        /// Создание ручной резевной копии базы данных
+        /// Создание ручной резервной копии базы данных
         /// </summary>
         public static string MakeBackup()
         {
@@ -56,6 +56,10 @@ namespace WebSiteDev.Service
                     }
                 }
             }
+
+            string originalContent = File.ReadAllText(FileName, Encoding.UTF8);
+            string fixedContent = "SET NAMES utf8mb4;\n" + originalContent;
+            File.WriteAllText(FileName, fixedContent, new UTF8Encoding(false));
 
             return FileName;
         }
@@ -89,7 +93,7 @@ namespace WebSiteDev.Service
             }
 
             // Проверка наличия CREATE TABLE в SQL-файле
-            string fileContent = File.ReadAllText(FilePath);
+            string fileContent = File.ReadAllText(FilePath, Encoding.UTF8);
             hasCreateTable = fileContent.IndexOf("CREATE TABLE", StringComparison.OrdinalIgnoreCase) >= 0;
 
             // Формируем предупреждения
@@ -124,16 +128,22 @@ namespace WebSiteDev.Service
                         con.Open();
                         // Получаем имя БД из настроек проекта
                         string dbName = Properties.Settings.Default.DbName;
-                        using (MySqlCommand cmd = new MySqlCommand($"CREATE DATABASE IF NOT EXISTS `{dbName}`;", con))
+                        using (MySqlCommand cmd = new MySqlCommand($"CREATE DATABASE IF NOT EXISTS `{dbName}` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;", con))
                         {
                             cmd.ExecuteNonQuery();
                         }
                     }
                 }
-                catch 
+                catch
                 {
 
                 }
+            }
+
+            if (!fileContent.TrimStart().StartsWith("SET NAMES", StringComparison.OrdinalIgnoreCase))
+            {
+                string fixedContent = "SET NAMES utf8mb4;\n" + fileContent;
+                File.WriteAllText(FilePath, fixedContent, new UTF8Encoding(false));
             }
 
             // Восстановление
@@ -167,7 +177,7 @@ namespace WebSiteDev.Service
 
                 using (MySqlDataReader rdr = cmd.ExecuteReader())
                 {
-                    using (StreamWriter writer = new StreamWriter(FilePath, false, Encoding.GetEncoding("windows-1251")))
+                    using (StreamWriter writer = new StreamWriter(FilePath, false, Encoding.UTF8))
                     {
                         // Заголовки
                         for (int i = 0; i < rdr.FieldCount; i++)
@@ -228,28 +238,46 @@ namespace WebSiteDev.Service
         {
             CsvImporter.ValidateFile(FilePath, separator, TableName, SkipHeader);
 
-            using (MySqlConnection con = new MySqlConnection(Data.GetConnectionStringInFile()))
+            string tempFilePath = Path.GetTempFileName();
+            string content = File.ReadAllText(FilePath, Encoding.UTF8);
+            File.WriteAllText(tempFilePath, content, new UTF8Encoding(false));
+
+            try
             {
-                con.Open();
-
-                MySqlBulkLoader loader = new MySqlBulkLoader(con);
-                loader.Local = true;
-                loader.TableName = TableName;
-                loader.FileName = FilePath;
-                loader.FieldTerminator = separator;
-                loader.LineTerminator = "\n";
-                loader.CharacterSet = "cp1251";
-
-                if (SkipHeader)
+                using (MySqlConnection con = new MySqlConnection(Data.GetConnectionStringInFile()))
                 {
-                    loader.NumberOfLinesToSkip = 1;
-                }
-                else
-                {
-                    loader.NumberOfLinesToSkip = 0;
-                }
+                    con.Open();
 
-                return loader.Load();
+                    MySqlBulkLoader loader = new MySqlBulkLoader(con);
+                    loader.Local = true;
+                    loader.TableName = TableName;
+                    loader.FileName = tempFilePath;
+                    loader.FieldTerminator = separator;
+                    loader.LineTerminator = "\n";
+                    loader.CharacterSet = "utf8mb4";
+
+                    if (SkipHeader)
+                    {
+                        loader.NumberOfLinesToSkip = 1;
+                    }
+                    else
+                    {
+                        loader.NumberOfLinesToSkip = 0;
+                    }
+
+                    return loader.Load();
+                }
+            }
+            finally
+            {
+                try
+                {
+                    File.Delete(tempFilePath);
+                }
+                catch
+                {
+
+                }
             }
         }
     }
