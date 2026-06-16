@@ -1,3 +1,6 @@
+SET NAMES utf8mb4;
+CREATE DATABASE  IF NOT EXISTS `db67` /*!40100 DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci */ /*!80016 DEFAULT ENCRYPTION='N' */;
+USE `db67`;
 -- MySqlBackup.NET 2.7.0.0
 -- Dump Time: 2026-06-09 13:21:59
 -- --------------------------------------
@@ -32,7 +35,7 @@ CREATE TABLE IF NOT EXISTS `Category` (
 -- 
 
 /*!40000 ALTER TABLE `Category` DISABLE KEYS */;
-INSERT INTO `Category`(`CategoryID`,`CategoryName`) VALUES(1,'Сайт-визитка'),(2,'Интернет-магазин'),(3,'Корпоративный сайт'),(4,'Лендинг (Landing Page)'),(5,'Портфолио'),(6,'Блог'),(7,'Информационный портал'),(8,'Новостной сайт'),(9,'Форум'),(10,'Персональный сайт'),(11,'Промо-сайт'),(12,'Образовательный портал');
+
 /*!40000 ALTER TABLE `Category` ENABLE KEYS */;
 
 -- 
@@ -124,7 +127,7 @@ CREATE TABLE IF NOT EXISTS `Role` (
 -- 
 
 /*!40000 ALTER TABLE `Role` DISABLE KEYS */;
-INSERT INTO `Role`(`RoleID`,`RoleName`) VALUES(1,'Администратор'),(2,'Менеджер'),(3,'Директор');
+
 /*!40000 ALTER TABLE `Role` ENABLE KEYS */;
 
 -- 
@@ -143,7 +146,7 @@ CREATE TABLE IF NOT EXISTS `Status` (
 -- 
 
 /*!40000 ALTER TABLE `Status` DISABLE KEYS */;
-INSERT INTO `Status`(`StatusID`,`StatusName`) VALUES(1,'Новый'),(2,'В работе'),(3,'Завершён'),(4,'Отменён');
+
 /*!40000 ALTER TABLE `Status` ENABLE KEYS */;
 
 -- 
@@ -154,7 +157,7 @@ DROP TABLE IF EXISTS `Users`;
 CREATE TABLE IF NOT EXISTS `Users` (
   `UserID` int NOT NULL AUTO_INCREMENT,
   `Surname` varchar(90) NOT NULL,
-  `FirstName` varchar(70) NOT NULL,
+  `FirstName` varchar(75) NOT NULL,
   `MiddleName` varchar(90) DEFAULT NULL,
   `UserLogin` varchar(20) NOT NULL,
   `UserPassword` varchar(255) NOT NULL,
